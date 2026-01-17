@@ -1,8 +1,8 @@
 ---
 title: 地球外少年少女を見直した
 tags: ["日記"]
-createdAt: 2026-01-19
-updatedAt: 2026-01-19
+createdAt: 2026-01-17 15:00:00
+updatedAt: 2026-01-17 15:00:00
 ---
 
 Netflixで地球外少年少女を見直した。
