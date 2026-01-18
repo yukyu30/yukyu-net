@@ -199,7 +199,8 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
     sendMessage(userMessage, { onPrank: playPrankEffect })
   }
 
-  // 最新のアシスタントメッセージを取得
+  // 最新のユーザーメッセージとアシスタントメッセージを取得
+  const latestUserMessage = messages.filter(m => m.role === 'user').slice(-1)[0]
   const latestAssistantMessage = messages.filter(m => m.role === 'assistant').slice(-1)[0]
 
   return (
@@ -220,18 +221,27 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
       {/* テキストボックス（ギャルゲ風） */}
       <div className="flex-shrink-0 bg-gray-900/95 border-t-2 border-green-500 backdrop-blur-sm">
         {/* 会話表示エリア */}
-        <div className="p-4 min-h-[120px] max-h-[200px] overflow-y-auto">
+        <div className="p-4 min-h-[140px] max-h-[240px] overflow-y-auto space-y-3">
           {/* 初期メッセージ */}
           {messages.length === 0 && !streamingContent && !currentStatus && (
             <div className="text-green-400">
-              <p className="text-lg">何でも聞いてね！</p>
-              <p className="text-sm mt-1 text-green-600">ブログの記事について教えてあげるよ</p>
+              <p className="text-lg font-bold">yukyu</p>
+              <p className="mt-1">何でも聞いてね！ブログの記事について教えてあげるよ。</p>
+            </div>
+          )}
+
+          {/* ユーザーの質問を表示 */}
+          {latestUserMessage && (
+            <div className="text-cyan-400 border-b border-green-900/50 pb-2">
+              <p className="text-xs text-cyan-600 mb-1">あなた</p>
+              <p className="whitespace-pre-wrap">{latestUserMessage.content}</p>
             </div>
           )}
 
           {/* ステータス表示 */}
           {currentStatus && !streamingContent && (
             <div className="text-green-500 animate-pulse">
+              <p className="text-xs text-green-600 mb-1">yukyu</p>
               <span>{currentStatus.message}</span>
               {currentStatus.documents && currentStatus.documents.length > 0 && (
                 <ul className="mt-2 text-xs text-green-700 space-y-1">
@@ -246,6 +256,7 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
           {/* ストリーミング中の回答 */}
           {streamingContent && (
             <div className="text-green-400">
+              <p className="text-xs text-green-600 mb-1">yukyu</p>
               <div className={PROSE_CLASSES}>
                 <ReactMarkdown>{streamingContent}</ReactMarkdown>
               </div>
@@ -256,6 +267,7 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
           {/* 最新の回答（ストリーミング完了後） */}
           {!streamingContent && !currentStatus && latestAssistantMessage && (
             <div className="text-green-400">
+              <p className="text-xs text-green-600 mb-1">yukyu</p>
               <div className={PROSE_CLASSES}>
                 <ReactMarkdown>{latestAssistantMessage.content}</ReactMarkdown>
               </div>
