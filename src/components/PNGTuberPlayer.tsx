@@ -216,13 +216,13 @@ export default function PNGTuberPlayer({ isTalking, className = '' }: PNGTuberPl
   }, [isLoaded])
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative flex items-center justify-center ${className}`}>
       {/* CRTモニター風エフェクト */}
-      <div className="relative overflow-hidden rounded-lg">
+      <div className="relative overflow-hidden rounded-lg w-full h-full flex items-center justify-center">
         {/* メインキャンバス */}
         <canvas
           ref={canvasRef}
-          className="w-full h-full object-contain"
+          className="max-w-full max-h-full object-contain"
         />
 
         {/* スキャンライン */}
