@@ -287,12 +287,12 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={isLoading ? "応答中..." : "メッセージを入力..."}
-              className="flex-1 bg-black/50 border border-green-700 rounded px-3 py-2 text-sm md:text-base text-green-400 placeholder-green-800 focus:outline-none focus:border-green-500"
+              className="flex-1 bg-black/50 border border-green-700 rounded px-3 py-2 text-base text-green-400 placeholder-green-800 focus:outline-none focus:border-green-500"
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="bg-green-700 hover:bg-green-600 disabled:bg-gray-800 disabled:text-gray-600 text-black font-bold px-4 md:px-6 py-2 rounded transition-colors text-sm md:text-base"
+              className="bg-green-700 hover:bg-green-600 disabled:bg-gray-800 disabled:text-gray-600 text-black font-bold px-4 md:px-6 py-2 rounded transition-colors text-base"
             >
               送信
             </button>
