@@ -51,8 +51,9 @@ export function getAllPosts(): Post[] {
       .substring(0, 200)
       .trim() + '...'
 
-    const dateString = data.date || data.created_at 
-      ? new Date(data.date || data.created_at).toISOString().split('T')[0]
+    const rawDate = data.date || data.created_at || data.createdAt
+    const dateString = rawDate
+      ? new Date(rawDate).toISOString().split('T')[0]
       : slug
 
     // Extract first image from content
@@ -135,8 +136,9 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     .substring(0, 200)
     .trim() + '...'
 
-  const dateString = data.date || data.created_at 
-    ? new Date(data.date || data.created_at).toISOString().split('T')[0]
+  const rawDate = data.date || data.created_at || data.createdAt
+  const dateString = rawDate
+    ? new Date(rawDate).toISOString().split('T')[0]
     : slug
 
   // Extract first image from content

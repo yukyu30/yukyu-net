@@ -36,9 +36,13 @@ export function generateSitemapEntries(): SitemapEntry[] {
 
   // 記事ページ
   posts.forEach(post => {
+    // 日付が有効かチェック
+    const date = new Date(post.date)
+    const lastModified = isNaN(date.getTime()) ? new Date() : date
+
     entries.push({
       url: `${SITE_URL}/posts/${post.slug}`,
-      lastModified: new Date(post.date),
+      lastModified,
       changeFrequency: 'monthly',
       priority: 0.7,
     })
