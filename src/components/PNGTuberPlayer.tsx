@@ -47,7 +47,8 @@ export default function PNGTuberPlayer({ isTalking, className = '' }: PNGTuberPl
   // 口の状態をランダムに切り替え（話している時）
   const updateMouthState = useCallback(() => {
     if (isTalking) {
-      const states: MouthState[] = ['open', 'half', 'e', 'u']
+      // closedも混ぜて自然な話している感を出す
+      const states: MouthState[] = ['open', 'half', 'e', 'u', 'closed', 'half', 'open']
       mouthStateRef.current = states[Math.floor(Math.random() * states.length)]
     } else {
       mouthStateRef.current = 'closed'

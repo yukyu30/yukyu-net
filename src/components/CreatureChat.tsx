@@ -211,17 +211,17 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
       )}
 
       {/* メインエリア：PNGTuberを大きく表示 */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4">
+      <div className="flex-1 flex flex-col items-center justify-center p-2 md:p-4 min-h-0">
         {/* PNGTuberキャラクター表示（大きく中央に） */}
-        <div className="flex-1 flex items-center justify-center w-full max-w-2xl">
-          <PNGTuberPlayer isTalking={isTalking} className="w-full max-w-md" />
+        <div className="flex-1 flex items-center justify-center w-full max-w-2xl min-h-0">
+          <PNGTuberPlayer isTalking={isTalking} className="w-full max-w-xs md:max-w-md h-auto max-h-full" />
         </div>
       </div>
 
       {/* テキストボックス（ギャルゲ風） */}
       <div className="flex-shrink-0 bg-gray-900/95 border-t-2 border-green-500 backdrop-blur-sm">
         {/* 会話表示エリア */}
-        <div className="p-4 min-h-[140px] max-h-[240px] overflow-y-auto space-y-3">
+        <div className="p-3 md:p-4 min-h-[100px] max-h-[160px] md:max-h-[240px] overflow-y-auto space-y-2 md:space-y-3">
           {/* 初期メッセージ */}
           {messages.length === 0 && !streamingContent && !currentStatus && (
             <div className="text-green-400">
@@ -279,7 +279,7 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
         </div>
 
         {/* 入力フォーム */}
-        <form onSubmit={handleSubmit} className="p-3 border-t border-green-900/50">
+        <form onSubmit={handleSubmit} className="p-2 md:p-3 border-t border-green-900/50">
           <div className="flex gap-2">
             <input
               ref={inputRef}
@@ -287,12 +287,12 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={isLoading ? "応答中..." : "メッセージを入力..."}
-              className="flex-1 bg-black/50 border border-green-700 rounded px-4 py-2 text-green-400 placeholder-green-800 focus:outline-none focus:border-green-500"
+              className="flex-1 bg-black/50 border border-green-700 rounded px-3 py-2 text-sm md:text-base text-green-400 placeholder-green-800 focus:outline-none focus:border-green-500"
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="bg-green-700 hover:bg-green-600 disabled:bg-gray-800 disabled:text-gray-600 text-black font-bold px-6 py-2 rounded transition-colors"
+              className="bg-green-700 hover:bg-green-600 disabled:bg-gray-800 disabled:text-gray-600 text-black font-bold px-4 md:px-6 py-2 rounded transition-colors text-sm md:text-base"
             >
               送信
             </button>
