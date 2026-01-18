@@ -80,6 +80,14 @@ async function generatePrankMessage(openai: OpenAI): Promise<string> {
   }
 }
 
+// ダミー応答（APIキーがない場合）
+const DUMMY_RESPONSES = [
+  'これはテストモードでこ！APIキーが設定されてないから、ダミーの応答を返してるぼこ。',
+  '開発中でこ〜！本番環境ではちゃんとAIが答えるぼこ。',
+  'テストメッセージでこ。実際のAI応答を見るにはOPENAI_API_KEYを設定してね、ぼこ。',
+  'ダミーモードで動いてるでこ。記事の検索とかAI応答は本番で試してね、ぼこ！',
+]
+
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder()
 
@@ -94,6 +102,36 @@ export async function POST(request: NextRequest) {
       return new Response(JSON.stringify({ error: 'message is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    // APIキーがない場合はダミー応答を返す
+    if (!process.env.OPENAI_API_KEY) {
+      const readableStream = new ReadableStream({
+        async start(controller) {
+          sendEvent(controller, { type: 'status', status: 'thinking', message: 'テストモード...' })
+
+          // ダミー応答をストリーミング風に送信
+          const dummyResponse = DUMMY_RESPONSES[Math.floor(Math.random() * DUMMY_RESPONSES.length)]
+          sendEvent(controller, { type: 'sources', sources: [] })
+
+          // 文字を少しずつ送信（ストリーミング風）
+          for (const char of dummyResponse) {
+            sendEvent(controller, { type: 'content', content: char })
+            await new Promise(resolve => setTimeout(resolve, 30))
+          }
+
+          sendEvent(controller, { type: 'done' })
+          controller.close()
+        },
+      })
+
+      return new Response(readableStream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+        },
       })
     }
 
