@@ -1,10 +1,10 @@
 import { Metadata } from 'next'
-import CreatureChat from '@/components/CreatureChat'
+import McpAppHost from '@/components/McpAppHost'
 import MenuBar from '@/components/MenuBar'
 
 export const metadata: Metadata = {
   title: 'DecoBoco Chat | yukyu.net',
-  description: 'yukyuのブログについて聞いてみよう',
+  description: 'yukyuのブログについて聞いてみよう - MCP Apps',
 }
 
 interface ChatPageProps {
@@ -18,7 +18,11 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
     <div className="h-screen flex flex-col bg-black">
       <MenuBar />
       <main className="flex-1 flex flex-col overflow-hidden">
-        <CreatureChat initialQuery={q} />
+        <McpAppHost
+          appUrl="/mcp-apps/chat.html"
+          initialQuery={q}
+          className="w-full h-full"
+        />
       </main>
     </div>
   )

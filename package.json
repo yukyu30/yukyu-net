@@ -21,6 +21,8 @@
     "@gsap/react": "^2.1.2",
     "@mastra/core": "^0.24.9",
     "@mastra/libsql": "^0.16.4",
+    "@modelcontextprotocol/ext-apps": "^1.0.1",
+    "@modelcontextprotocol/sdk": "^1.25.3",
     "@tailwindcss/typography": "^0.5.16",
     "dotenv": "^17.2.3",
     "gsap": "^3.14.1",
