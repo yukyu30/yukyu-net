@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.7",
+    "@anthropic-ai/sdk": "^0.71.2",
     "@gsap/react": "^2.1.2",
     "@mastra/core": "^0.24.9",
     "@mastra/libsql": "^0.16.4",

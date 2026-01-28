@@ -1,13 +1,17 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import PNGTuberPlayer from './PNGTuberPlayer'
+import { SourcesList } from './chat/SourceCard'
+import { ChatStatus } from './chat/ChatStatus'
+import { ProviderBadge } from './chat/ProviderBadge'
 
 interface Source {
   slug: string
   title: string
+  excerpt?: string
+  score?: number
 }
 
 interface Message {
@@ -16,32 +20,26 @@ interface Message {
   sources?: Source[]
 }
 
-const HISTORY_LIMIT = 6
-const PROSE_CLASSES = "prose prose-invert prose-sm max-w-none [&_p]:my-1 [&_ul]:my-2 [&_ul]:ml-4 [&_ul]:list-disc [&_ol]:my-2 [&_ol]:ml-4 [&_ol]:list-decimal [&_li]:my-0.5 [&_li]:text-green-400 [&_h1]:text-green-300 [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mt-2 [&_h1]:mb-1 [&_h2]:text-green-300 [&_h2]:text-base [&_h2]:font-bold [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:text-green-300 [&_h3]:text-sm [&_h3]:font-bold [&_h3]:mt-2 [&_h3]:mb-1 [&_strong]:text-green-300 [&_strong]:font-bold [&_em]:text-green-500 [&_code]:text-green-300 [&_code]:bg-green-900/30 [&_code]:px-1 [&_code]:rounded [&_a]:text-green-400 [&_a]:underline"
-
-function SourcesList({ sources }: { sources: Source[] }) {
-  if (sources.length === 0) return null
-  return (
-    <div className="mt-3 pt-2 border-t border-green-900">
-      <p className="text-xs text-green-700 mb-1">参考にした記事:</p>
-      <ul className="text-xs space-y-1">
-        {sources.map((src, j) => (
-          <li key={j}>
-            <Link href={`/posts/${src.slug}`} className="text-green-500 hover:text-green-300 underline">
-              {src.title}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+interface DocumentInfo {
+  title: string
+  slug: string
+  score?: number
+  excerpt?: string
 }
 
 interface StatusInfo {
   status: string
   message: string
-  documents?: string[]
+  documents?: DocumentInfo[] | string[]
 }
+
+interface ProviderInfo {
+  provider: 'openai' | 'claude'
+  model?: string
+}
+
+const HISTORY_LIMIT = 6
+const PROSE_CLASSES = "prose prose-invert prose-sm max-w-none [&_p]:my-1 [&_ul]:my-2 [&_ul]:ml-4 [&_ul]:list-disc [&_ol]:my-2 [&_ol]:ml-4 [&_ol]:list-decimal [&_li]:my-0.5 [&_li]:text-green-400 [&_h1]:text-green-300 [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mt-2 [&_h1]:mb-1 [&_h2]:text-green-300 [&_h2]:text-base [&_h2]:font-bold [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:text-green-300 [&_h3]:text-sm [&_h3]:font-bold [&_h3]:mt-2 [&_h3]:mb-1 [&_strong]:text-green-300 [&_strong]:font-bold [&_em]:text-green-500 [&_code]:text-green-300 [&_code]:bg-green-900/30 [&_code]:px-1 [&_code]:rounded [&_a]:text-green-400 [&_a]:underline"
 
 interface CreatureChatProps {
   initialQuery?: string
@@ -54,7 +52,9 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
   const [streamingContent, setStreamingContent] = useState('')
   const [streamingSources, setStreamingSources] = useState<Source[]>([])
   const [currentStatus, setCurrentStatus] = useState<StatusInfo | null>(null)
+  const [currentProvider, setCurrentProvider] = useState<ProviderInfo | null>(null)
   const [isTalking, setIsTalking] = useState(false)
+  const [showSourcesPanel, setShowSourcesPanel] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const initialQuerySent = useRef(false)
@@ -100,6 +100,8 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
     setStreamingContent('')
     setStreamingSources([])
     setCurrentStatus(null)
+    setCurrentProvider(null)
+    setShowSourcesPanel(false)
 
     try {
       const response = await fetch('/api/chat', {
@@ -131,7 +133,13 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6))
-              if (data.type === 'prank') {
+              if (data.type === 'provider') {
+                // AIプロバイダー情報を設定
+                setCurrentProvider({
+                  provider: data.provider,
+                  model: data.model,
+                })
+              } else if (data.type === 'prank') {
                 // AIが悪口を検出したのでドッキリ発動
                 options?.onPrank?.()
                 // prankメッセージをcontentとして扱う
@@ -146,11 +154,14 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
                 sources = data.sources
                 setStreamingSources(data.sources)
                 setCurrentStatus(null) // ステータス表示を消す
+                if (data.sources.length > 0) {
+                  setShowSourcesPanel(true)
+                }
               } else if (data.type === 'content') {
                 accumulatedContent += data.content
                 setStreamingContent(accumulatedContent)
               } else if (data.type === 'done') {
-                // コンテンツがある場合のみメッセージを追加（prankの場合は空）
+                // コンテンツがある場合のみメッセージを追加
                 if (accumulatedContent) {
                   setMessages((prev) => [
                     ...prev,
@@ -203,6 +214,11 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
   const latestUserMessage = messages.filter(m => m.role === 'user').slice(-1)[0]
   const latestAssistantMessage = messages.filter(m => m.role === 'assistant').slice(-1)[0]
 
+  // 表示するソース（ストリーミング中または最新のアシスタントメッセージから）
+  const displaySources = streamingSources.length > 0
+    ? streamingSources
+    : latestAssistantMessage?.sources || []
+
   return (
     <div className="relative flex-1 overflow-hidden bg-black">
       {/* フラッシュ演出 */}
@@ -214,6 +230,36 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
       <div className="absolute inset-0 flex items-center justify-center">
         <PNGTuberPlayer isTalking={isTalking} className="w-full h-full" />
       </div>
+
+      {/* プロバイダーバッジ（右上） */}
+      {currentProvider && (
+        <div className="absolute top-3 right-3 z-20">
+          <ProviderBadge provider={currentProvider.provider} model={currentProvider.model} />
+        </div>
+      )}
+
+      {/* MCP Apps風のソースパネル（左サイド） */}
+      {showSourcesPanel && displaySources.length > 0 && (
+        <div className="absolute top-3 left-3 z-20 w-64 max-h-[40vh] overflow-y-auto bg-black/80 backdrop-blur-sm border border-green-800/50 rounded-lg p-3 hidden md:block">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs font-medium text-green-500 flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              参考記事
+            </h3>
+            <button
+              onClick={() => setShowSourcesPanel(false)}
+              className="text-green-700 hover:text-green-400 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <SourcesList sources={displaySources} />
+        </div>
+      )}
 
       {/* オーバーレイ：テキストボックス（下部に固定） */}
       <div className="absolute bottom-0 left-0 right-0 z-10">
@@ -238,16 +284,9 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
 
             {/* ステータス表示 */}
             {currentStatus && !streamingContent && (
-              <div className="text-green-500 animate-pulse">
+              <div className="py-1">
                 <p className="text-xs text-green-600 mb-1">yukyu</p>
-                <span className="text-sm md:text-base">{currentStatus.message}</span>
-                {currentStatus.documents && currentStatus.documents.length > 0 && (
-                  <ul className="mt-2 text-xs text-green-700 space-y-1">
-                    {currentStatus.documents.map((doc, i) => (
-                      <li key={i}>→ {doc}</li>
-                    ))}
-                  </ul>
-                )}
+                <ChatStatus status={currentStatus} />
               </div>
             )}
 
@@ -258,7 +297,10 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
                 <div className={PROSE_CLASSES}>
                   <ReactMarkdown>{streamingContent}</ReactMarkdown>
                 </div>
-                <SourcesList sources={streamingSources} />
+                {/* モバイル用のソース表示 */}
+                <div className="md:hidden">
+                  <SourcesList sources={streamingSources} compact />
+                </div>
               </div>
             )}
 
@@ -269,7 +311,12 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
                 <div className={PROSE_CLASSES}>
                   <ReactMarkdown>{latestAssistantMessage.content}</ReactMarkdown>
                 </div>
-                {latestAssistantMessage.sources && <SourcesList sources={latestAssistantMessage.sources} />}
+                {/* モバイル用のソース表示 */}
+                <div className="md:hidden">
+                  {latestAssistantMessage.sources && (
+                    <SourcesList sources={latestAssistantMessage.sources} compact />
+                  )}
+                </div>
               </div>
             )}
 

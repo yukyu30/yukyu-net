@@ -1,12 +1,16 @@
 import { NextRequest } from 'next/server'
-import OpenAI from 'openai'
 import { searchWithRelated } from '@/lib/rag/retriever'
+import {
+  getAIProvider,
+  isAIAvailable,
+  streamChatCompletion,
+  getChatCompletion,
+  type ChatMessage,
+} from '@/lib/ai-provider'
 
 // 悪口判定用プロンプト
 const BAD_WORD_CHECK_PROMPT = `以下のメッセージが悪口、暴言、侮辱、攻撃的な表現を含むかどうか判定してください。
-判定結果を「YES」か「NO」のみで答えてください。
-
-メッセージ: {message}`
+判定結果を「YES」か「NO」のみで答えてください。`
 
 // ドッキリ文言生成用プロンプト
 const PRANK_MESSAGE_PROMPT = `あなたはyukyu.netのブログ管理人yukyuです。ユーザーが悪口を言ったので、カメラのシャッター音と共に「画像を記録した」とドッキリを仕掛けます。
@@ -45,35 +49,32 @@ const CREATURE_SYSTEM_PROMPT = `あなたはyukyu.netのブログ管理人、yuk
 記事に関連する情報がなければ、一般的な知識で答えても構いませんが、その場合は「ブログにはその情報がなかったけど...」と前置きしてください。`
 
 // AIで悪口判定
-async function checkBadWord(openai: OpenAI, message: string): Promise<boolean> {
+async function checkBadWord(message: string): Promise<boolean> {
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'user', content: BAD_WORD_CHECK_PROMPT.replace('{message}', message) },
-      ],
-      temperature: 0,
-      max_completion_tokens: 10,
-    })
-    const result = response.choices[0]?.message?.content?.trim().toUpperCase()
-    return result === 'YES'
+    const provider = getAIProvider()
+    const result = await getChatCompletion(
+      provider,
+      BAD_WORD_CHECK_PROMPT,
+      `メッセージ: ${message}`,
+      { temperature: 0, maxTokens: 10 }
+    )
+    return result.trim().toUpperCase() === 'YES'
   } catch {
     return false
   }
 }
 
 // AIでドッキリ文言を生成
-async function generatePrankMessage(openai: OpenAI): Promise<string> {
+async function generatePrankMessage(): Promise<string> {
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'user', content: PRANK_MESSAGE_PROMPT },
-      ],
-      temperature: 1,
-      max_completion_tokens: 100,
-    })
-    return response.choices[0]?.message?.content?.trim() || '📸 画像を記録したよ。なんちて。'
+    const provider = getAIProvider()
+    const result = await getChatCompletion(
+      provider,
+      PRANK_MESSAGE_PROMPT,
+      'ドッキリメッセージを生成してください。',
+      { temperature: 1, maxTokens: 100 }
+    )
+    return result.trim() || '📸 画像を記録したよ。なんちて。'
   } catch {
     return '📸 画像を記録したよ。なんちて。'
   }
@@ -83,7 +84,7 @@ async function generatePrankMessage(openai: OpenAI): Promise<string> {
 const DUMMY_RESPONSES = [
   'これはテストモードだよ！APIキーが設定されてないから、ダミーの応答を返してるね。',
   '開発中〜！本番環境ではちゃんとAIが答えるよ。',
-  'テストメッセージです。実際のAI応答を見るにはOPENAI_API_KEYを設定してね。',
+  'テストメッセージです。実際のAI応答を見るにはAPIキーを設定してね。',
   'ダミーモードで動いてるよ。記事の検索とかAI応答は本番で試してね！',
 ]
 
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
     }
 
     // APIキーがない場合はダミー応答を返す
-    if (!process.env.OPENAI_API_KEY) {
+    if (!isAIAvailable()) {
       const readableStream = new ReadableStream({
         async start(controller) {
           sendEvent(controller, { type: 'status', status: 'thinking', message: 'テストモード...' })
@@ -137,12 +138,19 @@ export async function POST(request: NextRequest) {
     const readableStream = new ReadableStream({
       async start(controller) {
         try {
-          const openai = new OpenAI()
+          const provider = getAIProvider()
+
+          // 使用中のプロバイダーを通知
+          sendEvent(controller, {
+            type: 'provider',
+            provider,
+            model: provider === 'claude' ? 'claude-sonnet-4' : 'gpt-5.1',
+          })
 
           // 悪口判定（検索前に実行）
-          const isBadWord = await checkBadWord(openai, message)
+          const isBadWord = await checkBadWord(message)
           if (isBadWord) {
-            const prankMessage = await generatePrankMessage(openai)
+            const prankMessage = await generatePrankMessage()
             sendEvent(controller, { type: 'prank', message: prankMessage })
             sendEvent(controller, { type: 'done' })
             controller.close()
@@ -154,15 +162,25 @@ export async function POST(request: NextRequest) {
 
           let context = ''
           let relatedPostsText = ''
-          let sources: Array<{ slug: string; title: string }> = []
+          let sources: Array<{ slug: string; title: string; excerpt?: string; score?: number }> = []
 
           try {
             const { results, relatedPosts } = await searchWithRelated(message, 5)
 
             if (results.length > 0) {
-              // 見つかった記事を通知
-              const foundTitles = results.slice(0, 3).map(r => r.title)
-              sendEvent(controller, { type: 'status', status: 'found', message: '関連記事を発見', documents: foundTitles })
+              // 見つかった記事を通知（MCP Apps風のリッチな情報）
+              const foundDocuments = results.slice(0, 3).map(r => ({
+                title: r.title,
+                slug: r.slug,
+                score: r.score,
+                excerpt: r.text.slice(0, 100) + '...',
+              }))
+              sendEvent(controller, {
+                type: 'status',
+                status: 'found',
+                message: '関連記事を発見',
+                documents: foundDocuments,
+              })
 
               // 読み込み中ステータス
               sendEvent(controller, { type: 'status', status: 'reading', message: '記事を読んでいます...' })
@@ -182,6 +200,8 @@ export async function POST(request: NextRequest) {
                 .map(r => ({
                   slug: r.slug,
                   title: r.title,
+                  excerpt: r.text.slice(0, 150),
+                  score: r.score,
                 }))
             } else {
               sendEvent(controller, { type: 'status', status: 'not_found', message: '関連記事が見つかりませんでした' })
@@ -206,30 +226,31 @@ export async function POST(request: NextRequest) {
             .replace('{context}', context || '関連する記事は見つかりませんでした。')
             .replace('{relatedPosts}', relatedPostsText || 'なし')
 
-          const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-            { role: 'system', content: systemPrompt },
+          const messages: ChatMessage[] = [
             ...history.map((h: { role: string; content: string }) => ({
               role: h.role as 'user' | 'assistant',
               content: h.content,
             })),
-            { role: 'user', content: message },
+            { role: 'user' as const, content: message },
           ]
 
-          const stream = await openai.chat.completions.create({
-            model: 'gpt-5.1',
-            messages,
-            temperature: 0.7,
-            max_completion_tokens: 1000,
-            stream: true,
-          })
-
-          // sourcesを送信
+          // sourcesを送信（MCP Apps風のリッチな情報を含む）
           sendEvent(controller, { type: 'sources', sources })
 
+          // ストリーミング応答
+          const stream = streamChatCompletion({
+            provider,
+            systemPrompt,
+            messages,
+            temperature: 0.7,
+            maxTokens: 1000,
+          })
+
           for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content
-            if (content) {
-              sendEvent(controller, { type: 'content', content })
+            if (chunk.type === 'content' && chunk.content) {
+              sendEvent(controller, { type: 'content', content: chunk.content })
+            } else if (chunk.type === 'error') {
+              sendEvent(controller, { type: 'error', message: chunk.error || 'エラーが発生しました' })
             }
           }
 
