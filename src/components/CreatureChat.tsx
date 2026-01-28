@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import PNGTuberPlayer from './PNGTuberPlayer'
-import { SourcesList } from './chat/SourceCard'
 import { ChatStatus } from './chat/ChatStatus'
 import { ProviderBadge } from './chat/ProviderBadge'
 
@@ -238,26 +237,57 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
         </div>
       )}
 
-      {/* MCP Apps風のソースパネル（左サイド） */}
+      {/* 上部横スクロールのソースカード */}
       {showSourcesPanel && displaySources.length > 0 && (
-        <div className="absolute top-3 left-3 z-20 w-64 max-h-[40vh] overflow-y-auto bg-black/80 backdrop-blur-sm border border-green-800/50 rounded-lg p-3 hidden md:block">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xs font-medium text-green-500 flex items-center gap-1">
+        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/90 via-black/70 to-transparent pb-8 pt-3 px-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs text-green-600 flex items-center gap-1 flex-shrink-0">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               参考記事
-            </h3>
+            </span>
+            <div className="flex-1 h-px bg-green-900/50" />
             <button
               onClick={() => setShowSourcesPanel(false)}
-              className="text-green-700 hover:text-green-400 transition-colors"
+              className="text-green-700 hover:text-green-400 transition-colors flex-shrink-0"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <SourcesList sources={displaySources} />
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-green-800 scrollbar-track-transparent">
+            {displaySources.map((source, index) => (
+              <a
+                key={source.slug}
+                href={`/posts/${source.slug}`}
+                className="flex-shrink-0 w-48 bg-green-950/50 border border-green-800/50 rounded-lg p-2.5 hover:bg-green-900/50 hover:border-green-600 transition-all group"
+              >
+                <div className="flex items-start gap-2">
+                  <span className="flex-shrink-0 w-5 h-5 bg-green-700/50 rounded text-xs flex items-center justify-center text-green-300">
+                    {index + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-green-300 group-hover:text-green-200 truncate">
+                      {source.title}
+                    </p>
+                    {source.score && (
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <div className="flex-1 h-1 bg-green-950 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-green-500"
+                            style={{ width: `${Math.round(source.score * 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-green-600">{Math.round(source.score * 100)}%</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
       )}
 
@@ -297,10 +327,6 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
                 <div className={PROSE_CLASSES}>
                   <ReactMarkdown>{streamingContent}</ReactMarkdown>
                 </div>
-                {/* モバイル用のソース表示 */}
-                <div className="md:hidden">
-                  <SourcesList sources={streamingSources} compact />
-                </div>
               </div>
             )}
 
@@ -310,12 +336,6 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
                 <p className="text-xs text-green-600 mb-1">yukyu</p>
                 <div className={PROSE_CLASSES}>
                   <ReactMarkdown>{latestAssistantMessage.content}</ReactMarkdown>
-                </div>
-                {/* モバイル用のソース表示 */}
-                <div className="md:hidden">
-                  {latestAssistantMessage.sources && (
-                    <SourcesList sources={latestAssistantMessage.sources} compact />
-                  )}
                 </div>
               </div>
             )}
