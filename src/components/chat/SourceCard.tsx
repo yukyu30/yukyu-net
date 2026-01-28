@@ -14,8 +14,22 @@ interface SourceCardProps {
   index: number
 }
 
+// HTMLタグを除去してプレーンテキストに変換
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, '') // HTMLタグを除去
+    .replace(/&nbsp;/g, ' ') // &nbsp;をスペースに
+    .replace(/&amp;/g, '&')  // &amp;を&に
+    .replace(/&lt;/g, '<')   // &lt;を<に
+    .replace(/&gt;/g, '>')   // &gt;を>に
+    .replace(/&quot;/g, '"') // &quot;を"に
+    .replace(/\s+/g, ' ')    // 連続する空白を1つに
+    .trim()
+}
+
 export function SourceCard({ source, index }: SourceCardProps) {
   const relevancePercent = source.score ? Math.round(source.score * 100) : null
+  const cleanExcerpt = source.excerpt ? stripHtml(source.excerpt) : null
 
   return (
     <Link
@@ -34,10 +48,10 @@ export function SourceCard({ source, index }: SourceCardProps) {
             {source.title}
           </h4>
 
-          {/* Excerpt */}
-          {source.excerpt && (
+          {/* Excerpt (HTML stripped) */}
+          {cleanExcerpt && (
             <p className="mt-1 text-xs text-green-600 line-clamp-2">
-              {source.excerpt}
+              {cleanExcerpt}
             </p>
           )}
 
@@ -95,18 +109,10 @@ export function SourcesList({ sources, compact = false }: SourcesListProps) {
   }
 
   return (
-    <div className="mt-4 space-y-2">
-      <p className="text-xs text-green-600 flex items-center gap-1">
-        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        参考にした記事
-      </p>
-      <div className="grid gap-2">
-        {sources.map((source, index) => (
-          <SourceCard key={source.slug} source={source} index={index} />
-        ))}
-      </div>
+    <div className="space-y-2">
+      {sources.map((source, index) => (
+        <SourceCard key={source.slug} source={source} index={index} />
+      ))}
     </div>
   )
 }
