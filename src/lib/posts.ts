@@ -11,7 +11,7 @@ import rehypeStringify from 'rehype-stringify'
 import rehypeEmotion from './rehype-emotion'
 import rehypeHeadingId from './rehype-heading-id'
 
-const postsDirectory = path.join(process.cwd(), 'public', 'source')
+const postsDirectory = path.join(process.cwd(), 'contents')
 
 export interface Post {
   slug: string
@@ -62,7 +62,7 @@ export function getAllPosts(): Post[] {
     if (imageMatch && imageMatch[1]) {
       const imagePath = imageMatch[1]
       if (!imagePath.startsWith('http') && !imagePath.startsWith('/')) {
-        thumbnail = `/source/${slug}/${imagePath}`
+        thumbnail = `/contents/${slug}/${imagePath}`
       } else {
         thumbnail = imagePath
       }
@@ -112,7 +112,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   const processedContent = content.replace(
     /!\[(.*?)\]\(((?!http|https|\/)[^)]+)\)/g,
     (match, alt, src) => {
-      return `![${alt}](/source/${slug}/${src})`
+      return `![${alt}](/contents/${slug}/${src})`
     }
   )
 
@@ -147,7 +147,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   if (imageMatch && imageMatch[1]) {
     const imagePath = imageMatch[1]
     if (!imagePath.startsWith('http') && !imagePath.startsWith('/')) {
-      thumbnail = `/public_articles/source/${slug}/${imagePath}`
+      thumbnail = `/contents/${slug}/${imagePath}`
     } else {
       thumbnail = imagePath
     }

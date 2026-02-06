@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const sourceDir = path.join(process.cwd(), 'public', 'source');
+const sourceDir = path.join(process.cwd(), 'contents');
 const outputDir = path.join(process.cwd(), 'public', 'pagefind');
 
 const excludeDirs = ['README', 'me', 'privacy-policy'];

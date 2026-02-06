@@ -6,7 +6,7 @@ import matter from 'gray-matter';
 
 const openai = new OpenAI();
 
-const sourceDir = path.join(process.cwd(), 'public', 'source');
+const sourceDir = path.join(process.cwd(), 'contents');
 const outputDir = path.join(process.cwd(), 'public', 'graph');
 const cacheFile = path.join(outputDir, 'embeddings-cache.json');
 

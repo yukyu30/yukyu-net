@@ -14,7 +14,7 @@ function computeContentHash(content: string): string {
 
 // 記事のMarkdownコンテンツを直接読み取る（ハッシュ計算用）
 function getPostRawContent(slug: string): string | null {
-  const postsDirectory = path.join(process.cwd(), 'public', 'source')
+  const postsDirectory = path.join(process.cwd(), 'contents')
   const indexPath = path.join(postsDirectory, slug, 'index.md')
   
   if (!fs.existsSync(indexPath)) {

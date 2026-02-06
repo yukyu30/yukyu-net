@@ -34,7 +34,7 @@ npm run lint
 ## アーキテクチャ
 
 ### 記事管理
-- 記事は `public/source/{slug}/index.md` に格納（gray-matterでfrontmatter解析）
+- 記事は `contents/{slug}/index.md` に格納（gray-matterでfrontmatter解析）
 - `src/lib/posts.ts` が記事の読み込み・パース・ソートを担当
 - Markdownはunified/remark/rehypeパイプラインでHTMLに変換
 - カスタムrehypeプラグイン: `rehype-emotion.ts`（感情表現）、`rehype-heading-id.ts`（見出しID付与）

@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
       'node_modules/@swc/core-linux-x64-gnu',
       'node_modules/@swc/core-linux-x64-musl',
       'node_modules/@esbuild/linux-x64',
-      'public/source/**/*',
+      'contents/**/*',
     ],
   },
   // 開発サーバーの安定性を向上

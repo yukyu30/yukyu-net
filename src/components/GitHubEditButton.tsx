@@ -10,7 +10,7 @@ export default function GitHubEditButton() {
   if (!match) return null
   
   const articleDir = match[1]
-  const githubEditUrl = `https://github.com/yukyu30/yukyu-net-v2/edit/main/public/source/${articleDir}/index.md`
+  const githubEditUrl = `https://github.com/yukyu30/yukyu-net-v2/edit/main/contents/${articleDir}/index.md`
   
   return (
     <div className="border-t-2 border-black">

@@ -17,9 +17,9 @@ export default function ArticleActions({ title }: ArticleActionsProps) {
 
   const match = pathname.match(/^\/posts\/(.+)$/);
   const articleDir = match ? match[1] : null;
-  const markdownUrl = articleDir ? `/source/${articleDir}/index.md` : null;
+  const markdownUrl = articleDir ? `/contents/${articleDir}/index.md` : null;
   const githubEditUrl = articleDir
-    ? `https://github.com/yukyu30/yukyu-net-v2/edit/main/public/source/${articleDir}/index.md`
+    ? `https://github.com/yukyu30/yukyu-net-v2/edit/main/contents/${articleDir}/index.md`
     : null;
 
   const shareOnX = () => {

@@ -105,7 +105,7 @@ describe('記事詳細を取得する関数', () => {
     test('画像パスが適切に処理されること', async () => {
       const post = await getPostBySlug('2025-06-30')
       if (post?.content) {
-        const hasAbsolutePath = post.content.includes('/public_articles/source/2025-06-30/')
+        const hasAbsolutePath = post.content.includes('/contents/2025-06-30/')
         expect(hasAbsolutePath).toBe(true)
       }
     })
