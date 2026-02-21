@@ -2,7 +2,7 @@
 title: 感情を表現する記法を入れた
 created_at: 2025-10-05T16:58:02.093Z
 updated_at: 2025-10-05T16:58:02.093Z
-tags: ["作ったもの"]
+tags: ["つくったもの"]
 ---
 
 <emotion type="love">
