@@ -51,6 +51,10 @@ Nikkaに続く日常生活のソリューションアプリとして、健康管
 - 体重・体脂肪率・筋肉量・BMIなどの記録と推移
 
 
+## ロゴの作り方
+
+ChatGPTにベクター風のシンプルなロゴタイプと指定して画像を生成し、[LottieFiles](https://lottiefiles.com/jp/tools/raster-to-vector)のRaster to Vectorツールでラスター画像からSVGに変換するという流れで作っている。
+
 ## CLIがあるサービスとClaude Codeの相性
 
 今回はFly.io、Vercel、Auth0といったCLIが用意されているサービスを選んだ。
