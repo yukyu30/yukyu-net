@@ -22,6 +22,7 @@ export interface Post {
   content?: string
   thumbnail?: string
   rss?: boolean
+  externalUrl?: string
 }
 
 export function getAllPosts(): Post[] {
@@ -76,6 +77,7 @@ export function getAllPosts(): Post[] {
       tags: data.tags || [],
       thumbnail,
       rss: data.rss !== false,
+      externalUrl: data.externalUrl,
     }
   }).filter(post => post !== null) as Post[]
 
@@ -183,4 +185,9 @@ export function getAllTags(): Map<string, number> {
 export function getPostsByTag(tag: string): Post[] {
   const posts = getAllPosts()
   return posts.filter(post => post.tags?.includes(tag))
+}
+
+export function getExternalPosts(): Post[] {
+  const posts = getAllPosts()
+  return posts.filter(post => !!post.externalUrl)
 }

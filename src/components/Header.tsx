@@ -57,6 +57,13 @@ export default function Header({
                   <span className="text-xs font-mono font-bold">WORKS</span>
                 </Link>
                 <Link
+                  href="/writing"
+                  className="px-4 py-2 border-l border-green-400 hover:bg-green-400 hover:text-black transition-colors flex items-center justify-center"
+                  aria-label="Writing"
+                >
+                  <span className="text-xs font-mono font-bold">WRITING</span>
+                </Link>
+                <Link
                   href="/tags"
                   className="px-4 py-2 border-l border-green-400 hover:bg-green-400 hover:text-black transition-colors flex items-center justify-center"
                   aria-label="All Tags"
@@ -100,6 +107,13 @@ export default function Header({
                     aria-label="Works"
                   >
                     <span className="text-xs font-mono font-bold">WORKS</span>
+                  </Link>
+                  <Link
+                    href="/writing"
+                    className="px-4 py-2 hover:bg-green-400 hover:text-black transition-colors flex items-center justify-center flex-1 border-r border-green-400"
+                    aria-label="Writing"
+                  >
+                    <span className="text-xs font-mono font-bold">WRITING</span>
                   </Link>
                   <Link
                     href="/tags"

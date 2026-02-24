@@ -14,9 +14,15 @@ export default function PostCard({ post, index }: PostCardProps) {
   const [isUnlocking, setIsUnlocking] = useState(false)
   const cardRef = useRef<HTMLElement>(null)
 
+  const isExternal = !!post.externalUrl
+
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    setIsUnlocking(true)
+    if (isExternal) {
+      window.open(post.externalUrl, '_blank', 'noopener,noreferrer')
+    } else {
+      setIsUnlocking(true)
+    }
   }
 
   useEffect(() => {
@@ -58,6 +64,8 @@ export default function PostCard({ post, index }: PostCardProps) {
     }
   }, [index])
 
+  const href = isExternal ? post.externalUrl! : `/posts/${post.slug}`
+
   return (
     <>
       {isUnlocking && (
@@ -71,9 +79,10 @@ export default function PostCard({ post, index }: PostCardProps) {
         className="p-2 h-full opacity-0"
       >
         <a
-          href={`/posts/${post.slug}`}
+          href={href}
           onClick={handleClick}
           className="block cursor-pointer group h-full"
+          {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
         >
           <div className="bg-black group-hover:bg-green-950/50 transition-colors h-full flex flex-col p-4">
             {/* ヘッダー */}
@@ -114,7 +123,7 @@ export default function PostCard({ post, index }: PostCardProps) {
             {/* フッター */}
             <div className="mt-3 pt-3 border-t border-green-800">
               <span className="text-sm font-mono text-green-400">
-                &gt;_ OPEN
+                {isExternal ? <>&#62;_ EXTERNAL LINK &#8599;</> : <>&#62;_ OPEN</>}
               </span>
             </div>
           </div>
