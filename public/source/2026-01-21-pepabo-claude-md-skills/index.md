@@ -4,6 +4,7 @@ date: 2026-01-21
 tags: ["Claude Code", "ペパボ"]
 excerpt: "tech.pepabo.com に寄稿した記事です。CLAUDE.md、Skills、Rulesを組み合わせたiOSアプリ開発の効率化について紹介しました。"
 externalUrl: "https://tech.pepabo.com/2026/01/21/claude/"
+rss: false
 ---
 
 tech.pepabo.com に寄稿した記事です。

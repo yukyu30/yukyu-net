@@ -4,6 +4,7 @@ date: 2024-12-12
 tags: ["イベント", "ペパボ"]
 excerpt: "tech.pepabo.com に寄稿した記事です。アーキテクチャConference 2024の参加レポートです。"
 externalUrl: "https://tech.pepabo.com/2024/12/12/2024-architecture-conference/"
+rss: false
 ---
 
 tech.pepabo.com に寄稿した記事です。

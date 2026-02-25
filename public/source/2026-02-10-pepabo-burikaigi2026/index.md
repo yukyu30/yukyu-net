@@ -4,6 +4,7 @@ date: 2026-02-10
 tags: ["イベント", "ペパボ"]
 excerpt: "tech.pepabo.com に寄稿した記事です。BuriKaigi 2026への参加・登壇レポートです。"
 externalUrl: "https://tech.pepabo.com/2026/02/10/burikaigi2026/"
+rss: false
 ---
 
 tech.pepabo.com に寄稿した記事です。
