@@ -31,7 +31,10 @@ export default function Header({
           ) : (
             <>
               <div className="px-6 py-4 border-b-2 border-green-400">
-                <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
+                <Link
+                  href="/"
+                  className="inline-block hover:opacity-80 transition-opacity"
+                >
                   <h1 className="text-4xl font-bold tracking-tight">
                     <DecoBocoTitle text="DecoBoco Digital" />
                   </h1>
@@ -77,6 +80,24 @@ export default function Header({
                 >
                   <span className="text-xs font-mono font-bold">▛ CHAT</span>
                 </Link>
+                <div className="relative group border-l border-green-400">
+                  <button
+                    className="px-4 py-2 hover:bg-green-400 hover:text-black transition-colors flex items-center justify-center h-full"
+                    aria-label="Tools"
+                  >
+                    <span className="text-xs font-mono font-bold">TOOLS</span>
+                  </button>
+                  <div className="absolute right-0 top-full hidden group-hover:block border-2 border-green-400 bg-black z-50 min-w-[160px]">
+                    <a
+                      href="https://yukyu30.github.io/3d-face/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block px-4 py-2 text-xs font-mono font-bold hover:bg-green-400 hover:text-black transition-colors"
+                    >
+                      3D FACE
+                    </a>
+                  </div>
+                </div>
                 <Link
                   href="/rss.xml"
                   className="px-4 py-2 border-l-2 border-green-400 bg-green-400 text-black hover:bg-green-600 transition-colors flex items-center justify-center"
@@ -85,7 +106,7 @@ export default function Header({
                   <span className="text-xs font-mono font-bold">RSS</span>
                 </Link>
               </div>
-              
+
               {/* モバイル表示 */}
               <div className="md:hidden">
                 <div className="flex border-green-400">
@@ -136,6 +157,19 @@ export default function Header({
                   >
                     <span className="text-xs font-mono font-bold">RSS</span>
                   </Link>
+                </div>
+                <div className="border-t border-green-400 flex">
+                  <span className="px-4 py-1 text-xs font-mono font-bold border-r border-green-400 flex items-center">
+                    TOOLS
+                  </span>
+                  <a
+                    href="https://yukyu30.github.io/3d-face/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-1 text-xs font-mono font-bold hover:bg-green-400 hover:text-black transition-colors flex items-center flex-1"
+                  >
+                    3D FACE
+                  </a>
                 </div>
               </div>
             </>
