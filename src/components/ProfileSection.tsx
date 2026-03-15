@@ -61,7 +61,7 @@ export default function ProfileSection() {
         <div>
           <span className="text-base font-mono text-green-600">ROLE: </span>
           <span className="text-lg font-mono">
-            GMOペパボ / メタバース推進室 / 上級VR技術者
+            GMOペパボ / 事業開発部 / 上級VR技術者
           </span>
         </div>
       </div>
