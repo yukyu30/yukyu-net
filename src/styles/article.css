@@ -91,7 +91,7 @@
 }
 
 .article-content ul li::before {
-  content: '>';
+  content: '・';
   color: #16a34a;
   margin-right: 0.5rem;
   margin-left: -1rem;
