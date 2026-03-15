@@ -29,4 +29,20 @@ describe('Header', () => {
     expect(screen.getByText('← INDEX')).toBeInTheDocument()
     expect(screen.getByText('ARTICLE VIEW')).toBeInTheDocument()
   })
+
+  it('TOOLSメニューに3D FACEリンクが表示される', () => {
+    render(<Header postsCount={10} lastUpdate="2025-01-01" />)
+
+    // TOOLSメニューが表示される
+    expect(screen.getAllByText('TOOLS')[0]).toBeInTheDocument()
+
+    // 3D FACEリンクが表示される
+    const faceLinkElements = screen.getAllByText('3D FACE')
+    expect(faceLinkElements[0]).toBeInTheDocument()
+
+    // 外部リンクであることを確認
+    const faceLink = faceLinkElements[0].closest('a')
+    expect(faceLink).toHaveAttribute('href', 'https://yukyu30.github.io/3d-face/')
+    expect(faceLink).toHaveAttribute('target', '_blank')
+  })
 })
