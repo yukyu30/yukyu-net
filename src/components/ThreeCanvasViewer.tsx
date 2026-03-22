@@ -217,7 +217,6 @@ function DragControls({ children }: { children: React.ReactNode }) {
 function SourceWindow({ title, index, total }: { title: string; index: number; total: number }) {
   const groupRef = useRef<THREE.Group>(null)
   const meshRef = useRef<THREE.Mesh>(null)
-  const lineRef = useRef<THREE.Line>(null)
   const dotRef = useRef<THREE.Mesh>(null)
   const startTime = useRef(performance.now())
 
@@ -251,15 +250,16 @@ function SourceWindow({ title, index, total }: { title: string; index: number; t
     return tex
   }, [title])
 
-  // 接続線のジオメトリ
-  const lineGeometry = useMemo(() => {
+  // 接続線オブジェクト
+  const lineObj = useMemo(() => {
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, 0], 3))
-    return geo
+    const mat = new THREE.LineBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0 })
+    return new THREE.Line(geo, mat)
   }, [])
 
   useFrame(() => {
-    if (!groupRef.current || !meshRef.current || !lineRef.current || !dotRef.current) return
+    if (!groupRef.current || !meshRef.current || !dotRef.current) return
     const elapsed = (performance.now() - startTime.current) / 1000 - delay
 
     if (elapsed < 0) {
@@ -278,7 +278,7 @@ function SourceWindow({ title, index, total }: { title: string; index: number; t
 
     // 接続線を更新（モデル中心 → ウィンドウ位置）
     const windowPos = new THREE.Vector3(xSpread, curY, curZ)
-    const positions = lineRef.current.geometry.attributes.position as THREE.BufferAttribute
+    const positions = lineObj.geometry.attributes.position as THREE.BufferAttribute
     positions.setXYZ(0, modelCenter.x, modelCenter.y, modelCenter.z)
     positions.setXYZ(1, windowPos.x, windowPos.y, windowPos.z)
     positions.needsUpdate = true
@@ -288,7 +288,7 @@ function SourceWindow({ title, index, total }: { title: string; index: number; t
     dotRef.current.scale.setScalar(eased)
 
     // 線とドットの透明度をアニメーション
-    const lineMat = lineRef.current.material as THREE.LineBasicMaterial
+    const lineMat = lineObj.material as THREE.LineBasicMaterial
     lineMat.opacity = eased * 0.5
     const dotMat = dotRef.current.material as THREE.MeshBasicMaterial
     dotMat.opacity = eased
@@ -303,9 +303,7 @@ function SourceWindow({ title, index, total }: { title: string; index: number; t
       </mesh>
 
       {/* モデルからウィンドウへの接続線 */}
-      <line ref={lineRef as React.RefObject<THREE.Line>} geometry={lineGeometry}>
-        <lineBasicMaterial color="#4ade80" transparent opacity={0} />
-      </line>
+      <primitive object={lineObj} />
 
       {/* 接続ドット */}
       <mesh ref={dotRef}>
