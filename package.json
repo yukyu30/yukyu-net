@@ -20,7 +20,10 @@
     "@gsap/react": "^2.1.2",
     "@mastra/core": "^0.24.9",
     "@mastra/libsql": "^0.16.4",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@tailwindcss/typography": "^0.5.16",
+    "@types/three": "^0.183.1",
     "dotenv": "^17.2.3",
     "gsap": "^3.14.1",
     "next": "16.0.10",
@@ -31,6 +34,7 @@
     "react-force-graph": "^1.48.1",
     "react-force-graph-2d": "^1.29.0",
     "react-markdown": "^10.1.0",
+    "three": "^0.183.2",
     "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {

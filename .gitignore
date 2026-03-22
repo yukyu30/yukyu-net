@@ -50,3 +50,4 @@ public/pagefind/
 # Graph embeddings cache
 public/graph/embeddings-cache.json
 .claude/settings.local.json
+.takt/

@@ -23,12 +23,26 @@ interface TrackData {
 
 type MouthState = 'closed' | 'half' | 'open' | 'e' | 'u'
 
+interface PNGTuberAssets {
+  videoSrc: string
+  trackSrc: string
+  mouthDir: string
+}
+
+const DEFAULT_ASSETS: PNGTuberAssets = {
+  videoSrc: '/PNGTuber/yukyu_original.mp4',
+  trackSrc: '/PNGTuber/mouth_track_original.json',
+  mouthDir: '/PNGTuber/mouth_original',
+}
+
 interface PNGTuberPlayerProps {
   isTalking: boolean
   className?: string
+  onCanvasReady?: (canvas: HTMLCanvasElement) => void
+  assets?: PNGTuberAssets
 }
 
-export default function PNGTuberPlayer({ isTalking, className = '' }: PNGTuberPlayerProps) {
+export default function PNGTuberPlayer({ isTalking, className = '', onCanvasReady, assets = DEFAULT_ASSETS }: PNGTuberPlayerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const trackDataRef = useRef<TrackData | null>(null)
@@ -80,7 +94,7 @@ export default function PNGTuberPlayer({ isTalking, className = '' }: PNGTuberPl
     const loadAssets = async () => {
       // 動画をロード
       const video = document.createElement('video')
-      video.src = '/PNGTuber/yukyu.mp4'
+      video.src = assets.videoSrc
       video.loop = true
       video.muted = true
       video.playsInline = true
@@ -88,7 +102,7 @@ export default function PNGTuberPlayer({ isTalking, className = '' }: PNGTuberPl
       videoRef.current = video
 
       // トラッキングデータをロード
-      const trackResponse = await fetch('/PNGTuber/mouth_track.json')
+      const trackResponse = await fetch(assets.trackSrc)
       trackDataRef.current = await trackResponse.json()
 
       // 口スプライトをロード
@@ -98,7 +112,7 @@ export default function PNGTuberPlayer({ isTalking, className = '' }: PNGTuberPl
           (state) =>
             new Promise<void>((resolve) => {
               const img = new Image()
-              img.src = `/PNGTuber/mouth/${state}.png`
+              img.src = `${assets.mouthDir}/${state}.png`
               img.onload = () => {
                 spritesRef.current[state] = img
                 resolve()
@@ -121,6 +135,13 @@ export default function PNGTuberPlayer({ isTalking, className = '' }: PNGTuberPl
     }
   }, [])
 
+  // canvasが準備できたら通知
+  useEffect(() => {
+    if (isLoaded && canvasRef.current && onCanvasReady) {
+      onCanvasReady(canvasRef.current)
+    }
+  }, [isLoaded, onCanvasReady])
+
   // レンダリングループ
   useEffect(() => {
     if (!isLoaded) return
@@ -129,7 +150,7 @@ export default function PNGTuberPlayer({ isTalking, className = '' }: PNGTuberPl
       const canvas = canvasRef.current
       const video = videoRef.current
       const trackData = trackDataRef.current
-      const ctx = canvas?.getContext('2d')
+      const ctx = canvas?.getContext('2d', { willReadFrequently: true })
 
       if (!canvas || !video || !trackData || !ctx) {
         animationFrameRef.current = requestAnimationFrame(render)
@@ -187,7 +208,7 @@ export default function PNGTuberPlayer({ isTalking, className = '' }: PNGTuberPl
           const angle = Math.atan2(quad[1][1] - quad[0][1], quad[1][0] - quad[0][0])
 
           // キャリブレーションを適用
-          const { offset, scale, rotation } = trackData.calibration
+          const { offset = [0, 0], scale = 1, rotation = 0 } = trackData.calibration ?? {}
           const finalCenterX = centerX + offset[0]
           const finalCenterY = centerY + offset[1]
           const finalWidth = width * scale

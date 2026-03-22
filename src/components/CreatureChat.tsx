@@ -3,7 +3,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
+import dynamic from 'next/dynamic'
 import PNGTuberPlayer from './PNGTuberPlayer'
+
+const ThreeCanvasViewer = dynamic(() => import('./ThreeCanvasViewer'), {
+  ssr: false,
+})
 
 interface Source {
   slug: string
@@ -62,6 +67,8 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
   const isLoadingRef = useRef(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [showFlash, setShowFlash] = useState(false)
+  const [pngTuberCanvas, setPngTuberCanvas] = useState<HTMLCanvasElement | null>(null)
+  const [is3DMode, setIs3DMode] = useState(false)
 
   // フラッシュと音声の演出フック
   const playPrankEffect = useCallback(() => {
@@ -196,6 +203,13 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
     const userMessage = input.trim()
     setInput('')
     inputRef.current?.focus()
+
+    // /3d コマンド：3Dモードの切り替え
+    if (userMessage === '/3d') {
+      setIs3DMode((prev) => !prev)
+      return
+    }
+
     sendMessage(userMessage, { onPrank: playPrankEffect })
   }
 
@@ -210,10 +224,37 @@ export default function CreatureChat({ initialQuery }: CreatureChatProps) {
         <div className="fixed inset-0 bg-white z-[100] pointer-events-none" />
       )}
 
-      {/* 背景：PNGTuberをフル表示 */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <PNGTuberPlayer isTalking={isTalking} className="w-full h-full" />
-      </div>
+      {/* 背景：PNGTuber（デフォルト）または 3Dモード */}
+      {is3DMode ? (
+        <>
+          {/* PNGTuberPlayer（オフスクリーン：canvasソースとして使用、現在のアセット） */}
+          <div className="absolute" style={{ left: '-9999px', top: '-9999px', width: '640px', height: '480px' }}>
+            <PNGTuberPlayer
+              isTalking={isTalking}
+              className="w-full h-full"
+              onCanvasReady={setPngTuberCanvas}
+              assets={{
+                videoSrc: '/PNGTuber/yukyu.mp4',
+                trackSrc: '/PNGTuber/mouth_track.json',
+                mouthDir: '/PNGTuber/mouth',
+              }}
+            />
+          </div>
+          <div className="absolute inset-0">
+            <ThreeCanvasViewer
+              sourceCanvas={pngTuberCanvas}
+              glbPath="/PNGTuber/face.glb"
+              isSearching={!!currentStatus}
+              searchStatus={currentStatus ? { message: currentStatus.message, documents: currentStatus.documents } : null}
+              linkedSources={streamingSources.length > 0 ? streamingSources : (latestAssistantMessage?.sources ?? [])}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <PNGTuberPlayer isTalking={isTalking} className="w-full h-full" />
+        </div>
+      )}
 
       {/* オーバーレイ：テキストボックス（下部に固定） */}
       <div className="absolute bottom-0 left-0 right-0 z-10">
