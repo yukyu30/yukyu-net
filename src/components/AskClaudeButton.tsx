@@ -1,5 +1,6 @@
 'use client';
 
+import { sendGAEvent } from '@next/third-parties/google';
 import { useEffect, useRef, useState } from 'react';
 
 interface AskClaudeButtonProps {
@@ -139,7 +140,12 @@ export default function AskClaudeButton({ slug, rawMarkdown }: AskClaudeButtonPr
               href={claudeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                sendGAEvent('event', 'ask_claude_click', {
+                  slug,
+                });
+                setIsOpen(false);
+              }}
               role="menuitem"
               className="flex items-start gap-3 w-full px-4 py-3 hover:bg-green-900/20 transition-colors"
             >
