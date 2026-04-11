@@ -3,6 +3,7 @@ import MenuBar from './MenuBar';
 import StatusBar from './StatusBar';
 import ArticleActions from './ArticleActions';
 import ArticleContent from './ArticleContent';
+import AskClaudeButton from './AskClaudeButton';
 import TableOfContents from './TableOfContents';
 import { extractHeadings } from '@/lib/extract-headings';
 import '@/styles/article.css';
@@ -46,6 +47,7 @@ export default function ArticleLayout({
               ))}
             </div>
           )}
+          <AskClaudeButton />
         </header>
 
         {/* 目次 */}
