@@ -7,6 +7,7 @@ export default function AskClaudeButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [claudeUrl, setClaudeUrl] = useState('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [markdownText, setMarkdownText] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
@@ -18,6 +19,28 @@ export default function AskClaudeButton() {
     const prompt = `以下のブログを読んで質問に答えて ${window.location.href}`;
     setClaudeUrl(`https://claude.ai/new?q=${encodeURIComponent(prompt)}`);
   }, []);
+
+  // Pre-fetch markdown so the click handler can copy synchronously.
+  // navigator.clipboard.writeText requires an active user gesture and the
+  // gesture's transient activation expires while awaiting fetch.
+  useEffect(() => {
+    if (!markdownUrl) return;
+    let cancelled = false;
+    fetch(markdownUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.text();
+      })
+      .then((text) => {
+        if (!cancelled) setMarkdownText(text);
+      })
+      .catch((err) => {
+        console.error('Failed to prefetch markdown:', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [markdownUrl]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -37,13 +60,35 @@ export default function AskClaudeButton() {
     };
   }, [isOpen]);
 
+  const writeTextToClipboard = async (text: string) => {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    // Fallback for non-secure contexts where navigator.clipboard is undefined.
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    if (!ok) throw new Error('execCommand copy failed');
+  };
+
   const handleCopyPage = async () => {
     if (!markdownUrl) return;
     try {
-      const response = await fetch(markdownUrl);
-      if (!response.ok) throw new Error('Failed to fetch markdown');
-      const text = await response.text();
-      await navigator.clipboard.writeText(text);
+      // Prefer the prefetched text so we stay inside the click gesture.
+      let text = markdownText;
+      if (text == null) {
+        const response = await fetch(markdownUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        text = await response.text();
+        setMarkdownText(text);
+      }
+      await writeTextToClipboard(text);
       setCopyStatus('copied');
       setTimeout(() => setCopyStatus('idle'), 2000);
     } catch (err) {
