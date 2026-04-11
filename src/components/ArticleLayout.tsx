@@ -9,17 +9,21 @@ import { extractHeadings } from '@/lib/extract-headings';
 import '@/styles/article.css';
 
 interface ArticleLayoutProps {
+  slug: string;
   title: string;
   date: string;
   tags: string[] | undefined;
   content: string;
+  rawMarkdown: string;
 }
 
 export default function ArticleLayout({
+  slug,
   title,
   date,
   tags,
   content,
+  rawMarkdown,
 }: ArticleLayoutProps) {
   const headings = extractHeadings(content);
 
@@ -47,7 +51,7 @@ export default function ArticleLayout({
               ))}
             </div>
           )}
-          <AskClaudeButton />
+          <AskClaudeButton slug={slug} rawMarkdown={rawMarkdown} />
         </header>
 
         {/* 目次 */}

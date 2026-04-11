@@ -1,45 +1,24 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { usePathname } from 'next/navigation';
 
-export default function AskClaudeButton() {
+interface AskClaudeButtonProps {
+  slug: string;
+  rawMarkdown: string;
+}
+
+export default function AskClaudeButton({ slug, rawMarkdown }: AskClaudeButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [claudeUrl, setClaudeUrl] = useState('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
-  const [markdownText, setMarkdownText] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const pathname = usePathname();
 
-  const match = pathname.match(/^\/posts\/(.+)$/);
-  const articleDir = match ? match[1] : null;
-  const markdownUrl = articleDir ? `/source/${articleDir}/index.md` : null;
+  const markdownUrl = `/source/${slug}/index.md`;
 
   useEffect(() => {
-    const prompt = `以下のブログを読んで質問に答えて ${window.location.href}`;
+    const absoluteMarkdownUrl = `${window.location.origin}${markdownUrl}`;
+    const prompt = `以下のブログを読んで質問に答えて ${absoluteMarkdownUrl}`;
     setClaudeUrl(`https://claude.ai/new?q=${encodeURIComponent(prompt)}`);
-  }, []);
-
-  // Pre-fetch markdown so the click handler can copy synchronously.
-  // navigator.clipboard.writeText requires an active user gesture and the
-  // gesture's transient activation expires while awaiting fetch.
-  useEffect(() => {
-    if (!markdownUrl) return;
-    let cancelled = false;
-    fetch(markdownUrl)
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.text();
-      })
-      .then((text) => {
-        if (!cancelled) setMarkdownText(text);
-      })
-      .catch((err) => {
-        console.error('Failed to prefetch markdown:', err);
-      });
-    return () => {
-      cancelled = true;
-    };
   }, [markdownUrl]);
 
   useEffect(() => {
@@ -78,17 +57,8 @@ export default function AskClaudeButton() {
   };
 
   const handleCopyPage = async () => {
-    if (!markdownUrl) return;
     try {
-      // Prefer the prefetched text so we stay inside the click gesture.
-      let text = markdownText;
-      if (text == null) {
-        const response = await fetch(markdownUrl);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        text = await response.text();
-        setMarkdownText(text);
-      }
-      await writeTextToClipboard(text);
+      await writeTextToClipboard(rawMarkdown);
       setCopyStatus('copied');
       setTimeout(() => setCopyStatus('idle'), 2000);
     } catch (err) {
@@ -97,8 +67,6 @@ export default function AskClaudeButton() {
       setTimeout(() => setCopyStatus('idle'), 2000);
     }
   };
-
-  if (!markdownUrl) return null;
 
   const copyLabel =
     copyStatus === 'copied' ? 'COPIED' : copyStatus === 'error' ? 'ERROR' : 'Copy page';
