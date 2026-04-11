@@ -20,6 +20,7 @@ export interface Post {
   excerpt: string
   tags: string[]
   content?: string
+  rawMarkdown?: string
   thumbnail?: string
   rss?: boolean
   externalUrl?: string
@@ -162,6 +163,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     excerpt: data.excerpt || excerpt,
     tags: data.tags || [],
     content: contentHtml,
+    rawMarkdown: fileContents,
     thumbnail,
     rss: data.rss !== false,
   }

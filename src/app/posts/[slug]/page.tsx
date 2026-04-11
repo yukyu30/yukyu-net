@@ -68,10 +68,12 @@ export default async function PostPage({
 
   return (
     <ArticleLayout
+      slug={post.slug}
       title={post.title}
       date={post.date}
       tags={post.tags}
       content={post.content || ''}
+      rawMarkdown={post.rawMarkdown || ''}
     />
   )
 }
