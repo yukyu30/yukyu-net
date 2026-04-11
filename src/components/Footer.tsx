@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import siteConfig from '@/config/site.json';
 
 interface FooterProps {
   variant?: 'grid' | 'article';
@@ -13,7 +14,7 @@ export default function Footer({ variant = 'grid' }: FooterProps) {
         <div className="border-l-2 border-r-2 border-green-400 mx-4">
           <div className="px-6 py-4 flex justify-between items-center flex-wrap gap-2">
             <span className="text-xs font-mono">
-              © {year} DecoBoco Digital
+              © {year} {siteConfig.name}
             </span>
             <div className="flex gap-4 items-center">
               <Link

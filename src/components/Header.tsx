@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import DecoBocoTitle from './DecoBocoTitle';
+import siteConfig from '@/config/site.json';
 
 interface HeaderProps {
   postsCount?: number;
@@ -36,7 +37,7 @@ export default function Header({
                   className="inline-block hover:opacity-80 transition-opacity"
                 >
                   <h1 className="text-4xl font-bold tracking-tight">
-                    <DecoBocoTitle text="DecoBoco Digital" />
+                    <DecoBocoTitle text={siteConfig.name} />
                   </h1>
                 </Link>
               </div>

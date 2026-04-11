@@ -6,6 +6,7 @@ import StatusBar from './StatusBar';
 import WindowFrame from './WindowFrame';
 import ProfileSection from './ProfileSection';
 import BootSequence from './BootSequence';
+import siteConfig from '@/config/site.json';
 
 interface GridLayoutProps {
   children: ReactNode;
@@ -31,7 +32,7 @@ export default function GridLayout({
 
   const windowTitle = currentTag
     ? `TAG: #${currentTag}`
-    : 'DecoBoco Digital';
+    : siteConfig.name;
 
   // クライアントサイドでマウント完了を検知し、BootSequence表示判定
   useEffect(() => {

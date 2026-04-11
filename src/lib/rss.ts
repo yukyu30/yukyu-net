@@ -1,6 +1,7 @@
 import { getAllPosts } from './posts'
 import fs from 'fs'
 import path from 'path'
+import siteConfig from '@/config/site.json'
 
 function escapeXML(text: string): string {
   // XMLエンティティをエスケープ
@@ -45,7 +46,7 @@ export function generateRSSFeed(): string {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>yukyu's diary - DecoBoco Digital</title>
+    <title>${siteConfig.name}</title>
     <link>${siteUrl}</link>
     <description>yukyu's thoughts and digital archive</description>
     <author>yukyu</author>

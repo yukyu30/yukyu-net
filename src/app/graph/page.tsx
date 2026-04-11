@@ -1,9 +1,10 @@
 import { Metadata } from 'next';
 import ArticleGraph from '@/components/ArticleGraph';
 import MenuBar from '@/components/MenuBar';
+import siteConfig from '@/config/site.json';
 
 export const metadata: Metadata = {
-  title: 'Article Graph | DecoBoco Digital',
+  title: `Article Graph | ${siteConfig.name}`,
   description: '記事間の関連性を可視化したインタラクティブグラフ',
 };
 
