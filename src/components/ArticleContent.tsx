@@ -147,9 +147,12 @@ export default function ArticleContent({
     });
 
     // スクロールイベント: ビューポート下端までの文字を一気に復号
-    // 実際のスクロール位置が0のときは何もしない（初期ロード時の誤発火対策）
+    // Next.jsクライアントサイド遷移直後はscrollYが前ページの値を引き継ぐ場合や、
+    // scroll-to-topが遅れて発火する場合があるため、マウント直後はスクロール
+    // 反応を無効化し、少し待ってから有効化する
+    let scrollReady = false;
     const handleScroll = () => {
-      if (window.scrollY <= 0) return;
+      if (!scrollReady) return;
       const threshold = window.scrollY + window.innerHeight + 100;
       for (let i = 0; i < charData.length; i++) {
         if (charData[i].y <= threshold) {
@@ -161,10 +164,16 @@ export default function ArticleContent({
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // 既にスクロール済み（アンカーリンク等）の場合は初期位置まで復号
-    if (window.scrollY > 0) {
-      handleScroll();
-    }
+    // 500ms待ってからスクロール反応を有効化。
+    // この時点でもscrollY > 0なら（リロードで記事の途中にいる等）初期位置まで復号
+    timeouts.push(
+      setTimeout(() => {
+        scrollReady = true;
+        if (window.scrollY > 0) {
+          handleScroll();
+        }
+      }, 500)
+    );
 
     // アニメーション完了後
     const totalDuration = charData.length * msPerChar + 500;
