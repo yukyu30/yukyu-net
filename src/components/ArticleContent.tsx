@@ -49,7 +49,15 @@ export default function ArticleContent({
 
     // 各テキストノードの元のテキストと文字位置を保存
     const originalTexts = textNodes.map((node) => node.textContent || '');
-    const charData: { node: Text; index: number; original: string; revealed: boolean }[] = [];
+
+    type CharDatum = {
+      node: Text;
+      index: number;
+      original: string;
+      y: number;
+      revealed: boolean;
+    };
+    const charData: CharDatum[] = [];
 
     textNodes.forEach((node, nodeIndex) => {
       const text = originalTexts[nodeIndex];
@@ -59,6 +67,7 @@ export default function ArticleContent({
             node,
             index: i,
             original: text[i],
+            y: 0,
             revealed: false,
           });
         }
@@ -79,59 +88,99 @@ export default function ArticleContent({
       node.textContent = glitched;
     });
 
-    const timeouts: NodeJS.Timeout[] = [];
+    // 文字化け適用後にY座標を計算（親要素ごとにキャッシュ）
+    const parentYCache = new WeakMap<Element, number>();
+    charData.forEach((data) => {
+      const parent = data.node.parentElement;
+      if (!parent) return;
+      let y = parentYCache.get(parent);
+      if (y === undefined) {
+        const rect = parent.getBoundingClientRect();
+        y = rect.top + window.scrollY;
+        parentYCache.set(parent, y);
+      }
+      data.y = y;
+    });
+
     const msPerChar = 1000 / charsPerSecond; // 1文字あたりのミリ秒
+    const startTime = performance.now();
+    let currentIndex = 0;
+    let rafId = 0;
+    let scrollRevealIndex = 0;
+    let scrollTriggered = false;
 
-    // 各文字のアニメーション（先頭から順番に復号）
-    charData.forEach((data, charIndex) => {
-      // 先頭から順番に復号されるように、インデックスに基づいて時間を計算
-      const baseRevealTime = charIndex * msPerChar;
-      // 少しランダム性を加えて自然な感じに
-      const randomOffset = (Math.random() - 0.5) * msPerChar * 2;
-      const revealTime = Math.max(0, baseRevealTime + randomOffset);
+    // スクロールイベント: 現在のビューポート下端までを一気に開示対象にする
+    const handleScroll = () => {
+      scrollTriggered = true;
+      const threshold = window.scrollY + window.innerHeight + 100;
+      let idx = scrollRevealIndex;
+      for (let i = idx; i < charData.length; i++) {
+        if (charData[i].y <= threshold) {
+          idx = i + 1;
+        } else {
+          break;
+        }
+      }
+      if (idx > scrollRevealIndex) {
+        scrollRevealIndex = idx;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
-      const glitchCount = Math.floor(Math.random() * 3) + 2;
-      const glitchInterval = Math.min(revealTime / glitchCount, 50);
+    // 既にスクロール済み（アンカーリンク等）の場合は初期位置まで開示
+    if (window.scrollY > 0) {
+      handleScroll();
+    }
 
-      // 文字化けアニメーション
-      for (let i = 0; i < glitchCount; i++) {
-        const glitchTime = revealTime - (glitchCount - i) * glitchInterval;
-        if (glitchTime > 0) {
-          timeouts.push(
-            setTimeout(() => {
-              if (!data.revealed && data.node.textContent) {
-                const chars = data.node.textContent.split('');
-                chars[data.index] = getRandomChar();
-                data.node.textContent = chars.join('');
-              }
-            }, glitchTime)
-          );
+    // アニメーションループ
+    const animate = () => {
+      const elapsed = performance.now() - startTime;
+      // 時間ベースの開示インデックス
+      const timeBasedIndex = Math.floor(elapsed / msPerChar);
+      // スクロールで到達している位置 or 通常アニメーションの進行、大きい方に追従
+      const targetIndex = Math.min(
+        charData.length,
+        Math.max(timeBasedIndex, scrollTriggered ? scrollRevealIndex : 0)
+      );
+
+      // targetIndexまでを順番に開示
+      while (currentIndex < targetIndex) {
+        const data = charData[currentIndex];
+        if (!data.revealed && data.node.textContent) {
+          const chars = data.node.textContent.split('');
+          chars[data.index] = data.original;
+          data.node.textContent = chars.join('');
+          data.revealed = true;
+        }
+        currentIndex++;
+      }
+
+      // 未開示の先頭付近にグリッチ効果
+      const glitchRange = Math.min(30, charData.length - currentIndex);
+      for (let i = 0; i < glitchRange; i++) {
+        if (Math.random() < 0.3) {
+          const data = charData[currentIndex + i];
+          if (!data.revealed && data.node.textContent) {
+            const chars = data.node.textContent.split('');
+            chars[data.index] = getRandomChar();
+            data.node.textContent = chars.join('');
+          }
         }
       }
 
-      // 正しい文字を表示
-      timeouts.push(
-        setTimeout(() => {
-          data.revealed = true;
-          if (data.node.textContent) {
-            const chars = data.node.textContent.split('');
-            chars[data.index] = data.original;
-            data.node.textContent = chars.join('');
-          }
-        }, revealTime)
-      );
-    });
-
-    // アニメーション完了後
-    const totalDuration = charData.length * msPerChar + 500;
-    timeouts.push(
-      setTimeout(() => {
+      if (currentIndex >= charData.length) {
         setIsRevealed(true);
-      }, totalDuration)
-    );
+        return;
+      }
+
+      rafId = requestAnimationFrame(animate);
+    };
+
+    rafId = requestAnimationFrame(animate);
 
     return () => {
-      timeouts.forEach((timeout) => clearTimeout(timeout));
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [content, charsPerSecond, isRevealed, isMounted]);
 
