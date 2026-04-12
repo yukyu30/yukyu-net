@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import './globals.css';
 import Creature from '@/components/Creature';
+import siteConfig from '@/config/site.json';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "yukyu's diary - DecoBoco Digital",
+  title: siteConfig.name,
   description: "yukyu's thoughts and digital archive",
   authors: [{ name: 'yukyu' }],
   alternates: {
@@ -24,29 +25,29 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "yukyu's diary - DecoBoco Digital",
+    title: siteConfig.name,
     description: "yukyu's thoughts and digital archive",
     type: 'website',
     locale: 'ja_JP',
-    siteName: 'DecoBoco Digital',
+    siteName: siteConfig.name,
     images: [
       {
         url: `https://yukyu-site-og.vercel.app/api/og?title=${encodeURIComponent(
-          "yukyu's diary - DecoBoco Digital"
+          siteConfig.name
         )}`,
         width: 1200,
         height: 630,
-        alt: "yukyu's diary - DecoBoco Digital",
+        alt: siteConfig.name,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: "yukyu's diary - DecoBoco Digital",
+    title: siteConfig.name,
     description: "yukyu's thoughts and digital archive",
     images: [
       `https://yukyu-site-og.vercel.app/api/og?title=${encodeURIComponent(
-        "yukyu's diary - DecoBoco Digital"
+        siteConfig.name
       )}`,
     ],
   },

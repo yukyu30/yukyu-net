@@ -5,6 +5,7 @@ import { gsap } from 'gsap';
 import Link from 'next/link';
 import MenuBar from '@/components/MenuBar';
 import type { StatusResponse } from '@/types/status';
+import siteConfig from '@/config/site.json';
 
 function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString);
@@ -169,7 +170,7 @@ export default function StatusPage() {
       {/* フッター */}
       <footer className="border-t border-green-400 px-4 py-2 mt-4">
         <div className="text-center text-xs font-mono text-green-600">
-          STATUS PAGE - DecoBoco Digital
+          STATUS PAGE - {siteConfig.name}
         </div>
       </footer>
     </div>

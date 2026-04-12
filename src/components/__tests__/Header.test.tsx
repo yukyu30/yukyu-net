@@ -16,7 +16,7 @@ describe('Header', () => {
     const { container } = render(<Header postsCount={10} lastUpdate="2025-01-01" />)
 
     // DecoBocoTitleは文字を分割するため、textContentで確認
-    expect(container.textContent).toContain('DecoBoco Digital')
+    expect(container.textContent).toContain('yukyu LTS')
     // デスクトップとモバイル両方のビューがあるため、getAllByTextを使用
     expect(screen.getAllByText('ENTRIES: 10')[0]).toBeInTheDocument()
     expect(screen.getAllByText('LAST UPDATE: 2025-01-01')[0]).toBeInTheDocument()

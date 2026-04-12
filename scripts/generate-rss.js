@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
+const siteConfig = require('../src/config/site.json');
 
 const postsDirectory = path.join(process.cwd(), 'public', 'source');
 const publicPath = path.join(process.cwd(), 'public');
@@ -97,7 +98,7 @@ function generateRSSFeed() {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>yukyu's diary - DecoBoco Digital</title>
+    <title>${siteConfig.name}</title>
     <link>${siteUrl}</link>
     <description>yukyu's thoughts and digital archive</description>
     <language>ja</language>
