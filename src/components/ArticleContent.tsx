@@ -49,7 +49,13 @@ export default function ArticleContent({
 
     // 各テキストノードの元のテキストと文字位置を保存
     const originalTexts = textNodes.map((node) => node.textContent || '');
-    const charData: { node: Text; index: number; original: string; revealed: boolean }[] = [];
+    const charData: {
+      node: Text;
+      index: number;
+      original: string;
+      y: number;
+      revealed: boolean;
+    }[] = [];
 
     textNodes.forEach((node, nodeIndex) => {
       const text = originalTexts[nodeIndex];
@@ -59,6 +65,7 @@ export default function ArticleContent({
             node,
             index: i,
             original: text[i],
+            y: 0,
             revealed: false,
           });
         }
@@ -79,14 +86,36 @@ export default function ArticleContent({
       node.textContent = glitched;
     });
 
+    // 文字化け適用後にY座標を計算（親要素ごとにキャッシュ）
+    const parentYCache = new WeakMap<Element, number>();
+    charData.forEach((data) => {
+      const parent = data.node.parentElement;
+      if (!parent) return;
+      let y = parentYCache.get(parent);
+      if (y === undefined) {
+        const rect = parent.getBoundingClientRect();
+        y = rect.top + window.scrollY;
+        parentYCache.set(parent, y);
+      }
+      data.y = y;
+    });
+
     const timeouts: NodeJS.Timeout[] = [];
     const msPerChar = 1000 / charsPerSecond; // 1文字あたりのミリ秒
 
+    // 1文字を正しい文字に復号する
+    const revealCharAt = (index: number) => {
+      const data = charData[index];
+      if (!data || data.revealed || !data.node.textContent) return;
+      data.revealed = true;
+      const chars = data.node.textContent.split('');
+      chars[data.index] = data.original;
+      data.node.textContent = chars.join('');
+    };
+
     // 各文字のアニメーション（先頭から順番に復号）
     charData.forEach((data, charIndex) => {
-      // 先頭から順番に復号されるように、インデックスに基づいて時間を計算
       const baseRevealTime = charIndex * msPerChar;
-      // 少しランダム性を加えて自然な感じに
       const randomOffset = (Math.random() - 0.5) * msPerChar * 2;
       const revealTime = Math.max(0, baseRevealTime + randomOffset);
 
@@ -112,15 +141,39 @@ export default function ArticleContent({
       // 正しい文字を表示
       timeouts.push(
         setTimeout(() => {
-          data.revealed = true;
-          if (data.node.textContent) {
-            const chars = data.node.textContent.split('');
-            chars[data.index] = data.original;
-            data.node.textContent = chars.join('');
-          }
+          revealCharAt(charIndex);
         }, revealTime)
       );
     });
+
+    // スクロールイベント: ビューポート下端までの文字を一気に復号
+    // Next.jsクライアントサイド遷移直後はscrollYが前ページの値を引き継ぐ場合や、
+    // scroll-to-topが遅れて発火する場合があるため、マウント直後はスクロール
+    // 反応を無効化し、少し待ってから有効化する
+    let scrollReady = false;
+    const handleScroll = () => {
+      if (!scrollReady) return;
+      const threshold = window.scrollY + window.innerHeight + 100;
+      for (let i = 0; i < charData.length; i++) {
+        if (charData[i].y <= threshold) {
+          revealCharAt(i);
+        } else {
+          break;
+        }
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // 500ms待ってからスクロール反応を有効化。
+    // この時点でもscrollY > 0なら（リロードで記事の途中にいる等）初期位置まで復号
+    timeouts.push(
+      setTimeout(() => {
+        scrollReady = true;
+        if (window.scrollY > 0) {
+          handleScroll();
+        }
+      }, 500)
+    );
 
     // アニメーション完了後
     const totalDuration = charData.length * msPerChar + 500;
@@ -132,6 +185,7 @@ export default function ArticleContent({
 
     return () => {
       timeouts.forEach((timeout) => clearTimeout(timeout));
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [content, charsPerSecond, isRevealed, isMounted]);
 
