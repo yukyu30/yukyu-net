@@ -1,0 +1,27 @@
+---
+title: 制約やルールを自覚する
+tags: ["日記"]
+createdAt: 2026-04-28 02:00:00
+updatedAt: 2026-04-28 02:00:00
+---
+
+最近はterraform, go, Next.jsを使って、個人開発を進めている。
+
+terraformに関しては、今まで触れてこなかったが業務でbedrockを使うためIAM、OICDを使った設定をするために触れた。
+
+applyまで一連の流れを体験したことで少し理解が深まった。
+そんなこんなで個人開発でもterraformを使うことにした。
+
+Next.jsに関しては、package by featureで機能によって分類するようにした。
+
+<iframe class="speakerdeck-iframe" frameborder="0" src="https://speakerdeck.com/player/37036944e6b84c868a239cbdb9933253" title="BCD Designに学ぶ、package by featureのための一貫したfeatureの切り方" allowfullscreen="true" allow="web-share" style="border: 0px; background: padding-box padding-box rgba(0, 0, 0, 0.1); margin: 0px; padding: 0px; border-radius: 6px; box-shadow: rgba(0, 0, 0, 0.2) 0px 5px 40px; width: 100%; height: auto; aspect-ratio: 560 / 315;" data-ratio="1.7777777777777777"></iframe>
+
+
+terraformで管理することで、AWSのサイトをぽちぽちして作るという選択肢が自分の中から消えた。
+Next.jsでは、コードを書く際にどこにコードをおくか、名前はどうするかなど考えるルールが明確化された。
+
+個人開発にしてはガチガチと固めているが、逆にそれが楽しい。
+自分の行動や思考のためのルール作りによって、本質的な開発に集中できるようになった。
+
+ハーネスエンジニアリングというと自分自身まだ馴染みがないが、実は自分の周りにある自分の行動を抑制するルールや制約を自覚することがハーネスエンジニアリングの始まりなのかもしれない。
+
