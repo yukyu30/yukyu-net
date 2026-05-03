@@ -1,79 +1,104 @@
-import { getPostBySlug, getAllPosts } from '@/lib/posts'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import ArticleLayout from '@/components/ArticleLayout'
-import type { Metadata } from 'next'
+import { importPage } from 'nextra/pages'
+import { getAllPosts, getPostBySlug } from '@/lib/posts'
 
-export async function generateStaticParams() {
-  const posts = getAllPosts()
-  return posts.map((post) => ({
-    slug: post.slug,
-  }))
+export function generateStaticParams() {
+  return getAllPosts().map(p => ({ slug: p.slug }))
 }
 
-export async function generateMetadata({
-  params,
-}: {
+interface PageProps {
   params: Promise<{ slug: string }>
-}): Promise<Metadata> {
-  const { slug } = await params
-  const post = await getPostBySlug(slug)
+}
 
-  if (!post) {
-    return {
-      title: 'Not Found',
-    }
-  }
-
-  const encodedTitle = encodeURIComponent(post.title)
-  const ogImageUrl = `https://yukyu-site-og.vercel.app/api/og?title=${encodedTitle}`
-
-  return {
-    title: post.title,
-    description: post.excerpt || post.content?.substring(0, 160),
-    openGraph: {
-      title: post.title,
-      description: post.excerpt || post.content?.substring(0, 160),
-      type: 'article',
-      publishedTime: post.date,
-      authors: ['yukyu'],
-      images: [
-        {
-          url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: post.title,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: post.title,
-      description: post.excerpt || post.content?.substring(0, 160),
-      images: [ogImageUrl],
-    },
+export async function generateMetadata(props: PageProps) {
+  const { slug } = await props.params
+  try {
+    const { metadata } = await importPage(['posts', slug])
+    return metadata
+  } catch {
+    return { title: 'Not Found | yukyu.net' }
   }
 }
 
-export default async function PostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
-  const { slug } = await params
-  const post = await getPostBySlug(slug)
+interface TocEntry {
+  id: string
+  value: string
+  depth: number
+}
 
-  if (!post) {
+export default async function PostPage(props: PageProps) {
+  const { slug } = await props.params
+  const post = getPostBySlug(slug)
+  if (!post) notFound()
+
+  let imported
+  try {
+    imported = await importPage(['posts', slug])
+  } catch {
     notFound()
   }
+  const { default: MDXContent, toc } = imported as {
+    default: React.ComponentType<unknown>
+    toc: TocEntry[]
+  }
+
+  const tags = post.frontMatter.tag ?? []
 
   return (
-    <ArticleLayout
-      slug={post.slug}
-      title={post.title}
-      date={post.date}
-      tags={post.tags}
-      content={post.content || ''}
-      rawMarkdown={post.rawMarkdown || ''}
-    />
+    <div className="page">
+      <section className="post-hero">
+        <div className="post-hero__caption">
+          Entry — /posts/{slug}
+        </div>
+        <h1 className="post-hero__title">{post.frontMatter.title}</h1>
+        <div className="post-hero__meta">
+          <div>
+            <span className="post-hero__meta-key">date:</span> {post.frontMatter.date}
+          </div>
+          <div>
+            <span className="post-hero__meta-key">read:</span> {post.readTime} min
+          </div>
+          {tags.length > 0 && (
+            <div>
+              <span className="post-hero__meta-key">tags:</span>{' '}
+              {tags.map(t => (
+                <Link key={t} href={`/tags/${encodeURIComponent(t)}`} className="post-hero__meta-tag">
+                  #{t}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="post-layout">
+        <aside className="post-toc">
+          <div className="post-toc__head">— Table of Contents</div>
+          <ol className="post-toc__list">
+            {toc.map((entry, i) => (
+              <li
+                key={entry.id}
+                className={`post-toc__item${entry.depth >= 3 ? ' is-sub' : ''}`}
+              >
+                <span className="post-toc__no">{String(i + 1).padStart(2, '0')}.</span>
+                <a className="post-toc__link" href={`#${entry.id}`}>{entry.value}</a>
+              </li>
+            ))}
+          </ol>
+        </aside>
+        <article className="post-body">
+          <MDXContent />
+          <div className="post-end">
+            <span>
+              <span className="post-end__accent">END</span> · {post.frontMatter.date}
+            </span>
+            <span>
+              <Link href="/">← back to /index</Link>
+            </span>
+          </div>
+        </article>
+      </section>
+    </div>
   )
 }

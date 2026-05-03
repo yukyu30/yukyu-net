@@ -1,70 +1,73 @@
-import { getAllPosts } from '@/lib/posts'
-import { getPaginatedPosts, getTotalPages } from '@/lib/pagination'
-import GridLayout from '@/components/GridLayout'
-import PostCard from '@/components/PostCard'
-import Pagination from '@/components/Pagination'
 import { notFound } from 'next/navigation'
-import { Metadata } from 'next'
+import { getAllPosts } from '@/lib/posts'
+import { PostIndexTable, Pagination } from '@/components/post-index-table'
 
-export async function generateStaticParams() {
-  const posts = getAllPosts()
-  const totalPages = getTotalPages(posts.length)
-  
-  return Array.from({ length: totalPages }, (_, i) => ({
-    page: (i + 1).toString(),
-  }))
+const PAGE_SIZE = 20
+
+interface PageProps {
+  params: Promise<{ page: string }>
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ page: string }>
-}): Promise<Metadata> {
-  const { page } = await params
-  
+export function generateStaticParams() {
+  const total = getAllPosts().length
+  const totalPages = Math.ceil(total / PAGE_SIZE)
+  const out = []
+  for (let i = 2; i <= totalPages; i += 1) {
+    out.push({ page: String(i) })
+  }
+  return out
+}
+
+export async function generateMetadata(props: PageProps) {
+  const { page } = await props.params
   return {
-    title: `ページ ${page} - yukyu.net`,
-    description: `記事一覧 - ページ ${page}`,
+    title: `Page ${page} | yukyu.net`,
+    description: `${page}ページ目の記事一覧`
   }
 }
 
-export default async function PaginatedHomePage({
-  params,
-}: {
-  params: Promise<{ page: string }>
-}) {
-  const { page } = await params
-  const currentPage = parseInt(page, 10)
-  
-  if (isNaN(currentPage) || currentPage < 1) {
-    notFound()
-  }
+export default async function PaginatedIndex(props: PageProps) {
+  const { page: rawPage } = await props.params
+  const page = Number.parseInt(rawPage, 10)
+  if (!Number.isFinite(page) || page < 1) notFound()
 
-  const allPosts = getAllPosts()
-  const totalPages = getTotalPages(allPosts.length)
-  
-  if (currentPage > totalPages) {
-    notFound()
-  }
+  const posts = getAllPosts()
+  const total = posts.length
+  const totalPages = Math.ceil(total / PAGE_SIZE)
+  if (page > totalPages) notFound()
 
-  const posts = getPaginatedPosts(allPosts, currentPage)
+  const start = (page - 1) * PAGE_SIZE
+  const visible = posts.slice(start, start + PAGE_SIZE)
+  const startNo = total - start
+  const pageStart = start + 1
 
   return (
-    <GridLayout 
-      postsCount={allPosts.length} 
-      lastUpdate={allPosts[0]?.date}
-      showProfile={false}
-      pagination={
-        <Pagination 
-          currentPage={currentPage} 
-          totalPages={totalPages} 
-          basePath="/" 
-        />
-      }
-    >
-      {posts.map((post, index) => (
-        <PostCard key={post.slug} post={post} index={index} />
-      ))}
-    </GridLayout>
+    <div className="page">
+      <section className="hero">
+        <div className="hero__grid">
+          <div>
+            <h1 className="hero__title">
+              <span className="hero__title-slash">/</span>page/{page}
+            </h1>
+          </div>
+          <div>
+            <div className="hero__meta-num">
+              {String(page).padStart(2, '0')}
+              <span className="hero__meta-num-small"> / {String(totalPages).padStart(2, '0')}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <PostIndexTable posts={visible} total={total} startNo={startNo} />
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        shown={visible.length}
+        pageStart={pageStart}
+      />
+    </div>
   )
 }
