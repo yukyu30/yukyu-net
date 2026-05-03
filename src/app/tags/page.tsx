@@ -1,42 +1,51 @@
-import { getAllTags } from '@/lib/posts'
 import Link from 'next/link'
-import MenuBar from '@/components/MenuBar'
-import StatusBar from '@/components/StatusBar'
-import WindowFrame from '@/components/WindowFrame'
+import { getAllPosts, getAllTagCounts } from '@/lib/posts'
 
-export default function TagsPage() {
-  const tags = getAllTags()
-  const sortedTags = Array.from(tags.entries()).sort((a, b) => b[1] - a[1])
+export const metadata = {
+  title: 'Tags | yukyu.net',
+  description: 'タグ一覧'
+}
+
+export default function TagsIndex() {
+  const tags = getAllTagCounts()
+  const total = getAllPosts().length
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
-      <MenuBar />
-
-      <main className="flex-1 p-4">
-        <WindowFrame title="ALL TAGS">
-          <div className="px-4 py-3">
-            <p className="text-sm font-mono text-green-600">
-              {tags.size} {tags.size === 1 ? 'TAG' : 'TAGS'} FOUND
-            </p>
+    <div className="page">
+      <section className="hero">
+        <div className="hero__grid">
+          <div>
+            <h1 className="hero__title">
+              <span className="hero__title-slash">/</span>tags
+            </h1>
           </div>
-
-          <div className="p-4">
-            <div className="flex flex-wrap gap-2">
-              {sortedTags.map(([tag, count]) => (
-                <Link
-                  key={tag}
-                  href={`/tags/${encodeURIComponent(tag)}`}
-                  className="font-mono text-sm text-green-600 hover:text-green-400 transition-colors"
-                >
-                  [#{tag} ({count})]
-                </Link>
-              ))}
-            </div>
+          <div>
+            <div className="hero__meta-num">{tags.length}</div>
+            <div className="hero__meta-sub">tags · {total} entries</div>
           </div>
-        </WindowFrame>
-      </main>
+        </div>
+      </section>
 
-      <StatusBar status="VIEWING TAGS" />
+      <section className="tag-cloud">
+        <Link
+          key="all"
+          href="/tags/all"
+          className="tag-cloud__item is-all"
+        >
+          <span className="tag-cloud__tag">ALL</span>
+          <span className="tag-cloud__count">{total}</span>
+        </Link>
+        {tags.map(t => (
+          <Link
+            key={t.tag}
+            href={`/tags/${encodeURIComponent(t.tag)}`}
+            className="tag-cloud__item"
+          >
+            <span className="tag-cloud__tag">#{t.tag}</span>
+            <span className="tag-cloud__count">{t.count}</span>
+          </Link>
+        ))}
+      </section>
     </div>
   )
 }

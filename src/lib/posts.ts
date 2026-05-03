@@ -1,195 +1,130 @@
-import fs from 'fs'
-import path from 'path'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import matter from 'gray-matter'
-import { unified } from 'unified'
-import remarkParse from 'remark-parse'
-import remarkGfm from 'remark-gfm'
-import remarkBreaks from 'remark-breaks'
-import remarkRehype from 'remark-rehype'
-import rehypeRaw from 'rehype-raw'
-import rehypeStringify from 'rehype-stringify'
-import rehypeEmotion from './rehype-emotion'
-import rehypeHeadingId from './rehype-heading-id'
+import { NextraFrontmatterSchema, type NextraFrontmatter } from './frontmatter'
 
-const postsDirectory = path.join(process.cwd(), 'public', 'source')
+const POSTS_DIR = resolve(process.cwd(), 'content/posts')
+const READ_CHARS_PER_MINUTE = 500
 
-export interface Post {
+export interface PostListItem {
   slug: string
-  title: string
-  date: string
-  excerpt: string
-  tags: string[]
-  content?: string
-  rawMarkdown?: string
-  thumbnail?: string
-  rss?: boolean
-  externalUrl?: string
+  frontMatter: NextraFrontmatter
+  bodyChars: number
+  readTime: number
 }
 
-export function getAllPosts(): Post[] {
-  const excludeDirs = ['README', 'privacy-policy']
-  
-  const directories = fs.readdirSync(postsDirectory)
-    .filter(dir => {
-      const fullPath = path.join(postsDirectory, dir)
-      return fs.statSync(fullPath).isDirectory() && !excludeDirs.includes(dir)
+let cache: PostListItem[] | null = null
+
+function loadAll(): PostListItem[] {
+  if (cache && process.env.NODE_ENV !== 'development') return cache
+  cache = readdirSync(POSTS_DIR)
+    .filter(name => name.endsWith('.mdx'))
+    .map(name => {
+      const slug = name.replace(/\.mdx$/, '')
+      const raw = readFileSync(join(POSTS_DIR, name), 'utf8')
+      const { data, content } = matter(raw)
+      let frontMatter
+      try {
+        frontMatter = NextraFrontmatterSchema.parse(data)
+      } catch (err) {
+        throw new Error(
+          `Failed to parse frontmatter in content/posts/${name}: ${
+            err instanceof Error ? err.message : String(err)
+          }`
+        )
+      }
+      const bodyChars = stripMarkdown(content).length
+      return {
+        slug,
+        frontMatter,
+        bodyChars,
+        readTime: Math.max(1, Math.ceil(bodyChars / READ_CHARS_PER_MINUTE))
+      }
     })
-
-  const posts = directories.map(dir => {
-    const slug = dir
-    const indexPath = path.join(postsDirectory, dir, 'index.md')
-    
-    if (!fs.existsSync(indexPath)) {
-      return null
-    }
-
-    const fileContents = fs.readFileSync(indexPath, 'utf8')
-    const { data, content } = matter(fileContents)
-
-    const excerpt = content
-      .replace(/^#+\s+/gm, '')
-      .replace(/!\[.*?\]\(.*?\)/g, '')
-      .replace(/\[.*?\]\(.*?\)/g, '')
-      .substring(0, 200)
-      .trim() + '...'
-
-    const rawDate = data.date || data.created_at || data.createdAt
-    const dateString = rawDate
-      ? new Date(rawDate).toISOString().split('T')[0]
-      : slug
-
-    // Extract first image from content
-    const imageMatch = content.match(/!\[.*?\]\(([^)]+)\)/)
-    let thumbnail = undefined
-    if (imageMatch && imageMatch[1]) {
-      const imagePath = imageMatch[1]
-      if (!imagePath.startsWith('http') && !imagePath.startsWith('/')) {
-        thumbnail = `/source/${slug}/${imagePath}`
-      } else {
-        thumbnail = imagePath
-      }
-    }
-
-    return {
-      slug,
-      title: data.title || slug,
-      date: dateString,
-      excerpt: data.excerpt || excerpt,
-      tags: data.tags || [],
-      thumbnail,
-      rss: data.rss !== false,
-      externalUrl: data.externalUrl,
-    }
-  }).filter(post => post !== null) as Post[]
-
-  return posts.sort((a, b) => {
-    // slugから日付を抽出（YYYY-MM-DD形式の場合）
-    const getDateFromSlug = (slug: string): Date => {
-      const match = slug.match(/^(\d{4})-(\d{2})-(\d{2})/)
-      if (match) {
-        return new Date(match[1] + '-' + match[2] + '-' + match[3])
-      }
-      return new Date(0) // 日付形式でない場合は古い日付として扱う
-    }
-    
-    // dateフィールドがある場合はそれを優先、なければslugから日付を抽出
-    const dateA = a.date !== a.slug ? new Date(a.date) : getDateFromSlug(a.slug)
-    const dateB = b.date !== b.slug ? new Date(b.date) : getDateFromSlug(b.slug)
-    
-    // 降順ソート（新しい記事が上）
-    return dateB.getTime() - dateA.getTime()
-  })
+    .sort((a, b) => b.frontMatter.date.localeCompare(a.frontMatter.date))
+  return cache
 }
 
-export async function getPostBySlug(slug: string): Promise<Post | null> {
-  const postPath = path.join(postsDirectory, slug)
-  const indexPath = path.join(postPath, 'index.md')
+function stripMarkdown(s: string): string {
+  return s
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`[^`]*`/g, '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[#*_>~`-]/g, '')
+    .replace(/\s+/g, '')
+}
 
-  if (!fs.existsSync(indexPath)) {
-    return null
+export function getAllPosts(): PostListItem[] {
+  return loadAll()
+}
+
+export function getPostBySlug(slug: string): PostListItem | undefined {
+  return loadAll().find(p => p.slug === slug)
+}
+
+export function getPostsByTag(tag: string): PostListItem[] {
+  return loadAll().filter(p => p.frontMatter.tag?.includes(tag))
+}
+
+export function getPostsByTags(tags: string[]): PostListItem[] {
+  const set = new Set(tags)
+  return loadAll().filter(p => p.frontMatter.tag?.some(t => set.has(t)))
+}
+
+export function getWorks(): PostListItem[] {
+  return getPostsByTags(['work', 'つくったもの'])
+}
+
+export function getProfileExcerpt(slug = 'me', lines = 2): string {
+  const filePath = join(POSTS_DIR, `${slug}.mdx`)
+  let raw: string
+  try {
+    raw = readFileSync(filePath, 'utf8')
+  } catch {
+    return ''
   }
+  const { content } = matter(raw)
+  const match = content.match(/##\s*profile\s*\n([\s\S]*?)(?=\n##\s|\n*$)/)
+  const body = match ? match[1] : content
+  const picked = body
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    .slice(0, lines)
+    .map(l =>
+      l
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    )
+  return picked.join('\n')
+}
 
-  const fileContents = fs.readFileSync(indexPath, 'utf8')
-  const { data, content } = matter(fileContents)
+export function getEarliestYear(): number {
+  const all = loadAll()
+  if (all.length === 0) return new Date().getUTCFullYear()
+  const earliest = all[all.length - 1]
+  return Number.parseInt(earliest.frontMatter.date.slice(0, 4), 10)
+}
 
-  const processedContent = content.replace(
-    /!\[(.*?)\]\(((?!http|https|\/)[^)]+)\)/g,
-    (match, alt, src) => {
-      return `![${alt}](/source/${slug}/${src})`
-    }
-  )
+export interface TagCount {
+  tag: string
+  count: number
+}
 
-  const processedMarkdown = await unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkBreaks)
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypeRaw)
-    .use(rehypeHeadingId)
-    .use(rehypeEmotion)
-    .use(rehypeStringify)
-    .process(processedContent)
-  
-  const contentHtml = processedMarkdown.toString()
+export function getTopTags(limit = 6): TagCount[] {
+  return getAllTagCounts().slice(0, limit)
+}
 
-  const excerpt = content
-    .replace(/^#+\s+/gm, '')
-    .replace(/!\[.*?\]\(.*?\)/g, '')
-    .replace(/\[.*?\]\(.*?\)/g, '')
-    .substring(0, 200)
-    .trim() + '...'
-
-  const rawDate = data.date || data.created_at || data.createdAt
-  const dateString = rawDate
-    ? new Date(rawDate).toISOString().split('T')[0]
-    : slug
-
-  // Extract first image from content
-  const imageMatch = content.match(/!\[.*?\]\(([^)]+)\)/)
-  let thumbnail = undefined
-  if (imageMatch && imageMatch[1]) {
-    const imagePath = imageMatch[1]
-    if (!imagePath.startsWith('http') && !imagePath.startsWith('/')) {
-      thumbnail = `/public_articles/source/${slug}/${imagePath}`
-    } else {
-      thumbnail = imagePath
+export function getAllTagCounts(): TagCount[] {
+  const counts = new Map<string, number>()
+  for (const p of loadAll()) {
+    for (const t of p.frontMatter.tag ?? []) {
+      counts.set(t, (counts.get(t) ?? 0) + 1)
     }
   }
-
-  return {
-    slug,
-    title: data.title || slug,
-    date: dateString,
-    excerpt: data.excerpt || excerpt,
-    tags: data.tags || [],
-    content: contentHtml,
-    rawMarkdown: fileContents,
-    thumbnail,
-    rss: data.rss !== false,
-  }
-}
-
-export function getAllTags(): Map<string, number> {
-  const posts = getAllPosts()
-  const tagCount = new Map<string, number>()
-  
-  posts.forEach(post => {
-    if (post.tags) {
-      post.tags.forEach(tag => {
-        tagCount.set(tag, (tagCount.get(tag) || 0) + 1)
-      })
-    }
-  })
-  
-  return tagCount
-}
-
-export function getPostsByTag(tag: string): Post[] {
-  const posts = getAllPosts()
-  return posts.filter(post => post.tags?.includes(tag))
-}
-
-export function getExternalPosts(): Post[] {
-  const posts = getAllPosts()
-  return posts.filter(post => !!post.externalUrl)
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([tag, count]) => ({ tag, count }))
 }
