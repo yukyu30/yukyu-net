@@ -13,6 +13,11 @@
 *.jpeg binary
 *.JPG binary
 *.gif binary
+*.webp binary
+*.svg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
 *.glb binary
 *.mp3 binary
 *.mp4 binary

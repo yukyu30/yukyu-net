@@ -43,6 +43,7 @@ describe('posts', () => {
       expect(counts[i - 1].count >= counts[i].count).toBe(true)
     }
     const top = getTopTags(3)
+    expect(top.length).toBeGreaterThan(0)
     expect(top.length).toBeLessThanOrEqual(3)
     expect(top[0]).toEqual(counts[0])
   })
@@ -86,6 +87,7 @@ describe('posts', () => {
     const single = getPostsByTag('work')
     const both = getPostsByTags(['work', 'つくったもの'])
     expect(both.length).toBeGreaterThanOrEqual(single.length)
+    expect(new Set(both.map(p => p.slug)).size).toBe(both.length)
     for (const p of both) {
       const tags = p.frontMatter.tag ?? []
       expect(tags.includes('work') || tags.includes('つくったもの')).toBe(true)

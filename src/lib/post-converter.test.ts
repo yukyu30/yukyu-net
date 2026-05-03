@@ -310,6 +310,7 @@ created_at: 2024-01-01
     expect(mdx).toContain('src="https://example.com/keep.jpg"')
     expect(mdx).toContain('src="/posts/other/keep.png"')
     expect(mdx).toContain('src="/posts/s/upper.png"')
+    expect(mdx).not.toContain('<IMG')
     expect(mdx).toContain('![md](/posts/s/md.png)')
     expect(mdx).toContain('![titled](/posts/s/has-title.png "image title")')
   })
