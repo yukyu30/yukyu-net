@@ -6,7 +6,10 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'yukyu.net',
-  description: '個人的な覚え書き'
+  description: '個人的な覚え書き',
+  other: {
+    'vibe-gallery-verification': '39d410fe-52e8-4b11-a97e-a03759c7bc59'
+  }
 }
 
 export default function RootLayout({
