@@ -300,13 +300,32 @@ created_at: 2024-01-01
 <img alt="b" src="@@img@@/pic2.gif" />
 <img src="https://example.com/keep.jpg" />
 <img src="/posts/other/keep.png" />
+<IMG SRC="./upper.png" />
 ![md](./md.png)
+![titled](./has-title.png "image title")
 `
     const { mdx } = convertPost({ source: input, slug: 's' })
     expect(mdx).toContain('src="/posts/s/pic.png"')
     expect(mdx).toContain('src="/posts/s/pic2.gif"')
     expect(mdx).toContain('src="https://example.com/keep.jpg"')
     expect(mdx).toContain('src="/posts/other/keep.png"')
+    expect(mdx).toContain('src="/posts/s/upper.png"')
     expect(mdx).toContain('![md](/posts/s/md.png)')
+    expect(mdx).toContain('![titled](/posts/s/has-title.png "image title")')
+  })
+
+  it('does not rewrite <img> inside fenced code blocks', () => {
+    const input = `---
+title: t
+created_at: 2024-01-01
+---
+
+\`\`\`html
+<img src="./local.png" />
+\`\`\`
+`
+    const { mdx } = convertPost({ source: input, slug: 's' })
+    expect(mdx).toContain('src="./local.png"')
+    expect(mdx).not.toContain('/posts/s/local.png')
   })
 })

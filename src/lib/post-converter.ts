@@ -120,11 +120,11 @@ function rewriteRelativeImages(body: string, slug: string): string {
     return `/posts/${slug}/${p}`
   }
   return body
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match, alt: string, rawPath: string) =>
-      `![${alt}](${rewriteOne(rawPath)})`
+    .replace(/!\[([^\]]*)\]\(([^\s)]+)(\s+[^)]*)?\)/g, (_match, alt: string, rawPath: string, title?: string) =>
+      `![${alt}](${rewriteOne(rawPath)}${title ?? ''})`
     )
-    .replace(/<img([^>]*?)\ssrc=(["'])([^"']+)\2([^>]*?)\s*\/?>/g, (_match, before: string, q: string, src: string, after: string) =>
-      `<img${before} src=${q}${rewriteOne(src)}${q}${after}/>`
+    .replace(/<img([^>]*?)\ssrc=(["'])([^"']+)\2([^>]*?)\s*\/?>/gi, (_match, before: string, q: string, src: string, after: string) =>
+      `<img${before} src=${q}${rewriteOne(src)}${q}${after} />`
     )
 }
 
