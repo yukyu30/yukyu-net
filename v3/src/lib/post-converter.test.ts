@@ -66,6 +66,30 @@ created_at: 2020-07-01
     expect(mdx).toContain('![ext](https://example.com/x.png)')
   })
 
+  it('rewrites bare relative image paths to /posts/{slug}/...', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+![cap](2021-05-18-1.png)
+`
+    const { mdx } = convertPost({ source: input, slug: '2021-05-18' })
+    expect(mdx).toContain('![cap](/posts/2021-05-18/2021-05-18-1.png)')
+  })
+
+  it('strips @@img@@/ prefix when present', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+![cap](@@img@@/final.jpg)
+`
+    const { mdx } = convertPost({ source: input, slug: 'whatever' })
+    expect(mdx).toContain('![cap](/posts/whatever/final.jpg)')
+  })
+
   it('leaves root-absolute paths untouched', () => {
     const input = `---
 title: t
@@ -88,6 +112,41 @@ body
 `
     const { mdx } = convertPost({ source: input })
     expect(mdx).not.toMatch(/^tag:/m)
+  })
+
+  it('self-closes void HTML tags so MDX can parse them', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+line1<br>line2
+
+<hr>
+
+<img src="x.png" alt="x">
+`
+    const { mdx } = convertPost({ source: input, slug: 's' })
+    expect(mdx).toContain('<br />')
+    expect(mdx).toContain('<hr />')
+    expect(mdx).toMatch(/<img [^>]+\/>/)
+    expect(mdx).not.toMatch(/<br>/)
+    expect(mdx).not.toMatch(/<hr>/)
+  })
+
+  it('leaves already self-closed void tags alone', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+<br />
+<hr/>
+`
+    const { mdx } = convertPost({ source: input })
+    expect(mdx).toContain('<br />')
+    expect(mdx).toContain('<hr/>')
+    expect((mdx.match(/<br/g) ?? []).length).toBe(1)
   })
 
   it('throws when frontmatter is invalid', () => {

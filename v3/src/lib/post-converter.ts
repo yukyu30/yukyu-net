@@ -22,14 +22,32 @@ export function convertPost({ source, slug }: ConvertPostInput): ConvertPostResu
   const next = convertFrontmatter(legacy)
   NextraFrontmatterSchema.parse(next)
 
-  const body = slug ? rewriteRelativeImages(content, slug) : content
+  const rewrittenBody = slug ? rewriteRelativeImages(content, slug) : content
+  const body = selfCloseVoidTags(rewrittenBody)
   const mdx = serializeMdx(next, body)
 
   return { mdx, frontmatter: next }
 }
 
+const VOID_TAGS = ['br', 'hr', 'img', 'input', 'meta', 'link', 'source']
+
+function selfCloseVoidTags(body: string): string {
+  return body.replace(
+    new RegExp(`<(${VOID_TAGS.join('|')})\\b([^>]*?)(?<!/)>`, 'gi'),
+    (_m, tag: string, attrs: string) => {
+      const trimmed = attrs.replace(/\s+$/, '')
+      return trimmed.length > 0 ? `<${tag}${trimmed} />` : `<${tag} />`
+    }
+  )
+}
+
 function rewriteRelativeImages(body: string, slug: string): string {
-  return body.replace(/!\[([^\]]*)\]\(\.\/([^)]+)\)/g, (_m, alt: string, path: string) => {
+  return body.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt: string, rawPath: string) => {
+    if (/^https?:\/\//.test(rawPath)) return match
+    if (rawPath.startsWith('/')) return match
+    let path = rawPath
+    if (path.startsWith('@@img@@/')) path = path.slice('@@img@@/'.length)
+    if (path.startsWith('./')) path = path.slice(2)
     return `![${alt}](/posts/${slug}/${path})`
   })
 }

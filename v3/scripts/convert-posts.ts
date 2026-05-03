@@ -29,6 +29,27 @@ function listPostDirs(root: string): string[] {
     .sort()
 }
 
+const V3_PUBLIC_DIR = resolve(__dirname, '../public')
+
+function fallbackMissingImages(mdx: string, slug: string, sourceDir: string): string {
+  const slugPrefix = `/posts/${slug}/`
+  return mdx.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt: string, path: string) => {
+    if (/^https?:\/\//.test(path)) return match
+    if (!path.startsWith('/')) return match
+
+    let resolved = false
+    if (path.startsWith(slugPrefix)) {
+      const filename = path.slice(slugPrefix.length)
+      resolved = existsSync(join(sourceDir, filename))
+    } else {
+      resolved = existsSync(join(V3_PUBLIC_DIR, path))
+    }
+    if (resolved) return match
+    const safeAlt = alt.replace(/"/g, '&quot;')
+    return `<img src="${path}" alt="${safeAlt}" />`
+  })
+}
+
 function copyAssets(srcDir: string, slug: string): void {
   const targetDir = join(OUT_PUBLIC, slug)
   let created = false
@@ -62,8 +83,10 @@ function main() {
     try {
       const source = readFileSync(srcPath, 'utf8')
       const { mdx } = convertPost({ source, slug })
-      writeFileSync(join(OUT_POSTS, `${slug}.mdx`), mdx, 'utf8')
-      copyAssets(join(SOURCE_ROOT, slug), slug)
+      const sourceDir = join(SOURCE_ROOT, slug)
+      const safeMdx = fallbackMissingImages(mdx, slug, sourceDir)
+      writeFileSync(join(OUT_POSTS, `${slug}.mdx`), safeMdx, 'utf8')
+      copyAssets(sourceDir, slug)
       stats.ok += 1
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
