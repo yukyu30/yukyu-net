@@ -471,6 +471,19 @@ button {
   }
 }
 
+@media (max-width: 480px) {
+  .whoami__works-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .whoami__work-thumb {
+    aspect-ratio: 16 / 10;
+  }
+  .whoami__work-title {
+    font-size: 13px;
+  }
+}
+
 /* ============ Categories grid ============ */
 .cat-grid {
   display: grid;
