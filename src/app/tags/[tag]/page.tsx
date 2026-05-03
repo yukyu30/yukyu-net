@@ -1,20 +1,33 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getAllTagCounts, getPostsByTag, getTopTags } from '@/lib/posts'
+import {
+  getAllPosts,
+  getAllTagCounts,
+  getPostsByTag,
+  getTopTags
+} from '@/lib/posts'
+import { PostIndexTable } from '@/components/post-index-table'
 
 const VISUAL_TAGS = new Set(['work', 'つくったもの'])
+const ALL_KEY = 'all'
 
 interface PageProps {
   params: Promise<{ tag: string }>
 }
 
 export function generateStaticParams() {
-  return getAllTagCounts().map(({ tag }) => ({ tag }))
+  return [
+    { tag: ALL_KEY },
+    ...getAllTagCounts().map(({ tag }) => ({ tag }))
+  ]
 }
 
 export async function generateMetadata(props: PageProps) {
   const { tag } = await props.params
   const decoded = decodeURIComponent(tag)
+  if (decoded.toLowerCase() === ALL_KEY) {
+    return { title: 'All entries | yukyu.net', description: 'すべての記事' }
+  }
   return {
     title: `#${decoded} | yukyu.net`,
     description: `${decoded} タグの記事一覧`
@@ -24,20 +37,22 @@ export async function generateMetadata(props: PageProps) {
 export default async function TagPage(props: PageProps) {
   const { tag: rawTag } = await props.params
   const tag = decodeURIComponent(rawTag)
-  const posts = getPostsByTag(tag)
+  const isAll = tag.toLowerCase() === ALL_KEY
+  const posts = isAll ? getAllPosts() : getPostsByTag(tag)
   if (posts.length === 0) notFound()
 
-  const isVisual = VISUAL_TAGS.has(tag)
+  const isVisual = !isAll && VISUAL_TAGS.has(tag)
   const topTags = getTopTags(6)
+  const heroSlash = isAll ? '/' : '#'
+  const heroLabel = isAll ? 'all' : tag
 
   return (
     <div className="page">
       <section className="hero">
         <div className="hero__grid">
           <div>
-            <div className="hero__caption">Tag — #{tag}</div>
             <h1 className="hero__title">
-              <span className="hero__title-slash">#</span>{tag}
+              <span className="hero__title-slash">{heroSlash}</span>{heroLabel}
             </h1>
           </div>
           <div>
@@ -92,27 +107,7 @@ export default async function TagPage(props: PageProps) {
           })}
         </section>
       ) : (
-        <section className="index-table">
-          <div className="index-table__head">
-            <span>NO.</span>
-            <span>DATE</span>
-            <span>TITLE</span>
-            <span>TAGS</span>
-          </div>
-          {posts.map((p, i) => {
-            const num = String(posts.length - i).padStart(3, '0')
-            return (
-              <Link key={p.slug} href={`/posts/${p.slug}`} className="index-row">
-                <span className="index-row__no">№{num}</span>
-                <span className="index-row__date">{p.frontMatter.date}</span>
-                <h2 className="index-row__title">{p.frontMatter.title}</h2>
-                <span className="index-row__tags">
-                  {(p.frontMatter.tag ?? []).slice(0, 2).map(t => '#' + t).join(' ')}
-                </span>
-              </Link>
-            )
-          })}
-        </section>
+        <PostIndexTable posts={posts} total={posts.length} startNo={posts.length} />
       )}
     </div>
   )

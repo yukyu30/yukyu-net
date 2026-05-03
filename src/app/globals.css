@@ -645,6 +645,23 @@ button {
   color: var(--color-accent);
 }
 
+.tag-cloud__item.is-all {
+  background: var(--color-accent);
+  color: #ffffff;
+  border-right-color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.tag-cloud__item.is-all:hover {
+  background: var(--color-orange);
+  color: #ffffff;
+}
+
+.tag-cloud__item.is-all .tag-cloud__count {
+  color: #ffffff;
+  opacity: 0.85;
+}
+
 .tag-cloud__tag {
   font-weight: 700;
 }
