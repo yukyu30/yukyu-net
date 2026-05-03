@@ -25,7 +25,10 @@ export type LegacyFrontmatter = z.infer<typeof LegacyFrontmatterSchema>
 
 export const NextraFrontmatterSchema = z.object({
   title: z.string(),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD'),
+  date: z.preprocess(
+    v => (v instanceof Date ? formatLocalDate(v) : v),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD')
+  ),
   description: z.string().optional(),
   tag: z.array(z.string()).optional()
 })
