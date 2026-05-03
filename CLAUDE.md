@@ -27,6 +27,9 @@ npm run test:watch
 # 旧 v2 の Markdown 記事を MDX に変換するスクリプト（必要時のみ）
 npm run convert:posts
 
+# 型チェック
+npm run typecheck
+
 # Lint
 npm run lint
 ```
