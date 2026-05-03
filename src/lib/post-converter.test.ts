@@ -289,4 +289,24 @@ no title
 `
     expect(() => convertPost({ source: input })).toThrow()
   })
+
+  it('rewrites relative <img> tag src as well as Markdown images', () => {
+    const input = `---
+title: t
+created_at: 2024-01-01
+---
+
+<img src="./pic.png" alt="a" />
+<img alt="b" src="@@img@@/pic2.gif" />
+<img src="https://example.com/keep.jpg" />
+<img src="/posts/other/keep.png" />
+![md](./md.png)
+`
+    const { mdx } = convertPost({ source: input, slug: 's' })
+    expect(mdx).toContain('src="/posts/s/pic.png"')
+    expect(mdx).toContain('src="/posts/s/pic2.gif"')
+    expect(mdx).toContain('src="https://example.com/keep.jpg"')
+    expect(mdx).toContain('src="/posts/other/keep.png"')
+    expect(mdx).toContain('![md](/posts/s/md.png)')
+  })
 })
