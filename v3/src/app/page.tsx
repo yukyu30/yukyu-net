@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getAllPosts, getEarliestYear, getTopTags, getWorks } from '@/lib/posts'
+import { PostIndexTable, Pagination } from '@/components/post-index-table'
 
 export const metadata = {
   title: 'yukyu.net',
@@ -8,9 +9,18 @@ export const metadata = {
 
 const PAGE_SIZE = 20
 
-function formatDate(iso: string): string {
-  return iso
-}
+const SOCIAL_LINKS: Array<{ name: string; url: string }> = [
+  { name: 'X', url: 'https://x.com/yukyu30' },
+  { name: 'BlueSky', url: 'https://bsky.app/profile/yukyu.net' },
+  { name: 'GitHub', url: 'https://github.com/yukyu30' },
+  { name: 'Zenn', url: 'https://zenn.dev/yu_9' },
+  { name: 'Instagram', url: 'https://instagram.com/ugo_kun_930' },
+  { name: 'SUZURI', url: 'https://suzuri.jp/yukyu30' },
+  { name: 'Portfolio', url: 'https://foriio.com/yukyu30' },
+  { name: 'YouTube', url: 'https://www.youtube.com/@yukyu30' },
+  { name: 'VRChat', url: 'https://vrchat.com/home/user/usr_c3a3cf58-fbf3-420b-9eb2-c9b69d46b5d6' },
+  { name: 'RSS', url: '/rss.xml' }
+]
 
 export default function Home() {
   const posts = getAllPosts()
@@ -20,7 +30,7 @@ export default function Home() {
   const works = getWorks()
   const recentWorks = works.filter(p => p.frontMatter.thumbnail).slice(0, 3)
   const since = getEarliestYear()
-  const years = new Date().getFullYear() - since
+  const years = new Date().getUTCFullYear() - since
 
   return (
     <div className="page">
@@ -47,19 +57,31 @@ export default function Home() {
         </div>
         <div className="whoami__grid">
           <div className="whoami__profile">
-            <p className="whoami__line">
-              ペパボでエンジニアをしている。書いたもの・作ったもの・登壇したことを、ここに置いておく。
-            </p>
-            <p className="whoami__line">
-              抽象的な自己紹介より、実際にやってきた具体を見てもらうほうが早いと思っている。
-            </p>
+            <dl className="whoami__id">
+              <div className="whoami__id-row">
+                <dt>NAME</dt>
+                <dd>
+                  yukyu
+                  <Link href="/posts/me" className="whoami__id-more">[VIEW PROFILE]</Link>
+                </dd>
+              </div>
+              <div className="whoami__id-row">
+                <dt>ROLE</dt>
+                <dd>GMOペパボ / エンジニアリングリード / 上級VR技術者</dd>
+              </div>
+            </dl>
             <ul className="whoami__links">
-              <li>
-                <a href="https://github.com/yukyu30">github.com/yukyu30</a>
-              </li>
-              <li>
-                <a href="/rss.xml">/rss.xml</a>
-              </li>
+              {SOCIAL_LINKS.map(l => (
+                <li key={l.name}>
+                  <a
+                    href={l.url}
+                    target={l.url.startsWith('http') ? '_blank' : undefined}
+                    rel={l.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  >
+                    [{l.name}]
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
           <dl className="whoami__stats">
@@ -115,47 +137,22 @@ export default function Home() {
             href={`/tags/${encodeURIComponent(t.tag)}`}
             className={`cat-grid__cell${i === 0 ? ' is-feature' : ''}`}
           >
-            <div className="cat-grid__cell-no">0{i + 1} / #{t.tag}</div>
+            <div className="cat-grid__cell-no">{String(i + 1).padStart(2, '0')} / #{t.tag}</div>
             <div className="cat-grid__cell-name">{t.tag}</div>
             <div className="cat-grid__cell-count">{t.count} entries →</div>
           </Link>
         ))}
       </section>
 
-      <section className="index-table">
-        <div className="index-table__head">
-          <span>NO.</span>
-          <span>DATE</span>
-          <span>TITLE</span>
-          <span>TAGS</span>
-        </div>
-        {visible.map((p, i) => {
-          const num = String(total - i).padStart(3, '0')
-          const isFirst = i === 0
-          return (
-            <Link
-              key={p.slug}
-              href={`/posts/${p.slug}`}
-              className={`index-row${isFirst ? ' is-first' : ''}`}
-            >
-              <span className="index-row__no">№{num}</span>
-              <span className="index-row__date">{formatDate(p.frontMatter.date)}</span>
-              <h2 className="index-row__title">{p.frontMatter.title}</h2>
-              <span className="index-row__tags">
-                {(p.frontMatter.tag ?? []).slice(0, 2).map(t => '#' + t).join(' ')}
-              </span>
-            </Link>
-          )
-        })}
-      </section>
+      <PostIndexTable posts={visible} total={total} startNo={total} highlightFirst />
 
-      {total > PAGE_SIZE && (
-        <section className="pagination">
-          <div className="pagination__meta">
-            showing 01–{String(visible.length).padStart(2, '0')} of {total}
-          </div>
-        </section>
-      )}
+      <Pagination
+        page={1}
+        totalPages={Math.ceil(total / PAGE_SIZE)}
+        total={total}
+        shown={visible.length}
+        pageStart={1}
+      />
     </div>
   )
 }

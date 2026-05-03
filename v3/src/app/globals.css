@@ -220,30 +220,81 @@ button {
 }
 
 .whoami__profile {
-  font-family: var(--font-display);
-  font-size: 17px;
-  line-height: 1.75;
-  letter-spacing: -0.005em;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.whoami__line {
-  margin: 0 0 12px;
+.whoami__id {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.whoami__id-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.whoami__id dt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-accent);
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.whoami__id dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+
+.whoami__id-more {
+  margin-left: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-accent);
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .whoami__links {
   list-style: none;
   padding: 0;
-  margin: 16px 0 0;
+  margin: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  font-family: var(--font-mono);
-  font-size: 12px;
+  gap: 6px;
 }
 
 .whoami__links a {
-  color: var(--color-accent);
-  border-bottom: 1px solid var(--color-faint);
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--color-ink);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.whoami__links a:hover {
+  background: var(--color-accent);
+  color: #ffffff;
+  border-color: var(--color-accent);
 }
 
 .whoami__stats {
@@ -656,6 +707,16 @@ button {
   background: var(--color-orange);
   color: #ffffff;
   font-weight: 700;
+}
+
+.pagination__page.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: default;
+}
+
+.pagination__page:hover:not(.is-active):not(.is-disabled) {
+  background: var(--color-bg);
 }
 
 /* ============ Post detail ============ */
