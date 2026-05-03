@@ -318,6 +318,107 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+/* ============ Works grid (thumbnail cards) ============ */
+.works-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--color-ink);
+}
+
+.works-card {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--color-faint);
+  border-bottom: 1px solid var(--color-faint);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  transition: background 120ms ease;
+}
+
+.works-card:nth-child(3n) {
+  border-right: none;
+}
+
+.works-card:hover {
+  background: #f6f8ff;
+}
+
+.works-card__thumb {
+  aspect-ratio: 16 / 10;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-faint);
+  overflow: hidden;
+  display: block;
+  position: relative;
+}
+
+.works-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.works-card__thumb--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.works-card__body {
+  padding: 18px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.works-card__meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-muted);
+  letter-spacing: 0.06em;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.works-card__no {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.works-card__title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.works-card__tags {
+  margin-top: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 880px) {
+  .works-grid {
+    grid-template-columns: 1fr;
+  }
+  .works-card,
+  .works-card:nth-child(3n) {
+    border-right: none;
+  }
+}
+
 /* ============ Pagination ============ */
 .pagination {
   padding: 20px 36px;

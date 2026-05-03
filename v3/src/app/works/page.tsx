@@ -46,25 +46,31 @@ export default function Works() {
         ))}
       </section>
 
-      <section className="index-table">
-        <div className="index-table__head">
-          <span>NO.</span>
-          <span>DATE</span>
-          <span>TITLE</span>
-          <span>TAGS</span>
-          <span style={{ textAlign: 'right' }}>READ</span>
-        </div>
+      <section className="works-grid">
         {unique.map((p, i) => {
           const num = String(unique.length - i).padStart(3, '0')
+          const thumb = p.frontMatter.thumbnail
           return (
-            <Link key={p.slug} href={`/posts/${p.slug}`} className="index-row">
-              <span className="index-row__no">№{num}</span>
-              <span className="index-row__date">{p.frontMatter.date}</span>
-              <h2 className="index-row__title">{p.frontMatter.title}</h2>
-              <span className="index-row__tags">
-                {(p.frontMatter.tag ?? []).slice(0, 2).map(t => '#' + t).join(' ')}
-              </span>
-              <span className="index-row__read">{p.readTime}′</span>
+            <Link key={p.slug} href={`/posts/${p.slug}`} className="works-card">
+              {thumb ? (
+                <span className="works-card__thumb">
+                  <img src={thumb} alt="" loading="lazy" />
+                </span>
+              ) : (
+                <span className="works-card__thumb works-card__thumb--placeholder">
+                  no image
+                </span>
+              )}
+              <div className="works-card__body">
+                <div className="works-card__meta">
+                  <span className="works-card__no">№{num}</span>
+                  <span>{p.frontMatter.date}</span>
+                </div>
+                <h2 className="works-card__title">{p.frontMatter.title}</h2>
+                <div className="works-card__tags">
+                  {(p.frontMatter.tag ?? []).slice(0, 3).map(t => '#' + t).join(' ')}
+                </div>
+              </div>
             </Link>
           )
         })}
