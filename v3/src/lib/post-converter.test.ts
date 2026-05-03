@@ -222,6 +222,34 @@ created_at: 2020-07-01
     expect(mdx).not.toContain('allowfullscreen=')
   })
 
+  it('does not touch HTML tags inside fenced code blocks', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+普通の段落 <br> ここは置換されてほしい
+
+\`\`\`html
+<br>
+<img src="x.png">
+<iframe class="raw">x</iframe>
+\`\`\`
+
+普通の段落 <hr> ここも置換されてほしい
+`
+    const { mdx } = convertPost({ source: input, slug: 's' })
+    const fenceMatch = mdx.match(/\`\`\`html\n([\s\S]*?)\n\`\`\`/)
+    expect(fenceMatch).not.toBeNull()
+    const fenced = fenceMatch![1]
+    expect(fenced).toContain('<br>')
+    expect(fenced).toContain('<img src="x.png">')
+    expect(fenced).toContain('<iframe class="raw">')
+    const outside = mdx.replace(/\`\`\`html\n[\s\S]*?\n\`\`\`/, '')
+    expect(outside).toContain('<br />')
+    expect(outside).toContain('<hr />')
+  })
+
   it('strips inline style="..." attributes that JSX cannot accept as strings', () => {
     const input = `---
 title: t

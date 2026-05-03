@@ -54,7 +54,7 @@ export default async function TagPage(props: PageProps) {
             href={`/tags/${encodeURIComponent(t.tag)}`}
             className={`cat-grid__cell${t.tag === tag ? ' is-feature' : ''}`}
           >
-            <div className="cat-grid__cell-no">0{i + 1} / #{t.tag}</div>
+            <div className="cat-grid__cell-no">{String(i + 1).padStart(2, '0')} / #{t.tag}</div>
             <div className="cat-grid__cell-name">{t.tag}</div>
             <div className="cat-grid__cell-count">{t.count} entries →</div>
           </Link>

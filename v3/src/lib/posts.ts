@@ -11,13 +11,12 @@ export interface PostListItem {
   frontMatter: NextraFrontmatter
   bodyChars: number
   readTime: number
-  body: string
 }
 
 let cache: PostListItem[] | null = null
 
 function loadAll(): PostListItem[] {
-  if (cache) return cache
+  if (cache && process.env.NODE_ENV !== 'development') return cache
   cache = readdirSync(POSTS_DIR)
     .filter(name => name.endsWith('.mdx'))
     .map(name => {
@@ -29,7 +28,6 @@ function loadAll(): PostListItem[] {
       return {
         slug,
         frontMatter,
-        body: content,
         bodyChars,
         readTime: Math.max(1, Math.ceil(bodyChars / READ_CHARS_PER_MINUTE))
       }
@@ -53,8 +51,28 @@ export function getAllPosts(): PostListItem[] {
   return loadAll()
 }
 
+export function getPostBySlug(slug: string): PostListItem | undefined {
+  return loadAll().find(p => p.slug === slug)
+}
+
 export function getPostsByTag(tag: string): PostListItem[] {
   return loadAll().filter(p => p.frontMatter.tag?.includes(tag))
+}
+
+export function getPostsByTags(tags: string[]): PostListItem[] {
+  const set = new Set(tags)
+  return loadAll().filter(p => p.frontMatter.tag?.some(t => set.has(t)))
+}
+
+export function getWorks(): PostListItem[] {
+  return getPostsByTags(['work', 'つくったもの'])
+}
+
+export function getEarliestYear(): number {
+  const all = loadAll()
+  if (all.length === 0) return new Date().getUTCFullYear()
+  const earliest = all[all.length - 1]
+  return Number.parseInt(earliest.frontMatter.date.slice(0, 4), 10)
 }
 
 export interface TagCount {
@@ -64,22 +82,6 @@ export interface TagCount {
 
 export function getTopTags(limit = 6): TagCount[] {
   return getAllTagCounts().slice(0, limit)
-}
-
-export function getWorks(): PostListItem[] {
-  const tagged = [...getPostsByTag('work'), ...getPostsByTag('つくったもの')]
-  const seen = new Map<string, PostListItem>()
-  for (const p of tagged) seen.set(p.slug, p)
-  return [...seen.values()].sort((a, b) =>
-    b.frontMatter.date.localeCompare(a.frontMatter.date)
-  )
-}
-
-export function getEarliestYear(): number {
-  const all = loadAll()
-  if (all.length === 0) return new Date().getFullYear()
-  const earliest = all[all.length - 1]
-  return Number.parseInt(earliest.frontMatter.date.slice(0, 4), 10)
 }
 
 export function getAllTagCounts(): TagCount[] {

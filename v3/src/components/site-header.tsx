@@ -1,5 +1,7 @@
-import Link from 'next/link'
-import { headers } from 'next/headers'
+'use client'
+
+import { Link } from 'next-view-transitions'
+import { usePathname } from 'next/navigation'
 
 const NAV: Array<{ key: string; label: string; href: string }> = [
   { key: 'home', label: 'Index', href: '/' },
@@ -17,9 +19,8 @@ function pickActive(pathname: string): string {
   return ''
 }
 
-export async function SiteHeader() {
-  const h = await headers()
-  const pathname = h.get('x-invoke-path') ?? h.get('x-pathname') ?? '/'
+export function SiteHeader() {
+  const pathname = usePathname() ?? '/'
   const active = pickActive(pathname)
   return (
     <header className="site-header">

@@ -31,6 +31,15 @@ function listPostDirs(root: string): string[] {
 
 const V3_PUBLIC_DIR = resolve(__dirname, '../public')
 
+function escapeAttr(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
 function fallbackMissingImages(mdx: string, slug: string, sourceDir: string): string {
   const slugPrefix = `/posts/${slug}/`
   return mdx.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt: string, path: string) => {
@@ -45,8 +54,9 @@ function fallbackMissingImages(mdx: string, slug: string, sourceDir: string): st
       resolved = existsSync(join(V3_PUBLIC_DIR, path))
     }
     if (resolved) return match
-    const safeAlt = alt.replace(/"/g, '&quot;')
-    return `<img src="${path}" alt="${safeAlt}" />`
+    const safeAlt = escapeAttr(alt)
+    const safeSrc = escapeAttr(path)
+    return `<img src="${safeSrc}" alt="${safeAlt}" />`
   })
 }
 

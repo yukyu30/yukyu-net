@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { importPage } from 'nextra/pages'
-import { getAllPosts } from '@/lib/posts'
+import { getAllPosts, getPostBySlug } from '@/lib/posts'
 
 export function generateStaticParams() {
   return getAllPosts().map(p => ({ slug: p.slug }))
@@ -29,7 +29,7 @@ interface TocEntry {
 
 export default async function PostPage(props: PageProps) {
   const { slug } = await props.params
-  const post = getAllPosts().find(p => p.slug === slug)
+  const post = getPostBySlug(slug)
   if (!post) notFound()
 
   let imported
