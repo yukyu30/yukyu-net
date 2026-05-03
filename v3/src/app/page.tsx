@@ -43,7 +43,7 @@ export default function Home() {
       <section className="whoami">
         <div className="whoami__head">
           <span className="whoami__label">// who</span>
-          <Link href="/who" className="whoami__more">more →</Link>
+          <Link href="/posts/me" className="whoami__more">more →</Link>
         </div>
         <div className="whoami__grid">
           <div className="whoami__profile">
