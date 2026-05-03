@@ -20,13 +20,26 @@ export function convertPost({ source, slug }: ConvertPostInput): ConvertPostResu
   const { data, content } = matter(source)
   const legacy = LegacyFrontmatterSchema.parse(data)
   const next = convertFrontmatter(legacy)
-  NextraFrontmatterSchema.parse(next)
 
   const rewrittenBody = slug ? rewriteRelativeImages(content, slug) : content
   const body = selfCloseVoidTags(rewrittenBody)
-  const mdx = serializeMdx(next, body)
 
+  const thumbnail = extractFirstImage(body)
+  if (thumbnail) {
+    next.thumbnail = thumbnail
+  }
+  NextraFrontmatterSchema.parse(next)
+
+  const mdx = serializeMdx(next, body)
   return { mdx, frontmatter: next }
+}
+
+function extractFirstImage(body: string): string | undefined {
+  const md = body.match(/!\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/)
+  if (md) return md[1]
+  const html = body.match(/<img[^>]+src=["']([^"']+)["']/i)
+  if (html) return html[1]
+  return undefined
 }
 
 const VOID_TAGS = ['br', 'hr', 'img', 'input', 'meta', 'link', 'source']
@@ -56,6 +69,9 @@ function serializeMdx(fm: NextraFrontmatter, body: string): string {
   const lines = [`title: ${escapeYamlString(fm.title)}`, `date: ${fm.date}`]
   if (fm.description !== undefined) {
     lines.push(`description: ${escapeYamlString(fm.description)}`)
+  }
+  if (fm.thumbnail) {
+    lines.push(`thumbnail: ${fm.thumbnail}`)
   }
   if (fm.tag && fm.tag.length > 0) {
     lines.push(`tag:`)

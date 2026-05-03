@@ -30,7 +30,8 @@ export const NextraFrontmatterSchema = z.object({
     z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD')
   ),
   description: z.string().optional(),
-  tag: z.array(z.string()).optional()
+  tag: z.array(z.string()).optional(),
+  thumbnail: z.string().optional()
 })
 
 export type NextraFrontmatter = z.infer<typeof NextraFrontmatterSchema>

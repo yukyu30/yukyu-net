@@ -149,6 +149,62 @@ created_at: 2020-07-01
     expect((mdx.match(/<br/g) ?? []).length).toBe(1)
   })
 
+  it('extracts the first markdown image as thumbnail', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+intro
+
+![cap](./first.png)
+
+more text
+
+![cap2](./second.png)
+`
+    const { mdx, frontmatter } = convertPost({ source: input, slug: 'sample' })
+    expect(frontmatter.thumbnail).toBe('/posts/sample/first.png')
+    expect(mdx).toMatch(/^---\n[\s\S]*thumbnail: \/posts\/sample\/first\.png[\s\S]*---/m)
+  })
+
+  it('uses absolute URL as thumbnail when first image is external', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+![ext](https://example.com/cover.png)
+`
+    const { frontmatter } = convertPost({ source: input, slug: 's' })
+    expect(frontmatter.thumbnail).toBe('https://example.com/cover.png')
+  })
+
+  it('uses HTML <img> src as thumbnail fallback', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+<img src="/posts/s/x.png" alt="x" />
+`
+    const { frontmatter } = convertPost({ source: input, slug: 's' })
+    expect(frontmatter.thumbnail).toBe('/posts/s/x.png')
+  })
+
+  it('omits thumbnail when no image is found', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+text only.
+`
+    const { mdx, frontmatter } = convertPost({ source: input, slug: 's' })
+    expect(frontmatter.thumbnail).toBeUndefined()
+    expect(mdx).not.toMatch(/^thumbnail:/m)
+  })
+
   it('throws when frontmatter is invalid', () => {
     const input = `---
 created_at: 2024-01-01
