@@ -42,6 +42,13 @@ for (const slug of readdirSync(PUBLIC_POSTS)) {
     const fromPath = join(dir, name)
     const toPath = join(dir, newName)
     if (existsSync(toPath) && toPath !== fromPath) {
+      const a = readFileSync(fromPath)
+      const b = readFileSync(toPath)
+      if (!a.equals(b)) {
+        throw new Error(
+          `Refusing to drop ${fromPath}: target ${toPath} exists with different content`
+        )
+      }
       unlinkSync(fromPath)
     } else {
       renameSync(fromPath, toPath)

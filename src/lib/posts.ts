@@ -23,7 +23,16 @@ function loadAll(): PostListItem[] {
       const slug = name.replace(/\.mdx$/, '')
       const raw = readFileSync(join(POSTS_DIR, name), 'utf8')
       const { data, content } = matter(raw)
-      const frontMatter = NextraFrontmatterSchema.parse(data)
+      let frontMatter
+      try {
+        frontMatter = NextraFrontmatterSchema.parse(data)
+      } catch (err) {
+        throw new Error(
+          `Failed to parse frontmatter in content/posts/${name}: ${
+            err instanceof Error ? err.message : String(err)
+          }`
+        )
+      }
       const bodyChars = stripMarkdown(content).length
       return {
         slug,
