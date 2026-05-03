@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getAllPosts, getTopTags } from '@/lib/posts'
+import { getAllPosts, getEarliestYear, getTopTags, getWorks } from '@/lib/posts'
 
 export const metadata = {
   title: 'yukyu.net',
@@ -17,7 +17,10 @@ export default function Home() {
   const visible = posts.slice(0, PAGE_SIZE)
   const topTags = getTopTags(6)
   const total = posts.length
-  const latest = posts[0]?.frontMatter.date ?? ''
+  const works = getWorks()
+  const recentWorks = works.filter(p => p.frontMatter.thumbnail).slice(0, 3)
+  const since = getEarliestYear()
+  const years = new Date().getFullYear() - since
 
   return (
     <div className="page">
@@ -35,6 +38,74 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="whoami">
+        <div className="whoami__head">
+          <span className="whoami__label">// who</span>
+          <Link href="/who" className="whoami__more">more →</Link>
+        </div>
+        <div className="whoami__grid">
+          <div className="whoami__profile">
+            <p className="whoami__line">
+              ペパボでエンジニアをしている。書いたもの・作ったもの・登壇したことを、ここに置いておく。
+            </p>
+            <p className="whoami__line">
+              抽象的な自己紹介より、実際にやってきた具体を見てもらうほうが早いと思っている。
+            </p>
+            <ul className="whoami__links">
+              <li>
+                <a href="https://github.com/yukyu30">github.com/yukyu30</a>
+              </li>
+              <li>
+                <a href="/rss.xml">/rss.xml</a>
+              </li>
+            </ul>
+          </div>
+          <dl className="whoami__stats">
+            <div className="whoami__stat">
+              <dt>posts</dt>
+              <dd>{total}</dd>
+            </div>
+            <div className="whoami__stat">
+              <dt>works</dt>
+              <dd>{works.length}</dd>
+            </div>
+            <div className="whoami__stat">
+              <dt>tags</dt>
+              <dd>{topTags.length > 0 ? '∞' : 0}</dd>
+            </div>
+            <div className="whoami__stat">
+              <dt>since</dt>
+              <dd>
+                {since}
+                <span className="whoami__stat-suffix"> · {years}y</span>
+              </dd>
+            </div>
+          </dl>
+        </div>
+        {recentWorks.length > 0 && (
+          <div className="whoami__works">
+            <div className="whoami__works-head">// recent works</div>
+            <div className="whoami__works-grid">
+              {recentWorks.map(p => (
+                <Link
+                  key={p.slug}
+                  href={`/posts/${p.slug}`}
+                  className="whoami__work"
+                >
+                  <span className="whoami__work-thumb">
+                    <img src={p.frontMatter.thumbnail} alt="" loading="lazy" />
+                  </span>
+                  <div className="whoami__work-meta">
+                    <span className="whoami__work-date">{p.frontMatter.date}</span>
+                    <span className="whoami__work-title">{p.frontMatter.title}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="cat-grid">

@@ -66,6 +66,22 @@ export function getTopTags(limit = 6): TagCount[] {
   return getAllTagCounts().slice(0, limit)
 }
 
+export function getWorks(): PostListItem[] {
+  const tagged = [...getPostsByTag('work'), ...getPostsByTag('つくったもの')]
+  const seen = new Map<string, PostListItem>()
+  for (const p of tagged) seen.set(p.slug, p)
+  return [...seen.values()].sort((a, b) =>
+    b.frontMatter.date.localeCompare(a.frontMatter.date)
+  )
+}
+
+export function getEarliestYear(): number {
+  const all = loadAll()
+  if (all.length === 0) return new Date().getFullYear()
+  const earliest = all[all.length - 1]
+  return Number.parseInt(earliest.frontMatter.date.slice(0, 4), 10)
+}
+
 export function getAllTagCounts(): TagCount[] {
   const counts = new Map<string, number>()
   for (const p of loadAll()) {

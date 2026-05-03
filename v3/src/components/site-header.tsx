@@ -22,12 +22,9 @@ export async function SiteHeader() {
   const active = pickActive(pathname)
   return (
     <header className="site-header">
-      <div className="site-header__brand">
-        <span className="site-header__logo">YUKYU</span>
-        <span className="site-header__tld">.NET</span>
-        <span className="site-header__sep">—</span>
-        <span className="site-header__tagline">個人的な覚え書き</span>
-      </div>
+      <Link href="/" className="site-header__brand">
+        yukyu.net
+      </Link>
       <nav className="site-header__nav">
         {NAV.map(({ key, label, href }) => (
           <Link

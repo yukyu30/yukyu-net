@@ -14,11 +14,11 @@ export function SiteFooter() {
       </div>
       <div>
         <div className="site-footer__head">Subscribe</div>
-        <div className="site-footer__body">RSS · ATOM</div>
+        <div className="site-footer__body"><a href="/rss.xml">/rss.xml</a></div>
       </div>
       <div className="site-footer__col-right">
-        <div className="site-footer__head">License</div>
-        <div className="site-footer__body">© {new Date().getFullYear()}<br />cc by-nc-sa 4.0</div>
+        <div className="site-footer__head">©</div>
+        <div className="site-footer__body">{new Date().getFullYear()} yukyu</div>
       </div>
     </footer>
   )
