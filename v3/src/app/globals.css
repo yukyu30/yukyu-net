@@ -253,7 +253,7 @@ button {
 .index-table__head,
 .index-row {
   display: grid;
-  grid-template-columns: 60px 110px 1fr 140px 80px;
+  grid-template-columns: 60px 110px 1fr 160px;
   align-items: baseline;
 }
 
@@ -419,6 +419,42 @@ button {
   }
 }
 
+/* ============ Tag cloud (/tags index) ============ */
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid var(--color-ink);
+}
+
+.tag-cloud__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 14px 18px;
+  border-right: 1px solid var(--color-faint);
+  border-bottom: 1px solid var(--color-faint);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.tag-cloud__item:hover {
+  background: #f6f8ff;
+  color: var(--color-accent);
+}
+
+.tag-cloud__tag {
+  font-weight: 700;
+}
+
+.tag-cloud__count {
+  font-size: 11px;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ============ Pagination ============ */
 .pagination {
   padding: 20px 36px;
@@ -494,6 +530,15 @@ button {
 
 .post-hero__meta-val--accent {
   color: var(--color-accent);
+}
+
+.post-hero__meta-tag {
+  margin-right: 8px;
+  color: var(--color-accent);
+}
+
+.post-hero__meta-tag:hover {
+  text-decoration: underline;
 }
 
 .post-layout {
@@ -699,7 +744,7 @@ button {
   }
   .index-table__head,
   .index-row {
-    grid-template-columns: 80px 1fr 60px;
+    grid-template-columns: 80px 1fr;
     padding-left: 20px;
     padding-right: 20px;
   }

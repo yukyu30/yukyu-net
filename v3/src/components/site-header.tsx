@@ -3,14 +3,16 @@ import { headers } from 'next/headers'
 
 const NAV: Array<{ key: string; label: string; href: string }> = [
   { key: 'home', label: 'Index', href: '/' },
-  { key: 'works', label: 'Works', href: '/works' },
-  { key: 'about', label: 'About', href: '/about' }
+  { key: 'tags', label: 'Tags', href: '/tags' },
+  { key: 'works', label: 'Works', href: '/tags/work' },
+  { key: 'who', label: 'Who', href: '/who' }
 ]
 
 function pickActive(pathname: string): string {
   if (pathname === '/' || pathname.startsWith('/posts') || pathname.startsWith('/page')) return 'home'
-  if (pathname.startsWith('/works')) return 'works'
-  if (pathname.startsWith('/about')) return 'about'
+  if (pathname === '/tags/work') return 'works'
+  if (pathname.startsWith('/tags')) return 'tags'
+  if (pathname.startsWith('/who')) return 'who'
   return ''
 }
 

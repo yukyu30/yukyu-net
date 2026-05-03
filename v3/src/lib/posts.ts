@@ -63,6 +63,10 @@ export interface TagCount {
 }
 
 export function getTopTags(limit = 6): TagCount[] {
+  return getAllTagCounts().slice(0, limit)
+}
+
+export function getAllTagCounts(): TagCount[] {
   const counts = new Map<string, number>()
   for (const p of loadAll()) {
     for (const t of p.frontMatter.tag ?? []) {
@@ -71,6 +75,5 @@ export function getTopTags(limit = 6): TagCount[] {
   }
   return [...counts.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .slice(0, limit)
     .map(([tag, count]) => ({ tag, count }))
 }

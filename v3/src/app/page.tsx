@@ -24,7 +24,6 @@ export default function Home() {
       <section className="hero">
         <div className="hero__grid">
           <div>
-            <div className="hero__caption"># index — updated {latest}</div>
             <h1 className="hero__title">
               <span className="hero__title-slash">/</span>index
             </h1>
@@ -34,7 +33,6 @@ export default function Home() {
               {visible.length}
               <span className="hero__meta-num-small"> / {total}</span>
             </div>
-            <div className="hero__meta-sub">entries shown · 新しい順</div>
             <p className="hero__meta-text">
               個人的な覚え書きの索引。技術、暮らし、日記、つくったもの。新しい順に並んでいます。
             </p>
@@ -62,7 +60,6 @@ export default function Home() {
           <span>DATE</span>
           <span>TITLE</span>
           <span>TAGS</span>
-          <span style={{ textAlign: 'right' }}>READ</span>
         </div>
         {visible.map((p, i) => {
           const num = String(total - i).padStart(3, '0')
@@ -79,7 +76,6 @@ export default function Home() {
               <span className="index-row__tags">
                 {(p.frontMatter.tag ?? []).slice(0, 2).map(t => '#' + t).join(' ')}
               </span>
-              <span className="index-row__read">{p.readTime}′</span>
             </Link>
           )
         })}
