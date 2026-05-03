@@ -22,7 +22,9 @@ export function convertPost({ source, slug }: ConvertPostInput): ConvertPostResu
   const next = convertFrontmatter(legacy)
 
   const rewrittenBody = slug ? rewriteRelativeImages(content, slug) : content
-  const body = selfCloseVoidTags(rewrittenBody)
+  const closedBody = selfCloseVoidTags(rewrittenBody)
+  const cleaned = stripInlineStyles(closedBody)
+  const body = jsxifyHtmlAttributes(cleaned)
 
   const thumbnail = extractFirstImage(body)
   if (thumbnail) {
@@ -40,6 +42,46 @@ function extractFirstImage(body: string): string | undefined {
   const html = body.match(/<img[^>]+src=["']([^"']+)["']/i)
   if (html) return html[1]
   return undefined
+}
+
+const HTML_TO_JSX_ATTRIBUTES: Record<string, string> = {
+  class: 'className',
+  for: 'htmlFor',
+  frameborder: 'frameBorder',
+  allowfullscreen: 'allowFullScreen',
+  contenteditable: 'contentEditable',
+  colspan: 'colSpan',
+  rowspan: 'rowSpan',
+  tabindex: 'tabIndex',
+  autofocus: 'autoFocus',
+  novalidate: 'noValidate',
+  readonly: 'readOnly',
+  autoplay: 'autoPlay',
+  playsinline: 'playsInline',
+  srcset: 'srcSet',
+  crossorigin: 'crossOrigin',
+  referrerpolicy: 'referrerPolicy',
+  cellpadding: 'cellPadding',
+  cellspacing: 'cellSpacing',
+  usemap: 'useMap',
+  formaction: 'formAction'
+}
+
+function stripInlineStyles(body: string): string {
+  return body.replace(/\sstyle="[^"]*"/g, '').replace(/\sstyle='[^']*'/g, '')
+}
+
+function jsxifyHtmlAttributes(body: string): string {
+  return body.replace(/<([a-zA-Z][^\s/>]*)([^>]*)>/g, (match, tag: string, attrs: string) => {
+    if (!/[a-zA-Z]=["']/.test(attrs) && !/\s(class|for|frameborder|allowfullscreen|contenteditable|colspan|rowspan|tabindex|autofocus|novalidate|readonly|autoplay|playsinline|srcset|crossorigin|referrerpolicy|cellpadding|cellspacing|usemap|formaction)\b/i.test(attrs)) {
+      return match
+    }
+    let next = attrs
+    for (const [from, to] of Object.entries(HTML_TO_JSX_ATTRIBUTES)) {
+      next = next.replace(new RegExp(`(\\s)${from}(\\s*=)`, 'gi'), `$1${to}$2`)
+    }
+    return `<${tag}${next}>`
+  })
 }
 
 const VOID_TAGS = ['br', 'hr', 'img', 'input', 'meta', 'link', 'source']

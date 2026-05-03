@@ -205,6 +205,53 @@ text only.
     expect(mdx).not.toMatch(/^thumbnail:/m)
   })
 
+  it('rewrites HTML attributes to JSX equivalents inside raw tags', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+<iframe class="x" frameborder="0" allowfullscreen="true" src="https://e.example/v"></iframe>
+`
+    const { mdx } = convertPost({ source: input, slug: 's' })
+    expect(mdx).toContain('className="x"')
+    expect(mdx).toContain('frameBorder="0"')
+    expect(mdx).toContain('allowFullScreen="true"')
+    expect(mdx).not.toContain(' class="')
+    expect(mdx).not.toContain('frameborder=')
+    expect(mdx).not.toContain('allowfullscreen=')
+  })
+
+  it('strips inline style="..." attributes that JSX cannot accept as strings', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+<iframe src="x" style="border: 0px; width: 100%;" data-ratio="1.7"></iframe>
+`
+    const { mdx } = convertPost({ source: input, slug: 's' })
+    expect(mdx).not.toMatch(/\sstyle="/)
+    expect(mdx).toContain('data-ratio="1.7"')
+    expect(mdx).toContain('src="x"')
+  })
+
+  it('does not touch data-* attributes or class names inside markdown text', () => {
+    const input = `---
+title: t
+created_at: 2020-07-01
+---
+
+通常テキスト class="not-an-attribute" のような文字列はそのまま。
+
+<div data-foo="bar" class="real">x</div>
+`
+    const { mdx } = convertPost({ source: input, slug: 's' })
+    expect(mdx).toContain('class="not-an-attribute"')
+    expect(mdx).toContain('data-foo="bar"')
+    expect(mdx).toContain('className="real"')
+  })
+
   it('throws when frontmatter is invalid', () => {
     const input = `---
 created_at: 2024-01-01
