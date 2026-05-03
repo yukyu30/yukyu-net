@@ -70,7 +70,12 @@ export function getWorks(): PostListItem[] {
 
 export function getProfileExcerpt(slug = 'me', lines = 2): string {
   const filePath = join(POSTS_DIR, `${slug}.mdx`)
-  const raw = readFileSync(filePath, 'utf8')
+  let raw: string
+  try {
+    raw = readFileSync(filePath, 'utf8')
+  } catch {
+    return ''
+  }
   const { content } = matter(raw)
   const match = content.match(/##\s*profile\s*\n([\s\S]*?)(?=\n##\s|\n*$)/)
   const body = match ? match[1] : content

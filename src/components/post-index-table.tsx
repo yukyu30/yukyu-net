@@ -27,7 +27,7 @@ export function PostIndexTable({ posts, total, startNo, highlightFirst = false }
           >
             <span className="index-row__no">№{num}</span>
             <span className="index-row__date">{p.frontMatter.date}</span>
-            <h2 className="index-row__title">{p.frontMatter.title}</h2>
+            <span className="index-row__title">{p.frontMatter.title}</span>
           </Link>
         )
       })}

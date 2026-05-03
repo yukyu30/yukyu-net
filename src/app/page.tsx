@@ -67,8 +67,8 @@ export default function Home() {
             </dl>
             {profileLines.length > 0 && (
               <div className="whoami__bio">
-                {profileLines.map((line, i) => (
-                  <p key={i} className="whoami__bio-line">{line}</p>
+                {profileLines.map(line => (
+                  <p key={line} className="whoami__bio-line">{line}</p>
                 ))}
                 <Link href="/posts/me" className="whoami__bio-more">もっと見る →</Link>
               </div>
