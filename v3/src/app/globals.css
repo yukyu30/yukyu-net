@@ -420,7 +420,14 @@ button {
     gap: 24px;
   }
   .whoami__works-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .whoami__work-thumb {
+    aspect-ratio: 1 / 1;
+  }
+  .whoami__work-title {
+    font-size: 12px;
   }
 }
 
