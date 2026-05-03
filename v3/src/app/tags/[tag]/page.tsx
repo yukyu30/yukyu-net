@@ -43,9 +43,6 @@ export default async function TagPage(props: PageProps) {
           <div>
             <div className="hero__meta-num">{posts.length}</div>
             <div className="hero__meta-sub">entries</div>
-            <p className="hero__meta-text">
-              「{tag}」タグが付いた記事の一覧。新しい順。
-            </p>
           </div>
         </div>
       </section>

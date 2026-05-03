@@ -33,9 +33,6 @@ export default function Home() {
               {visible.length}
               <span className="hero__meta-num-small"> / {total}</span>
             </div>
-            <p className="hero__meta-text">
-              個人的な覚え書きの索引。技術、暮らし、日記、つくったもの。新しい順に並んでいます。
-            </p>
           </div>
         </div>
       </section>

@@ -23,9 +23,6 @@ export default function TagsIndex() {
           <div>
             <div className="hero__meta-num">{tags.length}</div>
             <div className="hero__meta-sub">tags · {total} entries</div>
-            <p className="hero__meta-text">
-              全タグの一覧。出現回数の多い順に並んでいます。
-            </p>
           </div>
         </div>
       </section>
