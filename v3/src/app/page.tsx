@@ -88,16 +88,6 @@ export default function Home() {
               ))}
             </ul>
           </div>
-          <dl className="whoami__stats">
-            <div className="whoami__stat">
-              <dt>posts</dt>
-              <dd>{total}</dd>
-            </div>
-            <div className="whoami__stat">
-              <dt>works</dt>
-              <dd>{works.length}</dd>
-            </div>
-          </dl>
         </div>
         {recentWorks.length > 0 && (
           <div className="whoami__works">
