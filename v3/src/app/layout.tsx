@@ -15,10 +15,11 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ja" suppressHydrationWarning>
+    <html lang="ja" className="light" suppressHydrationWarning>
       <body>
         <Layout
           banner={null}
+          nextThemes={{ forcedTheme: 'light', defaultTheme: 'light' }}
           navbar={<Navbar pageMap={await getPageMap()} />}
           footer={<Footer>© {new Date().getFullYear()} yukyu</Footer>}
         >
