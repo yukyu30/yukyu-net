@@ -207,11 +207,6 @@ button {
   text-transform: uppercase;
 }
 
-.whoami__more {
-  color: var(--color-accent);
-  font-weight: 700;
-}
-
 .whoami__grid {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -259,8 +254,23 @@ button {
   line-height: 1.4;
 }
 
-.whoami__id-more {
-  margin-left: 10px;
+.whoami__bio {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-ink);
+}
+
+.whoami__bio-line {
+  margin: 0;
+}
+
+.whoami__bio-more {
+  align-self: flex-start;
+  margin-top: 4px;
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-accent);
@@ -272,29 +282,45 @@ button {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.whoami__links a {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   border: 1px solid var(--color-ink);
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
 
-.whoami__links a:hover {
+.whoami__links li {
+  border-right: 1px solid var(--color-faint);
+  border-bottom: 1px solid var(--color-faint);
+}
+
+.whoami__links li:nth-child(5n) {
+  border-right: none;
+}
+
+.whoami__links li:nth-last-child(-n + 5) {
+  border-bottom: none;
+}
+
+.whoami__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+  height: 100%;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.whoami__link:hover {
   background: var(--color-accent);
   color: #ffffff;
-  border-color: var(--color-accent);
+}
+
+.whoami__link-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .whoami__stats {
@@ -308,15 +334,10 @@ button {
 .whoami__stat {
   padding: 16px 18px;
   border-right: 1px solid var(--color-faint);
-  border-bottom: 1px solid var(--color-faint);
 }
 
-.whoami__stat:nth-child(2n) {
+.whoami__stat:last-child {
   border-right: none;
-}
-
-.whoami__stat:nth-last-child(-n + 2) {
-  border-bottom: none;
 }
 
 .whoami__stat dt {
@@ -419,6 +440,25 @@ button {
     grid-template-columns: 1fr;
     gap: 24px;
   }
+  .whoami__links {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .whoami__links li {
+    border-right: 1px solid var(--color-faint);
+    border-bottom: 1px solid var(--color-faint);
+  }
+  .whoami__links li:nth-child(5n) {
+    border-right: 1px solid var(--color-faint);
+  }
+  .whoami__links li:nth-last-child(-n + 5) {
+    border-bottom: 1px solid var(--color-faint);
+  }
+  .whoami__links li:nth-child(2n) {
+    border-right: none;
+  }
+  .whoami__links li:nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
   .whoami__works-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
@@ -480,7 +520,7 @@ button {
 .index-table__head,
 .index-row {
   display: grid;
-  grid-template-columns: 60px 110px 1fr 160px;
+  grid-template-columns: 60px 110px 1fr;
   align-items: baseline;
 }
 
@@ -986,9 +1026,7 @@ button {
     padding-right: 20px;
   }
   .index-table__head > :nth-child(1),
-  .index-row__no,
-  .index-table__head > :nth-child(4),
-  .index-row__tags {
+  .index-row__no {
     display: none;
   }
   .post-hero {

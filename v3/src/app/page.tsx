@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getAllPosts, getEarliestYear, getTopTags, getWorks } from '@/lib/posts'
+import { getAllPosts, getProfileExcerpt, getTopTags, getWorks } from '@/lib/posts'
 import { PostIndexTable, Pagination } from '@/components/post-index-table'
 
 export const metadata = {
@@ -29,8 +29,7 @@ export default function Home() {
   const total = posts.length
   const works = getWorks()
   const recentWorks = works.filter(p => p.frontMatter.thumbnail).slice(0, 3)
-  const since = getEarliestYear()
-  const years = new Date().getUTCFullYear() - since
+  const profileLines = getProfileExcerpt('me', 2).split('\n').filter(Boolean)
 
   return (
     <div className="page">
@@ -53,23 +52,27 @@ export default function Home() {
       <section className="whoami">
         <div className="whoami__head">
           <span className="whoami__label">// who</span>
-          <Link href="/posts/me" className="whoami__more">more →</Link>
         </div>
         <div className="whoami__grid">
           <div className="whoami__profile">
             <dl className="whoami__id">
               <div className="whoami__id-row">
                 <dt>NAME</dt>
-                <dd>
-                  yukyu
-                  <Link href="/posts/me" className="whoami__id-more">[VIEW PROFILE]</Link>
-                </dd>
+                <dd>yukyu</dd>
               </div>
               <div className="whoami__id-row">
                 <dt>ROLE</dt>
                 <dd>GMOペパボ / エンジニアリングリード / 上級VR技術者</dd>
               </div>
             </dl>
+            {profileLines.length > 0 && (
+              <div className="whoami__bio">
+                {profileLines.map((line, i) => (
+                  <p key={i} className="whoami__bio-line">{line}</p>
+                ))}
+                <Link href="/posts/me" className="whoami__bio-more">もっと見る →</Link>
+              </div>
+            )}
             <ul className="whoami__links">
               {SOCIAL_LINKS.map(l => (
                 <li key={l.name}>
@@ -77,8 +80,9 @@ export default function Home() {
                     href={l.url}
                     target={l.url.startsWith('http') ? '_blank' : undefined}
                     rel={l.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    className="whoami__link"
                   >
-                    [{l.name}]
+                    <span className="whoami__link-name">{l.name}</span>
                   </a>
                 </li>
               ))}
@@ -92,17 +96,6 @@ export default function Home() {
             <div className="whoami__stat">
               <dt>works</dt>
               <dd>{works.length}</dd>
-            </div>
-            <div className="whoami__stat">
-              <dt>tags</dt>
-              <dd>{topTags.length > 0 ? '∞' : 0}</dd>
-            </div>
-            <div className="whoami__stat">
-              <dt>since</dt>
-              <dd>
-                {since}
-                <span className="whoami__stat-suffix"> · {years}y</span>
-              </dd>
             </div>
           </dl>
         </div>

@@ -68,6 +68,25 @@ export function getWorks(): PostListItem[] {
   return getPostsByTags(['work', 'つくったもの'])
 }
 
+export function getProfileExcerpt(slug = 'me', lines = 2): string {
+  const filePath = join(POSTS_DIR, `${slug}.mdx`)
+  const raw = readFileSync(filePath, 'utf8')
+  const { content } = matter(raw)
+  const match = content.match(/##\s*profile\s*\n([\s\S]*?)(?=\n##\s|\n*$)/)
+  const body = match ? match[1] : content
+  const picked = body
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    .slice(0, lines)
+    .map(l =>
+      l
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    )
+  return picked.join('\n')
+}
+
 export function getEarliestYear(): number {
   const all = loadAll()
   if (all.length === 0) return new Date().getUTCFullYear()

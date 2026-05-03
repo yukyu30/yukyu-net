@@ -15,7 +15,6 @@ export function PostIndexTable({ posts, total, startNo, highlightFirst = false }
         <span>NO.</span>
         <span>DATE</span>
         <span>TITLE</span>
-        <span>TAGS</span>
       </div>
       {posts.map((p, i) => {
         const num = String(startNo - i).padStart(3, '0')
@@ -29,9 +28,6 @@ export function PostIndexTable({ posts, total, startNo, highlightFirst = false }
             <span className="index-row__no">№{num}</span>
             <span className="index-row__date">{p.frontMatter.date}</span>
             <h2 className="index-row__title">{p.frontMatter.title}</h2>
-            <span className="index-row__tags">
-              {(p.frontMatter.tag ?? []).slice(0, 2).map(t => '#' + t).join(' ')}
-            </span>
           </Link>
         )
       })}
