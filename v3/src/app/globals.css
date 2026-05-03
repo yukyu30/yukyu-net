@@ -1,0 +1,36 @@
+:root {
+  --color-bg: #ffffff;
+  --color-fg: #1a1a1a;
+  --color-primary: #1e6feb;
+  --color-primary-hover: #155bc4;
+  --color-accent: #f59e0b;
+  --color-muted: #6b7280;
+  --color-border: rgba(0, 0, 0, 0.06);
+}
+
+html {
+  background: var(--color-bg);
+  color: var(--color-fg);
+}
+
+body {
+  font-feature-settings: "palt";
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+article a {
+  border-bottom: 1px solid var(--color-border);
+}
+
+mark, .accent {
+  color: var(--color-accent);
+  background: transparent;
+}
