@@ -1,31 +1,28 @@
 import type { Metadata } from 'next'
-import { Footer, Layout, Navbar } from 'nextra-theme-blog'
-import { getPageMap } from 'nextra/page-map'
-import 'nextra-theme-blog/style.css'
+import { ViewTransitions } from 'next-view-transitions'
+import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: 'yukyu.net',
-  description: 'yukyu.net renewal'
+  description: '個人的な覚え書き'
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="ja" className="light" suppressHydrationWarning>
-      <body>
-        <Layout
-          banner={null}
-          nextThemes={{ forcedTheme: 'light', defaultTheme: 'light' }}
-          navbar={<Navbar pageMap={await getPageMap()} />}
-          footer={<Footer>© {new Date().getFullYear()} yukyu</Footer>}
-        >
+    <ViewTransitions>
+      <html lang="ja" suppressHydrationWarning>
+        <body>
+          <SiteHeader />
           {children}
-        </Layout>
-      </body>
-    </html>
+          <SiteFooter />
+        </body>
+      </html>
+    </ViewTransitions>
   )
 }
