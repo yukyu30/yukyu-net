@@ -32,9 +32,33 @@ describe('LegacyFrontmatterSchema', () => {
     expect(() => LegacyFrontmatterSchema.parse(input)).toThrow()
   })
 
-  it('rejects when created_at is missing', () => {
+  it('rejects when no date-ish field is present', () => {
     const input = { title: 'no date' }
     expect(() => LegacyFrontmatterSchema.parse(input)).toThrow()
+  })
+
+  it('accepts createdAt (camelCase) instead of created_at', () => {
+    const input = { title: 't', createdAt: '2026-04-28 02:00:00' }
+    const parsed = LegacyFrontmatterSchema.parse(input)
+    expect(parsed.createdAt).toBe('2026-04-28 02:00:00')
+  })
+
+  it('accepts plain date field', () => {
+    const input = { title: 't', date: '2020-12-16' }
+    const parsed = LegacyFrontmatterSchema.parse(input)
+    expect(parsed.date).toBe('2020-12-16')
+  })
+
+  it('accepts excerpt and externalUrl fields', () => {
+    const input = {
+      title: 't',
+      date: '2020-12-16',
+      excerpt: 'summary text',
+      externalUrl: 'https://example.com'
+    }
+    const parsed = LegacyFrontmatterSchema.parse(input)
+    expect(parsed.excerpt).toBe('summary text')
+    expect(parsed.externalUrl).toBe('https://example.com')
   })
 })
 
@@ -101,5 +125,30 @@ describe('convertFrontmatter', () => {
         created_at: 'not-a-date'
       })
     ).toThrow()
+  })
+
+  it('falls back to createdAt when created_at is absent', () => {
+    const result = convertFrontmatter({
+      title: 't',
+      createdAt: '2026-04-28 02:00:00'
+    })
+    expect(result.date).toBe('2026-04-28')
+  })
+
+  it('falls back to date when neither created_at nor createdAt is present', () => {
+    const result = convertFrontmatter({
+      title: 't',
+      date: '2020-12-16'
+    })
+    expect(result.date).toBe('2020-12-16')
+  })
+
+  it('promotes excerpt to description', () => {
+    const result = convertFrontmatter({
+      title: 't',
+      created_at: '2020-12-16',
+      excerpt: 'summary text'
+    })
+    expect(result.description).toBe('summary text')
   })
 })
