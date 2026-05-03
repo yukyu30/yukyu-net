@@ -1,16 +1,26 @@
-import { describe, it, expect } from 'vitest'
+import { existsSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { beforeAll, describe, it, expect } from 'vitest'
 import {
   getAllPosts,
   getAllTagCounts,
   getEarliestYear,
   getPostBySlug,
   getPostsByTag,
+  getPostsByTags,
   getProfileExcerpt,
   getTopTags,
   getWorks
 } from './posts'
 
 describe('posts', () => {
+  beforeAll(() => {
+    const mePath = join(resolve(process.cwd(), 'content/posts'), 'me.mdx')
+    if (!existsSync(mePath)) {
+      throw new Error(`Test fixture missing: ${mePath}`)
+    }
+  })
+
   it('returns posts sorted by date descending', () => {
     const posts = getAllPosts()
     expect(posts.length).toBeGreaterThan(0)
@@ -65,7 +75,18 @@ describe('posts', () => {
 
   it('exposes works as the union of work and つくったもの tags', () => {
     const works = getWorks()
+    expect(works.length).toBeGreaterThan(0)
     for (const p of works) {
+      const tags = p.frontMatter.tag ?? []
+      expect(tags.includes('work') || tags.includes('つくったもの')).toBe(true)
+    }
+  })
+
+  it('returns the union of multiple tags via getPostsByTags', () => {
+    const single = getPostsByTag('work')
+    const both = getPostsByTags(['work', 'つくったもの'])
+    expect(both.length).toBeGreaterThanOrEqual(single.length)
+    for (const p of both) {
       const tags = p.frontMatter.tag ?? []
       expect(tags.includes('work') || tags.includes('つくったもの')).toBe(true)
     }
