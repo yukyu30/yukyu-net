@@ -1,13 +1,13 @@
 import Link from 'next/link'
-import { getAllPosts, getProfileExcerpt, getTopTags, getWorks } from '@/lib/posts'
-import { PostIndexTable, Pagination } from '@/components/post-index-table'
+import { getAllPosts, getWorks } from '@/lib/posts'
+import { PostIndexTable } from '@/components/post-index-table'
 
 export const metadata = {
   title: 'yukyu.net',
-  description: '個人的な覚え書き'
+  description: '技術と表現のあいだで、インターネット上の創作体験を形にする。'
 }
 
-const PAGE_SIZE = 20
+const RECENT_POSTS = 8
 
 const SOCIAL_LINKS: Array<{ name: string; url: string }> = [
   { name: 'X', url: 'https://x.com/yukyu30' },
@@ -22,125 +22,151 @@ const SOCIAL_LINKS: Array<{ name: string; url: string }> = [
   { name: 'RSS', url: '/rss.xml' }
 ]
 
+const WHAT: string[] = [
+  'Web',
+  '3D',
+  'VR / VRChat',
+  'メタバース',
+  'AI',
+  'デザイン',
+  '動画',
+  '創作'
+]
+
+const HOW: string[] = [
+  '実装',
+  '研究',
+  'デザイン',
+  '3D制作',
+  'R&D',
+  '業務効率化'
+]
+
+const WHERE: string[] = [
+  'クリエイターEC',
+  'Webサービス',
+  'メタバース',
+  'VRChat',
+  '3Dコンテンツ',
+  '事業開発'
+]
+
 export default function Home() {
   const posts = getAllPosts()
-  const visible = posts.slice(0, PAGE_SIZE)
-  const topTags = getTopTags(5)
-  const total = posts.length
+  const recent = posts.slice(0, RECENT_POSTS)
   const works = getWorks()
   const recentWorks = works.filter(p => p.frontMatter.thumbnail).slice(0, 3)
-  const profileLines = getProfileExcerpt('me', 2).split('\n').filter(Boolean)
+  const total = posts.length
 
   return (
     <div className="page">
-      <section className="hero">
-        <div className="hero__grid">
-          <div>
-            <h1 className="hero__title">
-              <span className="hero__title-slash">/</span>index
-            </h1>
-          </div>
-          <div>
-            <div className="hero__meta-num">
-              {visible.length}
-              <span className="hero__meta-num-small"> / {total}</span>
-            </div>
-          </div>
-        </div>
+      <section className="lp-hero">
+        <p className="lp-hero__caption">// yukyu.net</p>
+        <h1 className="lp-hero__title">
+          <span className="lp-hero__title-slash">/</span>yukyu
+        </h1>
+        <p className="lp-hero__lead">
+          技術と表現のあいだで、インターネット上の創作体験を形にする。
+        </p>
       </section>
 
-      <section className="whoami">
-        <div className="whoami__head">
-          <span className="whoami__label">// who</span>
-        </div>
-        <div className="whoami__grid">
-          <div className="whoami__profile">
-            <dl className="whoami__id">
-              <div className="whoami__id-row">
-                <dt>NAME</dt>
-                <dd>yukyu</dd>
-              </div>
-              <div className="whoami__id-row">
-                <dt>ROLE</dt>
-                <dd>GMOペパボ / エンジニアリングリード / 上級VR技術者</dd>
-              </div>
-            </dl>
-            {profileLines.length > 0 && (
-              <div className="whoami__bio">
-                {profileLines.map(line => (
-                  <p key={line} className="whoami__bio-line">{line}</p>
-                ))}
-                <Link href="/posts/me" className="whoami__bio-more">もっと見る →</Link>
-              </div>
-            )}
-            <ul className="whoami__links">
-              {SOCIAL_LINKS.map(l => (
-                <li key={l.name}>
-                  <a
-                    href={l.url}
-                    target={l.url.startsWith('http') ? '_blank' : undefined}
-                    rel={l.url.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="whoami__link"
-                  >
-                    <span className="whoami__link-name">{l.name}</span>
-                  </a>
-                </li>
-              ))}
+      <section className="axes">
+        <div className="axes__row">
+          <div className="axes__label">// what</div>
+          <div className="axes__body">
+            <ul className="axes__list">
+              {WHAT.map(w => <li key={w}>{w}</li>)}
             </ul>
           </div>
         </div>
-        {recentWorks.length > 0 && (
-          <div className="whoami__works">
-            <div className="whoami__works-head">// recent works</div>
-            <div className="whoami__works-grid">
-              {recentWorks.map(p => (
-                <Link
-                  key={p.slug}
-                  href={`/posts/${p.slug}`}
-                  className="whoami__work"
-                >
-                  <span className="whoami__work-thumb">
-                    <img src={p.frontMatter.thumbnail} alt="" loading="lazy" />
-                  </span>
-                  <div className="whoami__work-meta">
-                    <span className="whoami__work-date">{p.frontMatter.date}</span>
-                    <span className="whoami__work-title">{p.frontMatter.title}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+
+        <div className="axes__row">
+          <div className="axes__label">// why</div>
+          <div className="axes__body">
+            <p className="axes__text">
+              中学生のころ、父親の古いノートパソコンを譲り受けて、VocaloidやUTAUを使った動画をインターネットに投稿しはじめた。
+              創作や表現が技術を介して人に届くことに、ずっと関心を持っている。
+            </p>
           </div>
-        )}
+        </div>
+
+        <div className="axes__row">
+          <div className="axes__label">// how</div>
+          <div className="axes__body">
+            <ul className="axes__list">
+              {HOW.map(h => <li key={h}>{h}</li>)}
+            </ul>
+            <p className="axes__text axes__text--muted">
+              ひとつの専門に閉じず、つくりたい体験に合わせて領域を行き来する。
+            </p>
+          </div>
+        </div>
+
+        <div className="axes__row">
+          <div className="axes__label">// where</div>
+          <div className="axes__body">
+            <ul className="axes__list">
+              {WHERE.map(w => <li key={w}>{w}</li>)}
+            </ul>
+          </div>
+        </div>
+
+        <div className="axes__row">
+          <div className="axes__label">// who</div>
+          <div className="axes__body">
+            <p className="axes__text axes__text--strong">
+              技術と表現のあいだで、創作体験を形にするエンジニア。
+            </p>
+            <Link href="/posts/me" className="axes__more">もっと見る →</Link>
+          </div>
+        </div>
       </section>
 
-      <section className="cat-grid">
-        <Link href="/posts" className="cat-grid__cell is-feature">
-          <div className="cat-grid__cell-no">01 / all</div>
-          <div className="cat-grid__cell-name">all</div>
-          <div className="cat-grid__cell-count">{total} entries →</div>
-        </Link>
-        {topTags.map((t, i) => (
-          <Link
-            key={t.tag}
-            href={`/tags/${encodeURIComponent(t.tag)}`}
-            className="cat-grid__cell"
-          >
-            <div className="cat-grid__cell-no">{String(i + 2).padStart(2, '0')} / #{t.tag}</div>
-            <div className="cat-grid__cell-name">{t.tag}</div>
-            <div className="cat-grid__cell-count">{t.count} entries →</div>
-          </Link>
-        ))}
+      <section className="lp-links">
+        <div className="lp-links__head">// links</div>
+        <ul className="lp-links__list">
+          {SOCIAL_LINKS.map(l => (
+            <li key={l.name}>
+              <a
+                href={l.url}
+                target={l.url.startsWith('http') ? '_blank' : undefined}
+                rel={l.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                className="lp-links__item"
+              >
+                {l.name}
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <PostIndexTable posts={visible} total={total} startNo={total} highlightFirst />
+      {recentWorks.length > 0 && (
+        <section className="lp-works">
+          <div className="lp-works__head">
+            <span>// recent works</span>
+            <Link href="/tags/work" className="lp-works__more">all works →</Link>
+          </div>
+          <div className="lp-works__grid">
+            {recentWorks.map(p => (
+              <Link key={p.slug} href={`/posts/${p.slug}`} className="lp-works__card">
+                <span className="lp-works__thumb">
+                  <img src={p.frontMatter.thumbnail} alt="" loading="lazy" />
+                </span>
+                <span className="lp-works__date">{p.frontMatter.date}</span>
+                <span className="lp-works__title">{p.frontMatter.title}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
-      <Pagination
-        page={1}
-        totalPages={Math.ceil(total / PAGE_SIZE)}
-        total={total}
-        shown={visible.length}
-        pageStart={1}
-      />
+      <section className="lp-recent">
+        <div className="lp-recent__head">
+          <span>// recent posts</span>
+          <Link href="/posts" className="lp-recent__more">all posts ({total}) →</Link>
+        </div>
+        <PostIndexTable posts={recent} total={total} startNo={total} />
+      </section>
     </div>
   )
 }
