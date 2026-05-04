@@ -37,8 +37,13 @@ npm run lint
 ## アーキテクチャ
 
 ### 記事管理
-- 記事は `content/posts/{slug}.mdx` に格納（gray-matter で frontmatter 解析）
-- 画像は `public/posts/{slug}/...` に同居
+- 記事と画像は `content/posts/{slug}/` にまとめて格納
+  - 本文: `content/posts/{slug}/index.mdx`
+  - 画像: 同じディレクトリに置く（例 `content/posts/{slug}/cover.jpeg`）
+- MDX 本文の画像参照は相対パス `![](./cover.jpeg)` を使う（Nextra が `next/image` 最適化）
+- frontmatter `thumbnail` は URL 形式 `/posts/{slug}/cover.jpeg`
+  - `predev` / `prebuild` で `scripts/sync-content-images.ts` が `content/posts/*/` の画像を `public/posts/*/` にミラーするので、この URL がそのまま解決する
+  - `public/posts/` は `.gitignore` 済み
 - `src/lib/posts.ts` が記事の読み込み・キャッシュ・タグ集計を担当
 - frontmatter のスキーマは `src/lib/frontmatter.ts` で zod 定義
 

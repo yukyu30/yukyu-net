@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import matter from 'gray-matter'
 import { NextraFrontmatterSchema, type NextraFrontmatter } from './frontmatter'
@@ -19,20 +19,44 @@ export interface PostListItem {
 
 let cache: PostListItem[] | null = null
 
+function postFilePath(slug: string): string | null {
+  const dirIndex = join(POSTS_DIR, slug, 'index.mdx')
+  if (existsSync(dirIndex)) return dirIndex
+  const flat = join(POSTS_DIR, `${slug}.mdx`)
+  if (existsSync(flat)) return flat
+  return null
+}
+
+function listSlugs(): string[] {
+  const out: string[] = []
+  for (const entry of readdirSync(POSTS_DIR, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (existsSync(join(POSTS_DIR, entry.name, 'index.mdx'))) {
+        out.push(entry.name)
+      }
+    } else if (entry.isFile() && entry.name.endsWith('.mdx')) {
+      out.push(entry.name.replace(/\.mdx$/, ''))
+    }
+  }
+  return out
+}
+
 function loadAll(): PostListItem[] {
   if (cache && process.env.NODE_ENV !== 'development') return cache
-  cache = readdirSync(POSTS_DIR)
-    .filter(name => name.endsWith('.mdx'))
-    .map(name => {
-      const slug = name.replace(/\.mdx$/, '')
-      const raw = readFileSync(join(POSTS_DIR, name), 'utf8')
+  cache = listSlugs()
+    .map(slug => {
+      const filePath = postFilePath(slug)
+      if (!filePath) {
+        throw new Error(`Missing MDX for slug: ${slug}`)
+      }
+      const raw = readFileSync(filePath, 'utf8')
       const { data, content } = matter(raw)
       let frontMatter
       try {
         frontMatter = NextraFrontmatterSchema.parse(data)
       } catch (err) {
         throw new Error(
-          `Failed to parse frontmatter in content/posts/${name}: ${
+          `Failed to parse frontmatter in ${filePath.replace(POSTS_DIR + '/', 'content/posts/')}: ${
             err instanceof Error ? err.message : String(err)
           }`
         )
@@ -82,7 +106,8 @@ export function getWorks(): PostListItem[] {
 }
 
 export function getProfileExcerpt(slug = 'me', lines = 2): string {
-  const filePath = join(POSTS_DIR, `${slug}.mdx`)
+  const filePath = postFilePath(slug)
+  if (!filePath) return ''
   let raw: string
   try {
     raw = readFileSync(filePath, 'utf8')

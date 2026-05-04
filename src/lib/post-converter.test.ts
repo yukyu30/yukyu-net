@@ -41,7 +41,7 @@ ${body}`
     expect(mdx).toContain(body.trim())
   })
 
-  it('rewrites relative image paths to /posts/{slug}/...', () => {
+  it('keeps relative image paths colocated with the MDX file', () => {
     const input = `---
 title: t
 created_at: 2020-07-01
@@ -50,8 +50,7 @@ created_at: 2020-07-01
 ![cap](./cst.gif)
 `
     const { mdx } = convertPost({ source: input, slug: '2020-07-01-cst' })
-    expect(mdx).toContain('![cap](/posts/2020-07-01-cst/cst.gif)')
-    expect(mdx).not.toContain('./cst.gif')
+    expect(mdx).toContain('![cap](./cst.gif)')
   })
 
   it('leaves absolute http(s) image URLs untouched', () => {
@@ -66,7 +65,7 @@ created_at: 2020-07-01
     expect(mdx).toContain('![ext](https://example.com/x.png)')
   })
 
-  it('rewrites bare relative image paths to /posts/{slug}/...', () => {
+  it('normalizes bare relative image paths with a ./ prefix', () => {
     const input = `---
 title: t
 created_at: 2020-07-01
@@ -75,7 +74,7 @@ created_at: 2020-07-01
 ![cap](2021-05-18-1.png)
 `
     const { mdx } = convertPost({ source: input, slug: '2021-05-18' })
-    expect(mdx).toContain('![cap](/posts/2021-05-18/2021-05-18-1.png)')
+    expect(mdx).toContain('![cap](./2021-05-18-1.png)')
   })
 
   it('strips @@img@@/ prefix when present', () => {
@@ -87,7 +86,7 @@ created_at: 2020-07-01
 ![cap](@@img@@/final.jpg)
 `
     const { mdx } = convertPost({ source: input, slug: 'whatever' })
-    expect(mdx).toContain('![cap](/posts/whatever/final.jpg)')
+    expect(mdx).toContain('![cap](./final.jpg)')
   })
 
   it('leaves root-absolute paths untouched', () => {
@@ -149,7 +148,7 @@ created_at: 2020-07-01
     expect((mdx.match(/<br/g) ?? []).length).toBe(1)
   })
 
-  it('extracts the first markdown image as thumbnail', () => {
+  it('extracts the first markdown image as thumbnail (URL form via slug)', () => {
     const input = `---
 title: t
 created_at: 2020-07-01
@@ -290,7 +289,7 @@ no title
     expect(() => convertPost({ source: input })).toThrow()
   })
 
-  it('rewrites relative <img> tag src as well as Markdown images', () => {
+  it('normalizes <img> tag src and Markdown images to colocated relative paths', () => {
     const input = `---
 title: t
 created_at: 2024-01-01
@@ -305,14 +304,14 @@ created_at: 2024-01-01
 ![titled](./has-title.png "image title")
 `
     const { mdx } = convertPost({ source: input, slug: 's' })
-    expect(mdx).toContain('src="/posts/s/pic.png"')
-    expect(mdx).toContain('src="/posts/s/pic2.gif"')
+    expect(mdx).toContain('src="./pic.png"')
+    expect(mdx).toContain('src="./pic2.gif"')
     expect(mdx).toContain('src="https://example.com/keep.jpg"')
     expect(mdx).toContain('src="/posts/other/keep.png"')
-    expect(mdx).toContain('src="/posts/s/upper.png"')
+    expect(mdx).toContain('src="./upper.png"')
     expect(mdx).not.toContain('<IMG')
-    expect(mdx).toContain('![md](/posts/s/md.png)')
-    expect(mdx).toContain('![titled](/posts/s/has-title.png "image title")')
+    expect(mdx).toContain('![md](./md.png)')
+    expect(mdx).toContain('![titled](./has-title.png "image title")')
   })
 
   it('does not rewrite <img> inside fenced code blocks', () => {
@@ -327,6 +326,5 @@ created_at: 2024-01-01
 `
     const { mdx } = convertPost({ source: input, slug: 's' })
     expect(mdx).toContain('src="./local.png"')
-    expect(mdx).not.toContain('/posts/s/local.png')
   })
 })
