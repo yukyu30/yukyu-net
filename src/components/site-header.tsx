@@ -7,14 +7,14 @@ const NAV: Array<{ key: string; label: string; href: string }> = [
   { key: 'home', label: 'Index', href: '/' },
   { key: 'posts', label: 'Posts', href: '/posts' },
   { key: 'tags', label: 'Tags', href: '/tags' },
-  { key: 'works', label: 'Works', href: '/tags/work' },
-  { key: 'who', label: 'Who', href: '/posts/me' }
+  { key: 'works', label: 'Works', href: '/works' },
+  { key: 'who', label: 'Who', href: '/me' }
 ]
 
 function pickActive(pathname: string): string {
-  if (pathname === '/posts/me') return 'who'
+  if (pathname === '/me') return 'who'
+  if (pathname === '/works') return 'works'
   if (pathname === '/' || pathname.startsWith('/page')) return 'home'
-  if (pathname === '/tags/work') return 'works'
   if (pathname.startsWith('/tags')) return 'tags'
   if (pathname.startsWith('/posts')) return 'posts'
   return ''

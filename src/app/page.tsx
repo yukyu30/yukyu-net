@@ -70,7 +70,7 @@ export default function Home() {
                 {profileLines.map(line => (
                   <p key={line} className="whoami__bio-line">{line}</p>
                 ))}
-                <Link href="/posts/me" className="whoami__bio-more">もっと見る →</Link>
+                <Link href="/me" className="whoami__bio-more">もっと見る →</Link>
               </div>
             )}
             <ul className="whoami__links">
