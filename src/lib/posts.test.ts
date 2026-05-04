@@ -7,7 +7,6 @@ import {
   getEarliestYear,
   getPostBySlug,
   getPostsByTag,
-  getPostsByTags,
   getProfileExcerpt,
   getTopTags,
   getWorks
@@ -75,23 +74,11 @@ describe('posts', () => {
     expect(year).toBeLessThanOrEqual(new Date().getUTCFullYear())
   })
 
-  it('exposes works as the union of work and つくったもの tags', () => {
+  it('exposes works as posts tagged work', () => {
     const works = getWorks()
     expect(works.length).toBeGreaterThan(0)
     for (const p of works) {
-      const tags = p.frontMatter.tag ?? []
-      expect(tags.includes('work') || tags.includes('つくったもの')).toBe(true)
-    }
-  })
-
-  it('returns the union of multiple tags via getPostsByTags', () => {
-    const single = getPostsByTag('work')
-    const both = getPostsByTags(['work', 'つくったもの'])
-    expect(both.length).toBeGreaterThanOrEqual(single.length)
-    expect(new Set(both.map(p => p.slug)).size).toBe(both.length)
-    for (const p of both) {
-      const tags = p.frontMatter.tag ?? []
-      expect(tags.includes('work') || tags.includes('つくったもの')).toBe(true)
+      expect(p.frontMatter.tag ?? []).toContain('work')
     }
   })
 })
