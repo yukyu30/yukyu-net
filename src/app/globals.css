@@ -110,6 +110,10 @@ button {
 }
 
 /* ============ Search (Nextra <Search />) ============ */
+/* These rules style Nextra's Combobox-based search dropdown via its
+   `.nextra-search` / `.nextra-search-results` class names and the
+   internal `[role="option"]` markup it emits. Tuned against
+   nextra@4.6.x — re-check on upgrade. */
 .nextra-search {
   position: relative;
   display: inline-flex;
