@@ -3,6 +3,7 @@
 import { Link } from 'next-view-transitions'
 import { usePathname } from 'next/navigation'
 import { Search } from 'nextra/components'
+import { useEffect, useRef, useState } from 'react'
 
 const NAV: Array<{ key: string; label: string; href: string }> = [
   { key: 'home', label: 'Index', href: '/' },
@@ -24,11 +25,51 @@ function pickActive(pathname: string): string {
 export function SiteHeader() {
   const pathname = usePathname() ?? '/'
   const active = pickActive(pathname)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const searchSlotRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setSearchOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!searchOpen) return
+    const input = searchSlotRef.current?.querySelector<HTMLInputElement>(
+      'input[type="search"]'
+    )
+    input?.focus()
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSearchOpen(false)
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [searchOpen])
+
   return (
     <header className="site-header">
       <Link href="/" className="site-header__brand">
         yukyu.net
       </Link>
+      <button
+        type="button"
+        className={`site-header__search-toggle${searchOpen ? ' is-open' : ''}`}
+        aria-label={searchOpen ? '検索を閉じる' : '検索を開く'}
+        aria-expanded={searchOpen}
+        onClick={() => setSearchOpen(o => !o)}
+      >
+        {searchOpen ? 'Close' : 'Search'}
+      </button>
+      <div
+        ref={searchSlotRef}
+        className={`site-header__search-slot${searchOpen ? ' is-open' : ''}`}
+      >
+        <Search
+          placeholder="Search…"
+          emptyResult={<span className="site-header__search-empty">no results</span>}
+          loading="searching…"
+          errorText="failed to load search index"
+        />
+      </div>
       <nav className="site-header__nav">
         {NAV.map(({ key, label, href }) => (
           <Link
@@ -39,12 +80,6 @@ export function SiteHeader() {
             {label}
           </Link>
         ))}
-        <Search
-          placeholder="Search…"
-          emptyResult={<span className="site-header__search-empty">no results</span>}
-          loading="searching…"
-          errorText="failed to load search index"
-        />
       </nav>
     </header>
   )
