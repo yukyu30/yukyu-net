@@ -2,6 +2,7 @@
 
 import { Link } from 'next-view-transitions'
 import { usePathname } from 'next/navigation'
+import { Search } from 'nextra/components'
 
 const NAV: Array<{ key: string; label: string; href: string }> = [
   { key: 'home', label: 'Index', href: '/' },
@@ -38,6 +39,13 @@ export function SiteHeader() {
             {label}
           </Link>
         ))}
+        <Search
+          className="site-header__search"
+          placeholder="Search…"
+          emptyResult={<span className="site-header__search-empty">no results</span>}
+          loading="…"
+          errorText="failed to load search index"
+        />
       </nav>
     </header>
   )
