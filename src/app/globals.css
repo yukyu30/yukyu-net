@@ -183,99 +183,143 @@ button {
   margin: 0;
 }
 
-/* ============ Whoami (root intro) ============ */
-.whoami {
-  padding: 36px;
+/* ============ LP hero (root) ============ */
+.lp-hero {
+  padding: 56px 36px 40px;
   border-bottom: 1px solid var(--color-ink);
   background: var(--color-paper);
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
 }
 
-.whoami__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+.lp-hero__caption {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-muted);
+  letter-spacing: 0.08em;
+  margin: 0 0 16px;
 }
 
-.whoami__label {
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.lp-hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(80px, 14vw, 200px);
+  line-height: 0.82;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  margin: 0 0 24px;
 }
 
-.whoami__grid {
-  display: block;
+.lp-hero__title-slash {
+  color: var(--color-accent);
 }
 
-.whoami__profile {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.7;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.whoami__id {
+.lp-hero__lead {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 2.4vw, 24px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.55;
+  max-width: 720px;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  text-wrap: balance;
 }
 
-.whoami__id-row {
+/* ============ Axes (what / why / how / where / who) ============ */
+.axes {
+  border-bottom: 1px solid var(--color-ink);
+  background: var(--color-bg);
+}
+
+.axes__row {
   display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 12px;
-  align-items: baseline;
+  grid-template-columns: 160px 1fr;
+  gap: 32px;
+  padding: 28px 36px;
+  border-bottom: 1px solid var(--color-faint);
 }
 
-.whoami__id dt {
+.axes__row:last-child {
+  border-bottom: none;
+}
+
+.axes__label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-accent);
   letter-spacing: 0.08em;
   font-weight: 700;
+  padding-top: 4px;
 }
 
-.whoami__id dd {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
-}
-
-.whoami__bio {
+.axes__body {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-family: var(--font-display);
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--color-ink);
+  gap: 12px;
 }
 
-.whoami__bio-line {
+.axes__list {
+  list-style: none;
+  padding: 0;
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
 }
 
-.whoami__bio-more {
-  align-self: flex-start;
-  margin-top: 4px;
+.axes__list li {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  padding: 4px 10px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-ink);
+}
+
+.axes__text {
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1.8;
+  margin: 0;
+  max-width: 640px;
+}
+
+.axes__text--strong {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.axes__text--muted {
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.axes__more {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-accent);
   font-weight: 700;
   letter-spacing: 0.04em;
+  align-self: flex-start;
 }
 
-.whoami__links {
+/* ============ LP links ============ */
+.lp-links {
+  padding: 28px 36px;
+  border-bottom: 1px solid var(--color-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--color-paper);
+}
+
+.lp-links__head {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lp-links__list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -284,10 +328,10 @@ button {
   gap: 4px;
 }
 
-.whoami__link {
+.lp-links__item {
   display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border: 1px solid var(--color-faint);
   background: var(--color-paper);
   color: var(--color-ink);
@@ -298,23 +342,25 @@ button {
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
 
-.whoami__link:hover {
+.lp-links__item:hover {
   background: var(--color-accent);
   color: #ffffff;
   border-color: var(--color-accent);
 }
 
-.whoami__link-name {
-  display: inline-block;
-}
-
-.whoami__works {
+/* ============ LP recent works ============ */
+.lp-works {
+  padding: 28px 36px;
+  border-bottom: 1px solid var(--color-ink);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
-.whoami__works-head {
+.lp-works__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-muted);
@@ -322,20 +368,25 @@ button {
   text-transform: uppercase;
 }
 
-.whoami__works-grid {
+.lp-works__more {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.lp-works__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
 
-.whoami__work {
+.lp-works__card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   color: var(--color-ink);
 }
 
-.whoami__work-thumb {
+.lp-works__thumb {
   display: block;
   aspect-ratio: 16 / 10;
   background: var(--color-bg);
@@ -343,31 +394,26 @@ button {
   border: 1px solid var(--color-faint);
 }
 
-.whoami__work-thumb img {
+.lp-works__thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.whoami__work:hover .whoami__work-thumb {
+.lp-works__card:hover .lp-works__thumb {
   border-color: var(--color-accent);
 }
 
-.whoami__work-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.whoami__work-date {
+.lp-works__date {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-muted);
   font-variant-numeric: tabular-nums;
+  margin-top: 4px;
 }
 
-.whoami__work-title {
+.lp-works__title {
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
@@ -375,78 +421,64 @@ button {
   letter-spacing: -0.01em;
 }
 
+/* ============ LP recent posts ============ */
+.lp-recent {
+  display: flex;
+  flex-direction: column;
+}
+
+.lp-recent__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 28px 36px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lp-recent__more {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
 @media (max-width: 880px) {
-  .whoami {
-    padding: 24px 20px;
+  .lp-hero {
+    padding: 32px 20px 24px;
   }
-  .whoami__works-grid {
+  .axes__row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 20px;
+  }
+  .lp-links {
+    padding: 20px;
+  }
+  .lp-works {
+    padding: 20px;
+  }
+  .lp-works__grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-  .whoami__work-thumb {
+  .lp-works__thumb {
     aspect-ratio: 1 / 1;
   }
-  .whoami__work-title {
-    font-size: 12px;
+  .lp-recent__head {
+    padding: 20px 20px 10px;
   }
 }
 
 @media (max-width: 480px) {
-  .whoami__works-grid {
+  .lp-works__grid {
     grid-template-columns: 1fr;
     gap: 14px;
   }
-  .whoami__work-thumb {
+  .lp-works__thumb {
     aspect-ratio: 16 / 10;
   }
-  .whoami__work-title {
-    font-size: 13px;
-  }
-}
-
-/* ============ Categories grid ============ */
-.cat-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  border-bottom: 1px solid var(--color-ink);
-}
-
-.cat-grid__cell {
-  padding: 20px 16px;
-  border-right: 1px solid var(--color-ink);
-  color: var(--color-ink);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.cat-grid__cell:last-child {
-  border-right: none;
-}
-
-.cat-grid__cell.is-feature {
-  background: var(--color-orange);
-  color: #ffffff;
-}
-
-.cat-grid__cell-no {
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  opacity: 0.7;
-}
-
-.cat-grid__cell-name {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1;
-}
-
-.cat-grid__cell-count {
-  font-size: 11px;
-  margin-top: 2px;
-  opacity: 0.85;
 }
 
 /* ============ Index table ============ */
