@@ -3,16 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "tsx scripts/sync-content-images.ts",
     "dev": "next dev",
-    "prebuild": "tsx scripts/sync-content-images.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sync:content-images": "tsx scripts/sync-content-images.ts",
     "convert:posts": "tsx scripts/convert-posts.ts"
   },
   "dependencies": {
