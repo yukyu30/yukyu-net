@@ -3,7 +3,7 @@ import { getAllPosts } from '@/lib/posts'
 export function SiteFooter() {
   const total = getAllPosts().length
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" data-pagefind-ignore>
       <div>
         <div className="site-footer__head">About</div>
         <div className="site-footer__body">yukyu — Tokyo<br />since 2019</div>

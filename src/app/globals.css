@@ -49,6 +49,8 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   font-family: var(--font-mono);
   font-size: 13px;
 }
@@ -62,6 +64,31 @@ button {
 .site-header__nav {
   display: flex;
   gap: 6px;
+}
+
+.site-header__search-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(250, 250, 247, 0.28);
+  color: var(--color-bg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 5px 10px;
+  height: 28px;
+  align-items: center;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.site-header__search-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--color-orange);
+}
+
+.site-header__search-toggle.is-open {
+  background: var(--color-orange);
+  border-color: var(--color-orange);
+  color: #ffffff;
 }
 
 .site-header__link {
@@ -80,6 +107,138 @@ button {
   color: #ffffff;
   opacity: 1;
   font-weight: 700;
+}
+
+/* ============ Search (Nextra <Search />) ============ */
+/* These rules style Nextra's Combobox-based search dropdown via its
+   `.nextra-search` / `.nextra-search-results` class names and the
+   internal `[role="option"]` markup it emits. Tuned against
+   nextra@4.6.x — re-check on upgrade. */
+.nextra-search {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.nextra-search input[type='search'] {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(250, 250, 247, 0.28);
+  border-radius: 0;
+  color: var(--color-bg);
+  outline: none;
+  width: 180px;
+  transition: border-color 120ms ease, background 120ms ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.nextra-search input[type='search']::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.nextra-search input[type='search']::placeholder {
+  color: rgba(250, 250, 247, 0.55);
+}
+
+.nextra-search input[type='search']:focus {
+  border-color: var(--color-orange);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nextra-search kbd {
+  display: none;
+}
+
+.nextra-search-results {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(70vh, 480px);
+  overflow-y: auto;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border: 1px solid var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 0;
+  box-shadow: 0 10px 28px rgba(10, 10, 10, 0.18);
+  z-index: 100;
+  list-style: none;
+}
+
+.nextra-search-results:empty {
+  display: none;
+}
+
+.nextra-search-results > div:not([role='option']) {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  padding: 10px 14px 4px;
+  margin-top: 6px;
+  border-top: 1px solid var(--color-faint);
+}
+
+.nextra-search-results > div:not([role='option']):first-child {
+  margin-top: 0;
+  border-top: none;
+}
+
+.nextra-search-results [role='option'] {
+  display: block;
+  padding: 10px 14px;
+  color: var(--color-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-faint);
+  cursor: pointer;
+}
+
+.nextra-search-results [role='option']:last-child {
+  border-bottom: none;
+}
+
+.nextra-search-results [role='option']:hover,
+.nextra-search-results [role='option'][data-focus] {
+  background: #f6f8ff;
+}
+
+.nextra-search-results [role='option'] > div:first-child {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+  color: var(--color-ink);
+  line-height: 1.3;
+}
+
+.nextra-search-results [role='option'] > div:nth-child(2) {
+  font-size: 11px;
+  color: var(--color-muted);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.nextra-search-results mark {
+  background: rgba(255, 90, 31, 0.18);
+  color: var(--color-accent);
+  font-weight: 700;
+  padding: 0 2px;
+}
+
+.site-header__search-empty {
+  display: block;
+  padding: 14px;
+  color: var(--color-muted);
 }
 
 /* ============ Footer ============ */
@@ -959,10 +1118,54 @@ button {
 /* ============ Responsive ============ */
 @media (max-width: 880px) {
   .site-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
+    align-items: center;
+    gap: 8px 12px;
     padding: 14px 20px;
+  }
+  .site-header__brand {
+    flex: 1;
+  }
+  .site-header__search-toggle {
+    display: inline-flex;
+  }
+  .site-header__search-slot {
+    order: 1;
+    flex-basis: 100%;
+    display: none;
+  }
+  .site-header__search-slot.is-open {
+    display: block;
+  }
+  .site-header__nav {
+    order: 2;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+  }
+  .nextra-search {
+    margin-left: 0;
+    width: 100%;
+  }
+  .nextra-search input[type='search'] {
+    width: 100%;
+    /* 16px+ keeps iOS Safari from auto-zooming on focus */
+    font-size: 16px;
+    padding: 8px 12px;
+  }
+  /* Override Headless UI's anchor positioning on mobile so the
+     dropdown always renders as a bottom sheet instead of flipping
+     above / off-screen. */
+  .nextra-search-results {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 70vh !important;
+    transform: none !important;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    border-top: 1px solid var(--color-ink);
+    box-shadow: 0 -10px 28px rgba(10, 10, 10, 0.18);
   }
   .site-footer {
     grid-template-columns: repeat(2, 1fr);

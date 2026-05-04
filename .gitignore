@@ -45,7 +45,7 @@ next-env.d.ts
 .claude/juiz_credit.json
 
 # Pagefind search index (generated at build time)
-public/pagefind/
+public/_pagefind/
 
 # Graph embeddings cache
 public/graph/embeddings-cache.json
