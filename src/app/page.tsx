@@ -23,12 +23,14 @@ const SOCIAL_LINKS: Array<{ name: string; url: string }> = [
 ]
 
 const WHAT: string[] = [
-  'Webアプリケーション',
-  '3Dグッズ生成',
-  'VRChat関連の企画・開発',
-  '3Dモデル',
-  'ロゴ',
-  'コンテンツ制作'
+  'Web',
+  '3D',
+  'VR / VRChat',
+  'メタバース',
+  'AI',
+  'デザイン',
+  '動画',
+  '創作'
 ]
 
 const HOW: string[] = [
