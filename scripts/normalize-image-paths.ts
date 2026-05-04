@@ -12,7 +12,6 @@ import { join, extname, basename } from 'node:path'
 
 const ROOT = process.cwd()
 const POSTS_DIR = join(ROOT, 'content/posts')
-const PUBLIC_POSTS = join(ROOT, 'public/posts')
 
 const isProblem = (s: string) => /[^\x00-\x7F]/.test(s) || s.includes('%')
 
@@ -33,10 +32,11 @@ function asciify(name: string): string {
 
 const renames: Array<{ slug: string; from: string; to: string }> = []
 
-for (const slug of readdirSync(PUBLIC_POSTS)) {
-  const dir = join(PUBLIC_POSTS, slug)
+for (const slug of readdirSync(POSTS_DIR)) {
+  const dir = join(POSTS_DIR, slug)
   if (!statSync(dir).isDirectory()) continue
   for (const name of readdirSync(dir)) {
+    if (name === 'index.mdx') continue
     if (!isProblem(name)) continue
     const newName = asciify(name)
     const fromPath = join(dir, name)
@@ -65,17 +65,19 @@ for (const r of renames) {
 }
 
 let mdxUpdated = 0
-for (const file of readdirSync(POSTS_DIR)) {
-  if (!file.endsWith('.mdx')) continue
-  const path = join(POSTS_DIR, file)
+for (const [slug, rs] of replacementsBySlug) {
+  const path = join(POSTS_DIR, slug, 'index.mdx')
+  if (!existsSync(path)) continue
   let body = readFileSync(path, 'utf8')
   let modified = false
-  for (const [slug, rs] of replacementsBySlug) {
-    for (const { from, to } of rs) {
-      const fromPath = `/posts/${slug}/${from}`
-      const toPath = `/posts/${slug}/${to}`
-      if (body.includes(fromPath)) {
-        body = body.split(fromPath).join(toPath)
+  for (const { from, to } of rs) {
+    const variants = [
+      [`./${from}`, `./${to}`],
+      [`/posts/${slug}/${from}`, `/posts/${slug}/${to}`]
+    ]
+    for (const [src, dst] of variants) {
+      if (body.includes(src)) {
+        body = body.split(src).join(dst)
         modified = true
       }
     }

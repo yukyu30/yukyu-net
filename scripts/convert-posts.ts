@@ -5,7 +5,6 @@ import { convertPost } from '../src/lib/post-converter'
 
 const SOURCE_ROOT = resolve(__dirname, '../../public/source')
 const OUT_POSTS = resolve(__dirname, '../content/posts')
-const OUT_PUBLIC = resolve(__dirname, '../public/posts')
 
 const IMAGE_EXTENSIONS = new Set(['.gif', '.png', '.jpg', '.jpeg', '.svg', '.webp', '.avif'])
 
@@ -29,8 +28,6 @@ function listPostDirs(root: string): string[] {
     .sort()
 }
 
-const V3_PUBLIC_DIR = resolve(__dirname, '../public')
-
 function escapeAttr(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -40,38 +37,29 @@ function escapeAttr(s: string): string {
     .replace(/'/g, '&apos;')
 }
 
-function fallbackMissingImages(mdx: string, slug: string, sourceDir: string): string {
-  const slugPrefix = `/posts/${slug}/`
+function fallbackMissingImages(mdx: string, sourceDir: string): string {
   return mdx.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt: string, path: string) => {
     if (/^https?:\/\//.test(path)) return match
-    if (!path.startsWith('/')) return match
-
-    let resolved = false
-    if (path.startsWith(slugPrefix)) {
-      const filename = path.slice(slugPrefix.length)
-      resolved = existsSync(join(sourceDir, filename))
-    } else {
-      resolved = existsSync(join(V3_PUBLIC_DIR, path))
-    }
-    if (resolved) return match
+    if (path.startsWith('/')) return match
+    const filename = path.startsWith('./') ? path.slice(2) : path
+    if (existsSync(join(sourceDir, filename))) return match
     const safeAlt = escapeAttr(alt)
     const safeSrc = escapeAttr(path)
     return `<img src="${safeSrc}" alt="${safeAlt}" />`
   })
 }
 
-function copyAssets(srcDir: string, slug: string): void {
-  const targetDir = join(OUT_PUBLIC, slug)
+function copyAssets(srcDir: string, postDir: string): void {
   let created = false
   for (const name of readdirSync(srcDir)) {
     if (name === 'index.md') continue
     const ext = extname(name).toLowerCase()
     if (!IMAGE_EXTENSIONS.has(ext)) continue
     if (!created) {
-      mkdirSync(targetDir, { recursive: true })
+      mkdirSync(postDir, { recursive: true })
       created = true
     }
-    copyFileSync(join(srcDir, name), join(targetDir, name))
+    copyFileSync(join(srcDir, name), join(postDir, name))
   }
 }
 
@@ -81,9 +69,7 @@ function main() {
   }
 
   if (existsSync(OUT_POSTS)) rmSync(OUT_POSTS, { recursive: true })
-  if (existsSync(OUT_PUBLIC)) rmSync(OUT_PUBLIC, { recursive: true })
   mkdirSync(OUT_POSTS, { recursive: true })
-  mkdirSync(OUT_PUBLIC, { recursive: true })
 
   const slugs = listPostDirs(SOURCE_ROOT)
   const stats: ConversionStats = { total: slugs.length, ok: 0, failed: [] }
@@ -94,9 +80,11 @@ function main() {
       const source = readFileSync(srcPath, 'utf8')
       const { mdx } = convertPost({ source, slug })
       const sourceDir = join(SOURCE_ROOT, slug)
-      const safeMdx = fallbackMissingImages(mdx, slug, sourceDir)
-      writeFileSync(join(OUT_POSTS, `${slug}.mdx`), safeMdx, 'utf8')
-      copyAssets(sourceDir, slug)
+      const safeMdx = fallbackMissingImages(mdx, sourceDir)
+      const postDir = join(OUT_POSTS, slug)
+      mkdirSync(postDir, { recursive: true })
+      writeFileSync(join(postDir, 'index.mdx'), safeMdx, 'utf8')
+      copyAssets(sourceDir, postDir)
       stats.ok += 1
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)

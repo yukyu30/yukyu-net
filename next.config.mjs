@@ -13,6 +13,11 @@ const withNextra = nextra({
 
 export default withNextra({
   reactStrictMode: true,
+  outputFileTracingExcludes: {
+    '*': [
+      'content/posts/**/*.{gif,png,jpg,jpeg,svg,webp,avif}'
+    ]
+  },
   turbopack: {
     root: __dirname
   }

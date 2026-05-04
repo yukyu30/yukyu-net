@@ -15,9 +15,10 @@ import {
 
 describe('posts', () => {
   beforeAll(() => {
-    const mePath = join(resolve(process.cwd(), 'content/posts'), 'me.mdx')
-    if (!existsSync(mePath)) {
-      throw new Error(`Test fixture missing: ${mePath}`)
+    const meDir = join(resolve(process.cwd(), 'content/posts'), 'me', 'index.mdx')
+    const meFlat = join(resolve(process.cwd(), 'content/posts'), 'me.mdx')
+    if (!existsSync(meDir) && !existsSync(meFlat)) {
+      throw new Error(`Test fixture missing: ${meDir}`)
     }
   })
 

@@ -37,8 +37,13 @@ npm run lint
 ## アーキテクチャ
 
 ### 記事管理
-- 記事は `content/posts/{slug}.mdx` に格納（gray-matter で frontmatter 解析）
-- 画像は `public/posts/{slug}/...` に同居
+- 記事と画像は `content/posts/{slug}/` にまとめて格納
+  - 本文: `content/posts/{slug}/index.mdx`
+  - 画像: 同じディレクトリに置く（例 `content/posts/{slug}/cover.jpeg`）
+- MDX 本文の画像参照は相対パス `![](./cover.jpeg)` を使う（Nextra が `next/image` 最適化）
+- frontmatter `thumbnail` は URL 形式 `/posts/{slug}/cover.jpeg`
+  - `src/app/posts/[slug]/[file]/route.ts`（`force-static` + `dynamicParams: false`）が `content/posts/{slug}/{file}` を直接配信。`generateStaticParams` で全画像を列挙してビルド時に静的化される
+  - `next.config.mjs` の `outputFileTracingExcludes` で画像をサーバーバンドルから除外
 - `src/lib/posts.ts` が記事の読み込み・キャッシュ・タグ集計を担当
 - frontmatter のスキーマは `src/lib/frontmatter.ts` で zod 定義
 
@@ -48,7 +53,8 @@ npm run lint
 - `/posts/[slug]` - 記事詳細（Nextra の `importPage` 経由で MDX をレンダリング）
 - `/tags` - タグ一覧
 - `/tags/[tag]` - タグ別一覧（`work` 系のタグはサムネカードグリッド）
-- `/rss.xml` - RSS フィード（Route Handler で動的生成）
+- `/rss.xml` - RSS フィード（`force-static` で Route Handler から静的生成）
+- `/posts/[slug]/[file]` - 記事画像配信用 Route Handler（`force-static`）
 
 ### スタイリング
 - `src/app/globals.css` の単一 CSS で完結（Tailwind は不使用）

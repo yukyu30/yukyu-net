@@ -1,5 +1,7 @@
 import { getAllPosts } from '@/lib/posts'
 
+export const dynamic = 'force-static'
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://yukyu.net'
 const SITE_TITLE = 'yukyu.net'
 const SITE_DESCRIPTION = '個人的な覚え書き'

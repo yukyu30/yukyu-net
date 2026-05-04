@@ -23,13 +23,13 @@ export function convertPost({ source, slug }: ConvertPostInput): ConvertPostResu
 
   const body = preservingFencedCode(content, segment => {
     let s = segment
-    if (slug) s = rewriteRelativeImages(s, slug)
+    s = normalizeRelativeImages(s)
     s = selfCloseVoidTags(s)
     s = stripInlineStyles(s)
     return jsxifyHtmlAttributes(s)
   })
 
-  const thumbnail = extractFirstImage(body)
+  const thumbnail = extractFirstImage(body, slug)
   if (thumbnail) {
     next.thumbnail = thumbnail
   }
@@ -39,12 +39,15 @@ export function convertPost({ source, slug }: ConvertPostInput): ConvertPostResu
   return { mdx, frontmatter: next }
 }
 
-function extractFirstImage(body: string): string | undefined {
+function extractFirstImage(body: string, slug?: string): string | undefined {
   const md = body.match(/!\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/)
-  if (md) return md[1]
-  const html = body.match(/<img[^>]+src=["']([^"']+)["']/i)
-  if (html) return html[1]
-  return undefined
+  const raw = md ? md[1] : body.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1]
+  if (!raw) return undefined
+  if (/^https?:\/\//.test(raw)) return raw
+  if (raw.startsWith('/')) return raw
+  if (!slug) return raw
+  const filename = raw.startsWith('./') ? raw.slice(2) : raw
+  return `/posts/${slug}/${filename}`
 }
 
 const HTML_TO_JSX_ATTRIBUTES: Record<string, string> = {
@@ -110,14 +113,14 @@ function selfCloseVoidTags(body: string): string {
   )
 }
 
-function rewriteRelativeImages(body: string, slug: string): string {
+function normalizeRelativeImages(body: string): string {
   const rewriteOne = (raw: string) => {
     if (/^https?:\/\//.test(raw)) return raw
     if (raw.startsWith('/')) return raw
     let p = raw
     if (p.startsWith('@@img@@/')) p = p.slice('@@img@@/'.length)
     if (p.startsWith('./')) p = p.slice(2)
-    return `/posts/${slug}/${p}`
+    return `./${p}`
   }
   return body
     .replace(/!\[([^\]]*)\]\(([^\s)]+)(\s+[^)]*)?\)/g, (_match, alt: string, rawPath: string, title?: string) =>
