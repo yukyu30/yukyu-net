@@ -873,7 +873,6 @@ button {
 .post-body iframe[src*="player.vimeo.com"],
 .post-body iframe[src*="speakerdeck.com"] {
   width: 100%;
-  height: auto;
   aspect-ratio: 16 / 9;
 }
 
