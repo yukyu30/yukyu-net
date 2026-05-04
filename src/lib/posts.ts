@@ -96,13 +96,8 @@ export function getPostsByTag(tag: string): PostListItem[] {
   return loadAll().filter(p => p.frontMatter.tag?.includes(tag))
 }
 
-export function getPostsByTags(tags: string[]): PostListItem[] {
-  const set = new Set(tags)
-  return loadAll().filter(p => p.frontMatter.tag?.some(t => set.has(t)))
-}
-
 export function getWorks(): PostListItem[] {
-  return getPostsByTags(['work', 'つくったもの'])
+  return getPostsByTag('work')
 }
 
 export function getProfileExcerpt(slug = 'me', lines = 2): string {
