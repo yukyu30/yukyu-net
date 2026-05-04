@@ -40,10 +40,9 @@ export function SiteHeader() {
           </Link>
         ))}
         <Search
-          className="site-header__search"
           placeholder="Search…"
           emptyResult={<span className="site-header__search-empty">no results</span>}
-          loading="…"
+          loading="searching…"
           errorText="failed to load search index"
         />
       </nav>
