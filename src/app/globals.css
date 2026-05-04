@@ -864,6 +864,18 @@ button {
   height: auto;
 }
 
+.post-body iframe {
+  max-width: 100%;
+  display: block;
+}
+
+.post-body iframe[src*="youtube.com/embed"],
+.post-body iframe[src*="player.vimeo.com"],
+.post-body iframe[src*="speakerdeck.com"] {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
 .post-body pre {
   background: var(--color-paper);
   border: 1px solid var(--color-faint);
