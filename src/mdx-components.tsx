@@ -7,10 +7,15 @@ function PassthroughWrapper({ children }: { children: ReactNode }) {
   return children
 }
 
+function PlainImg(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  return <img {...props} />
+}
+
 export function useMDXComponents(components?: Record<string, React.ComponentType>) {
   return {
     ...themeComponents,
     wrapper: PassthroughWrapper,
+    img: PlainImg,
     ...components
   }
 }

@@ -41,12 +41,21 @@ interface PaginationProps {
   total: number
   shown: number
   pageStart: number
+  pageHref?: (n: number) => string
 }
 
-export function Pagination({ page, totalPages, total, shown, pageStart }: PaginationProps) {
+const defaultPageHref = (n: number) => (n === 1 ? '/' : `/page/${n}`)
+
+export function Pagination({
+  page,
+  totalPages,
+  total,
+  shown,
+  pageStart,
+  pageHref = defaultPageHref
+}: PaginationProps) {
   if (totalPages <= 1) return null
 
-  const pageHref = (n: number) => (n === 1 ? '/' : `/page/${n}`)
   const prev = page > 1 ? pageHref(page - 1) : null
   const next = page < totalPages ? pageHref(page + 1) : null
 

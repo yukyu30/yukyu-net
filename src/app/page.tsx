@@ -25,7 +25,7 @@ const SOCIAL_LINKS: Array<{ name: string; url: string }> = [
 export default function Home() {
   const posts = getAllPosts()
   const visible = posts.slice(0, PAGE_SIZE)
-  const topTags = getTopTags(6)
+  const topTags = getTopTags(5)
   const total = posts.length
   const works = getWorks()
   const recentWorks = works.filter(p => p.frontMatter.thumbnail).slice(0, 3)
@@ -114,13 +114,18 @@ export default function Home() {
       </section>
 
       <section className="cat-grid">
+        <Link href="/posts" className="cat-grid__cell is-feature">
+          <div className="cat-grid__cell-no">01 / all</div>
+          <div className="cat-grid__cell-name">all</div>
+          <div className="cat-grid__cell-count">{total} entries →</div>
+        </Link>
         {topTags.map((t, i) => (
           <Link
             key={t.tag}
             href={`/tags/${encodeURIComponent(t.tag)}`}
-            className={`cat-grid__cell${i === 0 ? ' is-feature' : ''}`}
+            className="cat-grid__cell"
           >
-            <div className="cat-grid__cell-no">{String(i + 1).padStart(2, '0')} / #{t.tag}</div>
+            <div className="cat-grid__cell-no">{String(i + 2).padStart(2, '0')} / #{t.tag}</div>
             <div className="cat-grid__cell-name">{t.tag}</div>
             <div className="cat-grid__cell-count">{t.count} entries →</div>
           </Link>
