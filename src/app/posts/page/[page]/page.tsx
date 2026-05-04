@@ -1,23 +1,16 @@
 import { notFound } from 'next/navigation'
-import { getAllPosts } from '@/lib/posts'
+import { getAllPosts, POSTS_PAGE_SIZE, postsPageHref } from '@/lib/posts'
 import { PostIndexTable, Pagination } from '@/components/post-index-table'
-
-const PAGE_SIZE = 20
 
 interface PageProps {
   params: Promise<{ page: string }>
 }
 
-const pageHref = (n: number) => (n === 1 ? '/posts' : `/posts/page/${n}`)
-
 export function generateStaticParams() {
-  const total = getAllPosts().length
-  const totalPages = Math.ceil(total / PAGE_SIZE)
-  const out = []
-  for (let i = 2; i <= totalPages; i += 1) {
-    out.push({ page: String(i) })
-  }
-  return out
+  const totalPages = Math.ceil(getAllPosts().length / POSTS_PAGE_SIZE)
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => ({
+    page: String(i + 2)
+  }))
 }
 
 export async function generateMetadata(props: PageProps) {
@@ -35,11 +28,11 @@ export default async function PaginatedPosts(props: PageProps) {
 
   const posts = getAllPosts()
   const total = posts.length
-  const totalPages = Math.ceil(total / PAGE_SIZE)
+  const totalPages = Math.ceil(total / POSTS_PAGE_SIZE)
   if (page > totalPages) notFound()
 
-  const start = (page - 1) * PAGE_SIZE
-  const visible = posts.slice(start, start + PAGE_SIZE)
+  const start = (page - 1) * POSTS_PAGE_SIZE
+  const visible = posts.slice(start, start + POSTS_PAGE_SIZE)
   const startNo = total - start
   const pageStart = start + 1
 
@@ -69,7 +62,7 @@ export default async function PaginatedPosts(props: PageProps) {
         total={total}
         shown={visible.length}
         pageStart={pageStart}
-        pageHref={pageHref}
+        pageHref={postsPageHref}
       />
     </div>
   )

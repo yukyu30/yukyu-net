@@ -1,20 +1,16 @@
-import { getAllPosts } from '@/lib/posts'
+import { getAllPosts, POSTS_PAGE_SIZE, postsPageHref } from '@/lib/posts'
 import { PostIndexTable, Pagination } from '@/components/post-index-table'
-
-const PAGE_SIZE = 20
 
 export const metadata = {
   title: 'Posts | yukyu.net',
   description: 'すべての記事一覧'
 }
 
-const pageHref = (n: number) => (n === 1 ? '/posts' : `/posts/page/${n}`)
-
 export default function PostsIndex() {
   const posts = getAllPosts()
   const total = posts.length
-  const totalPages = Math.ceil(total / PAGE_SIZE)
-  const visible = posts.slice(0, PAGE_SIZE)
+  const totalPages = Math.ceil(total / POSTS_PAGE_SIZE)
+  const visible = posts.slice(0, POSTS_PAGE_SIZE)
 
   return (
     <div className="page">
@@ -27,8 +23,8 @@ export default function PostsIndex() {
           </div>
           <div>
             <div className="hero__meta-num">
-              {visible.length}
-              <span className="hero__meta-num-small"> / {total}</span>
+              01
+              <span className="hero__meta-num-small"> / {String(totalPages).padStart(2, '0')}</span>
             </div>
           </div>
         </div>
@@ -42,7 +38,7 @@ export default function PostsIndex() {
         total={total}
         shown={visible.length}
         pageStart={1}
-        pageHref={pageHref}
+        pageHref={postsPageHref}
       />
     </div>
   )

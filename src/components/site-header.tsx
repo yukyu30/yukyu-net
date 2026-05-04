@@ -16,7 +16,6 @@ function pickActive(pathname: string): string {
   if (pathname === '/' || pathname.startsWith('/page')) return 'home'
   if (pathname === '/tags/work') return 'works'
   if (pathname.startsWith('/tags')) return 'tags'
-  if (pathname === '/posts' || pathname.startsWith('/posts/page')) return 'posts'
   if (pathname.startsWith('/posts')) return 'posts'
   return ''
 }

@@ -6,6 +6,10 @@ import { NextraFrontmatterSchema, type NextraFrontmatter } from './frontmatter'
 const POSTS_DIR = resolve(process.cwd(), 'content/posts')
 const READ_CHARS_PER_MINUTE = 500
 
+export const POSTS_PAGE_SIZE = 20
+export const postsPageHref = (n: number) =>
+  n === 1 ? '/posts' : `/posts/page/${n}`
+
 export interface PostListItem {
   slug: string
   frontMatter: NextraFrontmatter
