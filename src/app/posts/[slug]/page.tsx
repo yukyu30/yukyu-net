@@ -73,6 +73,17 @@ export default async function PostPage(props: PageProps) {
       </section>
 
       <section className="post-layout">
+        <article className="post-body">
+          <MDXContent />
+          <div className="post-end">
+            <span>
+              <span className="post-end__accent">END</span> · {post.frontMatter.date}
+            </span>
+            <span>
+              <Link href="/">← back to /index</Link>
+            </span>
+          </div>
+        </article>
         <aside className="post-toc">
           <div className="post-toc__head">— Table of Contents</div>
           <ol className="post-toc__list">
@@ -87,17 +98,6 @@ export default async function PostPage(props: PageProps) {
             ))}
           </ol>
         </aside>
-        <article className="post-body">
-          <MDXContent />
-          <div className="post-end">
-            <span>
-              <span className="post-end__accent">END</span> · {post.frontMatter.date}
-            </span>
-            <span>
-              <Link href="/">← back to /index</Link>
-            </span>
-          </div>
-        </article>
       </section>
     </div>
   )
