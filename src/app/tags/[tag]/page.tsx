@@ -1,15 +1,12 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import {
   getAllPosts,
   getAllTagCounts,
-  getPostsByTag,
-  getTopTags
+  getPostsByTag
 } from '@/lib/posts'
 import { PostIndexTable } from '@/components/post-index-table'
-import { WorksGrid } from '@/components/works-grid'
+import { TagsSlider } from '@/components/tags-slider'
 
-const VISUAL_TAGS = new Set(['work', 'つくったもの'])
 const ALL_KEY = 'all'
 
 interface PageProps {
@@ -42,8 +39,8 @@ export default async function TagPage(props: PageProps) {
   const posts = isAll ? getAllPosts() : getPostsByTag(tag)
   if (posts.length === 0) notFound()
 
-  const isVisual = !isAll && VISUAL_TAGS.has(tag)
-  const topTags = getTopTags(6)
+  const allTags = getAllTagCounts()
+  const totalCount = getAllPosts().length
   const heroSlash = isAll ? '/' : '#'
   const heroLabel = isAll ? 'all' : tag
 
@@ -63,25 +60,10 @@ export default async function TagPage(props: PageProps) {
         </div>
       </section>
 
-      <section className="cat-grid">
-        {topTags.map((t, i) => (
-          <Link
-            key={t.tag}
-            href={`/tags/${encodeURIComponent(t.tag)}`}
-            className={`cat-grid__cell${t.tag === tag ? ' is-feature' : ''}`}
-          >
-            <div className="cat-grid__cell-no">{String(i + 1).padStart(2, '0')} / #{t.tag}</div>
-            <div className="cat-grid__cell-name">{t.tag}</div>
-            <div className="cat-grid__cell-count">{t.count} entries →</div>
-          </Link>
-        ))}
-      </section>
+      <TagsSlider tags={allTags} currentTag={isAll ? null : tag} totalCount={totalCount} />
 
-      {isVisual ? (
-        <WorksGrid posts={posts} />
-      ) : (
-        <PostIndexTable posts={posts} total={posts.length} startNo={posts.length} />
-      )}
+      <PostIndexTable posts={posts} total={posts.length} startNo={posts.length} />
+
     </div>
   )
 }
