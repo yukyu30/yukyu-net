@@ -4,6 +4,9 @@ import { importPage } from 'nextra/pages'
 import { getAllPosts, getPostBySlug } from '@/lib/posts'
 import { AUTHOR_INFO } from '@/lib/authors'
 import { PostToc } from '@/components/post-toc'
+import { PostShare } from '@/components/post-share'
+
+const SITE_ORIGIN = 'https://yukyu.net'
 
 export function generateStaticParams() {
   return getAllPosts().map(p => ({ slug: p.slug }))
@@ -17,7 +20,25 @@ export async function generateMetadata(props: PageProps) {
   const { slug } = await props.params
   try {
     const { metadata } = await importPage(['posts', slug])
-    return metadata
+    const post = getPostBySlug(slug)
+    const title = (metadata as { title?: string })?.title ?? post?.frontMatter.title ?? 'yukyu.net'
+    const ogUrl = `${SITE_ORIGIN}/og?title=${encodeURIComponent(String(title))}`
+    const pageUrl = `${SITE_ORIGIN}/posts/${slug}`
+    return {
+      ...metadata,
+      openGraph: {
+        ...(metadata as { openGraph?: Record<string, unknown> })?.openGraph,
+        title,
+        url: pageUrl,
+        type: 'article',
+        images: [{ url: ogUrl, width: 1200, height: 630 }]
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        images: [ogUrl]
+      }
+    }
   } catch {
     return { title: 'Not Found | yukyu.net' }
   }
@@ -95,6 +116,10 @@ export default async function PostPage(props: PageProps) {
       <section className="post-layout">
         <article className="post-body">
           <MDXContent />
+          <PostShare
+            url={`${SITE_ORIGIN}/posts/${slug}`}
+            title={post.frontMatter.title}
+          />
           <div className="post-end">
             <span>
               <span className="post-end__accent">END</span> · {post.frontMatter.date}
