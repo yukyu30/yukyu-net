@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "convert:posts": "tsx scripts/convert-posts.ts"
+    "convert:posts": "tsx scripts/convert-posts.ts",
+    "build:link-cards": "tsx scripts/build-link-cards.ts"
   },
   "dependencies": {
     "@splidejs/splide": "^4.1.4",

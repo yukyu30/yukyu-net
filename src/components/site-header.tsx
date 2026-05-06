@@ -11,6 +11,7 @@ const NAV: Array<{ key: string; label: string; href: string }> = [
   { key: 'posts', label: 'Posts', href: '/posts' },
   { key: 'tags', label: 'Tags', href: '/tags' },
   { key: 'works', label: 'Works', href: '/works' },
+  { key: 'storage', label: 'Storage', href: '/storage' },
   { key: 'me', label: 'Me', href: '/me' }
 ]
 
@@ -19,6 +20,7 @@ function pickActive(pathname: string): string {
   if (pathname === '/works') return 'works'
   if (pathname === '/' || pathname.startsWith('/page')) return 'home'
   if (pathname.startsWith('/tags')) return 'tags'
+  if (pathname.startsWith('/storage')) return 'storage'
   if (pathname.startsWith('/posts')) return 'posts'
   return ''
 }

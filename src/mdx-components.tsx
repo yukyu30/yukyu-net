@@ -1,5 +1,6 @@
 import type { ImgHTMLAttributes, ReactNode } from 'react'
 import { useMDXComponents as getThemeComponents } from 'nextra-theme-blog'
+import { LinkCard } from '@/components/link-card'
 
 const themeComponents = getThemeComponents()
 
@@ -32,6 +33,7 @@ export function useMDXComponents(components?: Record<string, React.ComponentType
     ...themeComponents,
     wrapper: PassthroughWrapper,
     img: PlainImg,
+    LinkCard,
     ...components
   }
 }
