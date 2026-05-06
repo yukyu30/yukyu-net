@@ -1,0 +1,140 @@
+---
+title: "vibe codingしたものを投稿するサイト「Vibe Gallery Space」をつくった"
+date: 2026-05-06
+tag:
+  - つくったもの
+  - work
+author: yukyu
+---
+
+vibe codingで作ったアプリを投稿・発見できるギャラリーサイト「[Vibe Gallery](https://vibe-gallery.space)」をつくった。
+
+## なぜつくったか
+
+最近はClaude CodeやCursor、v0、LovableなどのAIコーディングツールを使って週末に小さいアプリを作る機会が増えた。
+ただ、できあがったものをXに流すと一瞬で流れて埋もれるし、ProductHuntほど大ごとにしたいわけでもない。
+「vibe codingで作ったやつ、ここに置いとくね」くらいの気軽な置き場が欲しかったので作った。
+
+タグやAIツールで絞り込めるので、誰がどのツールでどんなものを作っているのかを眺める用途にも使える。
+
+## できること
+- アプリの投稿（タイトル / 説明 / サムネイル / websiteUrl / GitHub URL / タグ / 使ったAIツール）
+- タグやAIツールでの絞り込み
+- アプリごとの「ビハインドシーン」記事の投稿（開発の裏話・工夫したところを後から書き足せる）
+- サイト所有確認バッジ
+- MCPサーバ経由でClaudeなどから直接投稿・更新
+
+## コアにしたこと
+
+今回サイトを作る上で、特に時間をかけて考えたのは次の3つ。
+
+### 1. サイト所有確認
+
+vibe codingで作ったアプリといっても、URLとサムネだけなら他人のサイトを勝手に投稿することもできてしまう。
+それだと「自分の作品集」としても「他人を眺める場所」としても価値が薄れる。
+そこで、登録するwebsiteUrlに対して**所有確認**を入れた。
+
+仕組みはシンプルで、各ユーザーには Vibe Gallery 上のprofile IDが振られていて、そのIDを次のいずれかの形でサイトのルートHTMLに埋め込んでもらう。
+
+```html
+<!-- 方法1: meta タグ -->
+<meta name="vibe-gallery-verification" content="{あなたのprofile ID}">
+
+<!-- 方法2: html の data 属性 -->
+<html lang="ja" data-vibe-gallery-verification="{あなたのprofile ID}">
+```
+
+サーバ側は登録されたURLの`origin /` を取得しに行き、`<html>`タグの`data-vibe-gallery-verification`属性、または`<head>`内の`<meta name="vibe-gallery-verification">`のどちらか一方でも一致すればverified扱いにする。
+パス付きURL（`https://example.com/foo`）で登録されてもルートを見るので、Next.jsの一部ページだけにmetaを差し込むみたいな小細工は不要にしている。
+
+ちょっと地味だが気を遣ったのは以下のあたり。
+
+- **SSRF対策**: `localhost` / `127.0.0.0/8` / `10.0.0.0/8` / `172.16.0.0/12` / `192.168.0.0/16` / `169.254.0.0/16` / `0.0.0.0/8` を弾く。`http://localhost:3000` を登録してサーバから内部ネットワークを叩かせる、みたいなのを防ぐ
+- **HTMLサイズ上限**: 512KBで打ち切り。重いページを掴まされてfetchが詰まらないように
+- **タイムアウト**: 8秒
+- **content-typeチェック**: `text/html` か `application/xhtml+xml` 以外は弾く
+- **websiteUrl変更時はverification状態をリセット**: ドメインを差し替えてバッジだけ持ち越されたら所有確認の意味がない
+
+verifyしたあとは一覧で🔵バッジが付くだけだが、「このアプリは投稿者本人のもの」とわかる小さな信頼の指標として機能してくれる。
+
+### 2. MCPからの登録
+
+このサイトの一番気に入っているところで、Claude Desktopなどから話しかけるだけでアプリの投稿・更新・削除・ビハインドシーン記事の作成までできる。
+WebUIにアクセスせずに、コードを書いている流れのままClaudeに「これさっきデプロイしたやつ、Vibe Galleryにも上げといて」と言うだけで投稿される。
+
+実装は[Vercelの`mcp-handler`](https://vercel.com/changelog/mcp-server-support-on-vercel)とClerkの[`@clerk/mcp-tools`](https://github.com/clerk/mcp-tools)の組み合わせで、Streamable HTTP transportで`/api/mcp`に生やしている。
+
+認証はClerk OAuth 2.1（PKCE + Dynamic Client Registration）。
+読み書き問わず全ツールを`withMcpAuth({ required: true })`で守っているので、トークンなしで叩くと401と`WWW-Authenticate: Bearer resource_metadata="…"`が返り、それをトリガーにMCPクライアント側がOAuthフロー（DCR + ブラウザサインイン）を起動する流れ。
+
+Claude Desktopから使うときは設定ファイルにこれだけ書けばよい。
+
+```json
+{
+  "mcpServers": {
+    "vibe-gallery": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://vibe-gallery.space/api/mcp"]
+    }
+  }
+}
+```
+
+初回接続時にブラウザが開いてClerkのサインインを通れば、以降はClaudeから`submit_app`が呼べる。
+
+提供しているツールは大体こんな構成。
+
+| 種別 | tool | 役割 |
+| --- | --- | --- |
+| 読み取り | `list_apps` / `get_app` / `list_user_apps` / `list_ai_tools` | ギャラリーを眺める |
+| 読み取り | `list_behind_scenes` / `get_behind_scenes` | 開発記事を読む |
+| 書き込み | `get_me` | 認証中ユーザーのprofile |
+| 書き込み | `get_verification_info` | 所有確認用のスニペットを取得 |
+| 書き込み | `create_upload_url` / `open_thumbnail_uploader` | サムネイルのアップロード |
+| 書き込み | `submit_app` / `update_app` / `delete_app` / `reverify_app` | アプリ投稿の一通り |
+| 書き込み | `create_behind_scenes` / `update_behind_scenes` / `delete_behind_scenes` | 開発記事の一通り |
+
+`submit_app`は`websiteUrl`が指定されていれば内部で所有確認まで一気に走らせるので、ユーザー側は「このアプリ投稿しといて」と言うだけで、所有確認 → 投稿 → 検証バッジ付与までが完結する。
+所有確認用のIDが分からなければ`get_verification_info`を呼べば、そのままmetaタグ・data属性のスニペットまで返してくれるので、ClaudeにHTMLに埋め込んでもらってから投稿、という流れが自然に取れる。
+
+サムネイルだけはちょっと工夫していて、画像をbase64でMCPのargsに乗せると詰まりやすいので、`create_upload_url`で署名付きPUT URLを発行 → クライアントから直接S3にPUT → 戻ってきた`key`を`thumbnailStorageKey`として`submit_app`に渡す、という2段階構成にしている。
+さらに最近の[MCP Apps仕様（2026-01-26）](https://modelcontextprotocol.io/)に乗って、`open_thumbnail_uploader`を呼ぶとClaudeのチャット内にiframeでアップローダーUIが開いて、そこから画像を選ぶだけでstorage keyがモデルに通知される、というインタラクティブな経路も用意した。
+
+### 3. ビハインドシーン
+
+アプリ投稿サイトでよくあるのが「投稿した瞬間がピーク」問題。
+作った直後はテンションが高いので説明を書くが、その後の改善や試行錯誤は書く場所がなくて消えていく。
+
+そこでアプリごとに**ビハインドシーン記事**をぶら下げられるようにした。
+1アプリに対してN本の記事をMarkdownで書ける、ミニブログみたいなもの。
+
+- 「最初Supabaseで作ってたけどNeonに移した話」
+- 「v0で生成したUIをshadcn/uiに置き換えたとき気をつけたこと」
+- 「サムネをBunnyに乗せて爆速になった」
+
+…みたいな粒度の話を、メインの作品ページとは分けて書ける場所として運用している。
+
+ビハインドシーン記事もMCPから書ける（`create_behind_scenes` / `update_behind_scenes`）ので、Claude Codeで実装した直後に「今日やったこと、ビハインドシーンに書いといて」と言えばそのままドラフトに入る。
+記事は`status: "draft" | "published"`で公開状態を切り替えられて、デフォルトは下書き。意図せず公開されない安全側に倒している。
+
+## 技術スタック
+
+- **Framework**: Next.js 14 App Router (RSC)
+- **DB**: Postgres + Drizzle ORM
+- **認証**: Clerk（OAuth 2.1 / DCR込み）
+- **MCP**: `mcp-handler` + `@clerk/mcp-tools`
+- **Storage**: S3互換（ローカルはrustfs、本番はR2系）
+- **UI**: Tailwind + shadcn/ui
+- **Deploy**: Vercel
+
+mutationはServer Actionsを使わず、`app/api/*/route.ts`に切る方針にしている。
+WebからもMCPからも同じrepository関数を叩くようにしておきたかったので、ロジックを`shared/repositories/*`に寄せて両方から呼ぶ形にした。
+おかげでMCPツールは「認証 → 入力検証 → repository関数を呼ぶ」だけの薄いラッパで済んでいる。
+
+## おわりに
+
+vibe codingで作ったアプリをClaudeから直接投稿できる、というのが今回一番やりたかったことで、出来上がってみるとやっぱり気持ちがいい。
+所有確認とMCPと開発記事、というのは一見バラバラに見えるが、全部「**作った人が、作った流れのまま、自分の作品として置ける**」という1点でつながっていて、自分用に欲しかった形のサイトになった。
+
+[https://vibe-gallery.space](https://vibe-gallery.space) で公開している。
+気軽に投稿してもらえると嬉しい。
