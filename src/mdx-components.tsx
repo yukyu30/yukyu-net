@@ -1,4 +1,4 @@
-import type { ImgHTMLAttributes, ReactNode } from 'react'
+import type { HTMLAttributes, ImgHTMLAttributes, ReactNode } from 'react'
 import { useMDXComponents as getThemeComponents } from 'nextra-theme-blog'
 
 const themeComponents = getThemeComponents()
@@ -27,11 +27,16 @@ function PlainImg({ src, width, height, ...rest }: PlainImgProps) {
   return <img src={src} width={width} height={height} {...rest} />
 }
 
+function PlainPre({ children, ...rest }: HTMLAttributes<HTMLPreElement>) {
+  return <pre {...rest}>{children}</pre>
+}
+
 export function useMDXComponents(components?: Record<string, React.ComponentType>) {
   return {
     ...themeComponents,
     wrapper: PassthroughWrapper,
     img: PlainImg,
+    pre: PlainPre,
     ...components
   }
 }
