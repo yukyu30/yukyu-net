@@ -51,7 +51,7 @@ export async function GET(req: Request) {
     loadFont('Inter Tight', 900, allText),
   ])
 
-  const fonts: { name: string; data: ArrayBuffer; style: 'normal'; weight: number }[] = []
+  const fonts: { name: string; data: ArrayBuffer; style: 'normal'; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 }[] = []
   if (interTight) fonts.push({ name: 'InterTight', data: interTight, style: 'normal', weight: 900 })
   if (jpFont) fonts.push({ name: 'NotoSansJP', data: jpFont, style: 'normal', weight: 900 })
 
