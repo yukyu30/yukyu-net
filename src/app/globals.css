@@ -1025,6 +1025,34 @@ button {
   text-decoration: underline;
 }
 
+.post-hero__authors {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.post-hero__authors-names {
+  color: var(--color-fg);
+}
+
+.author-stack {
+  display: inline-flex;
+  align-items: center;
+}
+
+.author-stack__avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--color-bg);
+  object-fit: cover;
+  background: var(--color-bg);
+}
+
+.author-stack__avatar + .author-stack__avatar {
+  margin-left: -8px;
+}
+
 .post-layout {
   display: grid;
   grid-template-columns: 1fr 260px;
