@@ -1182,8 +1182,11 @@ button {
 }
 
 .post-body img {
+  display: block;
+  width: auto;
   max-width: 100%;
   height: auto;
+  margin: 16px auto;
 }
 
 .post-body iframe {
@@ -1238,6 +1241,34 @@ button {
   color: var(--color-muted);
   display: flex;
   justify-content: space-between;
+}
+
+.post-share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-faint);
+}
+
+.post-share__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border: 1px solid var(--color-ink);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.5;
+}
+
+.post-share__btn:hover {
+  background: var(--color-ink);
+  color: var(--color-bg);
 }
 
 .post-end__accent {
