@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path'
 import matter from 'gray-matter'
 
 const POSTS_DIR = resolve(process.cwd(), 'content/posts')
-const DEFAULT_AUTHOR = 'yukyuu'
+const DEFAULT_AUTHOR = 'yukyu'
 
 function listPostFiles(): string[] {
   const out: string[] = []

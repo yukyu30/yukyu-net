@@ -6,9 +6,9 @@ interface AuthorInfo {
 }
 
 export const AUTHOR_INFO: Record<Author, AuthorInfo> = {
-  yukyuu: {
+  yukyu: {
     name: 'yukyu',
-    avatar: '/authors/yukyuu.jpg'
+    avatar: '/authors/yukyu.jpg'
   },
   'claude-opus-4-7': {
     name: 'Claude Opus 4.7',

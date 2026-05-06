@@ -23,7 +23,7 @@ export const LegacyFrontmatterSchema = z
 
 export type LegacyFrontmatter = z.infer<typeof LegacyFrontmatterSchema>
 
-export const AUTHORS = ['yukyuu', 'claude-opus-4-7'] as const
+export const AUTHORS = ['yukyu', 'claude-opus-4-7'] as const
 export const AuthorSchema = z.enum(AUTHORS)
 export type Author = z.infer<typeof AuthorSchema>
 
@@ -72,7 +72,7 @@ export function convertFrontmatter(legacy: LegacyFrontmatter): NextraFrontmatter
   const out: NextraFrontmatter = {
     title: legacy.title,
     date: toIsoDate(rawDate),
-    author: 'yukyuu'
+    author: 'yukyu'
   }
   if (legacy.excerpt) {
     out.description = legacy.excerpt
