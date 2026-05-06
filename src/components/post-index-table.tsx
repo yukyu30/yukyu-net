@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Link as ViewTransitionLink } from 'next-view-transitions'
 import type { PostListItem } from '@/lib/posts'
 
 interface Props {
@@ -20,7 +21,7 @@ export function PostIndexTable({ posts, total, startNo, highlightFirst = false }
         const num = String(startNo - i).padStart(3, '0')
         const isFirst = highlightFirst && i === 0
         return (
-          <Link
+          <ViewTransitionLink
             key={p.slug}
             href={`/posts/${p.slug}`}
             className={`index-row${isFirst ? ' is-first' : ''}`}
@@ -28,7 +29,7 @@ export function PostIndexTable({ posts, total, startNo, highlightFirst = false }
             <span className="index-row__no">№{num}</span>
             <span className="index-row__date">{p.frontMatter.date}</span>
             <span className="index-row__title">{p.frontMatter.title}</span>
-          </Link>
+          </ViewTransitionLink>
         )
       })}
     </section>
