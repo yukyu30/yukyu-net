@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { importPage } from 'nextra/pages'
 import { getAllPosts, getPostBySlug } from '@/lib/posts'
 import { AUTHOR_INFO } from '@/lib/authors'
+import { PostToc } from '@/components/post-toc'
 
 export function generateStaticParams() {
   return getAllPosts().map(p => ({ slug: p.slug }))
@@ -103,20 +104,7 @@ export default async function PostPage(props: PageProps) {
             </span>
           </div>
         </article>
-        <aside className="post-toc">
-          <div className="post-toc__head">— Table of Contents</div>
-          <ol className="post-toc__list">
-            {toc.map((entry, i) => (
-              <li
-                key={entry.id}
-                className={`post-toc__item${entry.depth >= 3 ? ' is-sub' : ''}`}
-              >
-                <span className="post-toc__no">{String(i + 1).padStart(2, '0')}.</span>
-                <a className="post-toc__link" href={`#${entry.id}`}>{entry.value}</a>
-              </li>
-            ))}
-          </ol>
-        </aside>
+        <PostToc toc={toc} />
       </section>
     </div>
   )
