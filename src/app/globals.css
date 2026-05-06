@@ -1252,7 +1252,7 @@ button {
   border-top: 1px solid var(--color-faint);
 }
 
-.post-share__btn {
+.post-share .post-share__btn {
   display: inline-flex;
   align-items: center;
   padding: 6px 14px;
@@ -1266,7 +1266,7 @@ button {
   line-height: 1.5;
 }
 
-.post-share__btn:hover {
+.post-share .post-share__btn:hover {
   background: var(--color-ink);
   color: var(--color-bg);
 }
