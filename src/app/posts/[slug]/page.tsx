@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { importPage } from 'nextra/pages'
 import { getAllPosts, getPostBySlug } from '@/lib/posts'
+import { AUTHOR_INFO } from '@/lib/authors'
 import { PostToc } from '@/components/post-toc'
 
 export function generateStaticParams() {
@@ -45,6 +46,7 @@ export default async function PostPage(props: PageProps) {
   }
 
   const tags = post.frontMatter.tag ?? []
+  const authors = [post.frontMatter.author, ...(post.frontMatter.coAuthors ?? [])]
 
   return (
     <div className="page">
@@ -54,6 +56,23 @@ export default async function PostPage(props: PageProps) {
         </div>
         <h1 className="post-hero__title">{post.frontMatter.title}</h1>
         <div className="post-hero__meta">
+          <div className="post-hero__authors">
+            <span className="post-hero__meta-key">by:</span>
+            <span className="author-stack">
+              {authors.map(a => (
+                <img
+                  key={a}
+                  src={AUTHOR_INFO[a].avatar}
+                  alt={AUTHOR_INFO[a].name}
+                  title={AUTHOR_INFO[a].name}
+                  className="author-stack__avatar"
+                />
+              ))}
+            </span>
+            <span className="post-hero__authors-names">
+              {authors.map(a => AUTHOR_INFO[a].name).join(', ')}
+            </span>
+          </div>
           <div>
             <span className="post-hero__meta-key">date:</span> {post.frontMatter.date}
           </div>

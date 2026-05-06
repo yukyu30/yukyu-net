@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "convert:posts": "tsx scripts/convert-posts.ts"
+    "convert:posts": "tsx scripts/convert-posts.ts",
+    "textlint": "textlint \"content/posts/**/*.mdx\"",
+    "lint:frontmatter": "tsx scripts/lint-frontmatter.ts"
   },
   "dependencies": {
     "@splidejs/splide": "^4.1.4",
@@ -29,6 +31,8 @@
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
     "pagefind": "1.4.0",
+    "textlint": "^15.6.0",
+    "textlint-rule-preset-ja-spacing": "^2.4.3",
     "tsx": "4.19.2",
     "typescript": "5.7.2",
     "vitest": "2.1.8"
