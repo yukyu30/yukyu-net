@@ -1,23 +1,38 @@
-name: textlint
+name: content-lint
 
 on:
   pull_request:
     paths:
       - 'content/posts/**/*.mdx'
+      - 'src/lib/frontmatter.ts'
+      - 'scripts/lint-frontmatter.ts'
       - '.textlintrc.json'
       - 'package.json'
       - 'package-lock.json'
-      - '.github/workflows/textlint.yml'
+      - '.github/workflows/content-lint.yml'
   push:
     branches: [main]
     paths:
       - 'content/posts/**/*.mdx'
+      - 'src/lib/frontmatter.ts'
+      - 'scripts/lint-frontmatter.ts'
       - '.textlintrc.json'
       - 'package.json'
       - 'package-lock.json'
-      - '.github/workflows/textlint.yml'
+      - '.github/workflows/content-lint.yml'
 
 jobs:
+  frontmatter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint:frontmatter
+
   textlint:
     runs-on: ubuntu-latest
     steps:

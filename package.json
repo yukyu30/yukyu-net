@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "convert:posts": "tsx scripts/convert-posts.ts",
-    "textlint": "textlint \"content/posts/**/*.mdx\""
+    "textlint": "textlint \"content/posts/**/*.mdx\"",
+    "lint:frontmatter": "tsx scripts/lint-frontmatter.ts"
   },
   "dependencies": {
     "@splidejs/splide": "^4.1.4",
