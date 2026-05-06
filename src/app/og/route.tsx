@@ -5,6 +5,11 @@ export const runtime = 'edge'
 const WIDTH = 1200
 const HEIGHT = 630
 
+const COLOR_BG = '#fafaf7'
+const COLOR_INK = '#0a0a0a'
+const COLOR_ACCENT = '#002ced'
+const COLOR_MUTED = '#666666'
+
 async function loadJpFont(text: string): Promise<ArrayBuffer | null> {
   // Google Fonts API でグリフサブセット指定で TTF を取りに行く。
   // text パラメータで必要な文字だけ含む TTF が返ってきて軽い。
@@ -14,7 +19,6 @@ async function loadJpFont(text: string): Promise<ArrayBuffer | null> {
         encodeURIComponent(text),
       {
         headers: {
-          // user-agent 次第で TTF/WOFF2 が切り替わるので、TTF が返る古めの UA を要求
           'User-Agent':
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36'
         }
@@ -37,45 +41,93 @@ export async function GET(req: Request) {
   const rawTitle = searchParams.get('title') ?? 'yukyu.net'
   const title = rawTitle.length > 80 ? rawTitle.slice(0, 80) + '…' : rawTitle
 
-  const fontText = title + 'yukyu.net/index'
+  const fontText = title + 'yukyu.netPostsTagsWorksMe'
   const jpFont = await loadJpFont(fontText)
 
   return new ImageResponse(
     (
       <div
         style={{
-          height: '100%',
-          width: '100%',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: 64,
-          background: '#fafaf7',
-          color: '#0a0a0a'
+          width: '100%',
+          height: '100%',
+          background: COLOR_BG,
+          color: COLOR_INK
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', lineHeight: 1 }}>
-          <span style={{ color: '#002ced', fontSize: 96, fontWeight: 800 }}>/</span>
-          <span style={{ fontSize: 96, fontWeight: 800, marginLeft: 4 }}>index</span>
+        {/* サイトヘッダーと同じ黒バー */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: COLOR_INK,
+            color: COLOR_BG,
+            padding: '24px 56px',
+            fontSize: 26,
+            letterSpacing: '0.02em',
+            fontWeight: 700
+          }}
+        >
+          <span>yukyu.net</span>
+          <div style={{ display: 'flex', gap: 24, fontSize: 20, fontWeight: 400, opacity: 0.85 }}>
+            <span>Index</span>
+            <span>Posts</span>
+            <span>Tags</span>
+            <span>Works</span>
+            <span>Me</span>
+          </div>
         </div>
+
+        {/* タイトル本体 */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 24
+            justifyContent: 'center',
+            flex: 1,
+            padding: '0 56px'
           }}
         >
-          <div
-            style={{
-              fontSize: 56,
-              fontWeight: 800,
-              lineHeight: 1.25,
-              maxWidth: '100%'
-            }}
-          >
-            {title}
+          <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+            <span
+              style={{
+                color: COLOR_ACCENT,
+                fontSize: 96,
+                fontWeight: 800,
+                lineHeight: 1,
+                marginRight: 12
+              }}
+            >
+              /
+            </span>
+            <span
+              style={{
+                fontSize: 60,
+                fontWeight: 800,
+                lineHeight: 1.25,
+                marginTop: 18
+              }}
+            >
+              {title}
+            </span>
           </div>
-          <div style={{ fontSize: 28, color: '#666' }}>yukyu.net</div>
+        </div>
+
+        {/* 下部の余白とアクセント線 */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 56px 36px',
+            gap: 16,
+            color: COLOR_MUTED,
+            fontSize: 22
+          }}
+        >
+          <span style={{ width: 48, height: 3, background: COLOR_ACCENT }} />
+          <span>yukyu.net</span>
         </div>
       </div>
     ),
