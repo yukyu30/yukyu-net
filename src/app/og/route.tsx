@@ -1,15 +1,23 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { ImageResponse } from 'next/og'
 
 const WIDTH = 1200
 const HEIGHT = 630
 
-const COLOR_BG = '#002CED'
 const COLOR_INK = '#ffffff'
-const COLOR_MUTED = 'rgba(255,255,255,0.7)'
+const COLOR_MUTED = 'rgba(255,255,255,0.65)'
+
+// 青 (#002CED) + AE風グレインノイズの 1200x630 PNG。
+// satori は SVG filter / mixBlendMode をサポートしないので、ノイズ感のある
+// 背景は事前に scripts/generate-og-bg.mjs で焼き込んで public/og-bg.png に
+// 置いてある。モジュールロード時に読み込んで data URL 化し、satori の <img>
+// にそのまま流す。
+const ogBgBuffer = readFileSync(join(process.cwd(), 'public', 'og-bg.png'))
+const ogBgDataUrl = `data:image/png;base64,${ogBgBuffer.toString('base64')}`
 
 async function loadJpFont(text: string): Promise<ArrayBuffer | null> {
   // Google Fonts API でグリフサブセット指定で TTF を取りに行く。
-  // text パラメータで必要な文字だけ含む TTF が返ってきて軽い。
   try {
     const cssRes = await fetch(
       'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@800&text=' +
@@ -38,63 +46,76 @@ export async function GET(req: Request) {
   const rawTitle = searchParams.get('title') ?? 'yukyu.net'
   const title = rawTitle.length > 80 ? rawTitle.slice(0, 80) + '…' : rawTitle
 
-  const fontText = title + 'yukyu.net'
+  const fontText = title + 'YUKYU.NET'
   const jpFont = await loadJpFont(fontText)
 
   return new ImageResponse(
     (
       <div
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
+          position: 'relative',
           width: '100%',
           height: '100%',
-          padding: '72px 64px',
-          backgroundImage:
-            'radial-gradient(ellipse at 25% 20%, #1a45ff 0%, #002CED 45%, #001a8c 100%)',
-          color: COLOR_INK
+          display: 'flex'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <span
-            style={{
-              width: 48,
-              height: 4,
-              background: COLOR_INK,
-              opacity: 0.85,
-              marginRight: 16
-            }}
-          />
-          <span style={{ fontSize: 22, color: COLOR_MUTED, letterSpacing: '0.04em' }}>
-            yukyu.net
-          </span>
-        </div>
+        {/* 背景: 事前生成した青+グレインノイズ PNG */}
+        <img
+          src={ogBgDataUrl}
+          width={WIDTH}
+          height={HEIGHT}
+          style={{ position: 'absolute', top: 0, left: 0 }}
+        />
 
+        {/* 中身 */}
         <div
           style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
             display: 'flex',
-            fontSize: 84,
-            fontWeight: 800,
-            lineHeight: 1.1,
-            letterSpacing: '-0.04em',
-            color: COLOR_INK,
-            maxWidth: '100%'
-          }}
-        >
-          {title}
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            fontSize: 24,
-            fontWeight: 700,
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            padding: 64,
             color: COLOR_INK
           }}
         >
-          yukyu.net
+          <div
+            style={{
+              display: 'flex',
+              fontSize: 18,
+              color: COLOR_MUTED,
+              letterSpacing: '0.04em'
+            }}
+          >
+            yukyu.net
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              fontSize: 84,
+              fontWeight: 800,
+              lineHeight: 1.05,
+              letterSpacing: '-0.045em',
+              color: COLOR_INK,
+              maxWidth: 1080
+            }}
+          >
+            {title}
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              fontSize: 18,
+              color: COLOR_INK,
+              fontWeight: 700,
+              letterSpacing: '0.08em'
+            }}
+          >
+            YUKYU.NET
+          </div>
         </div>
       </div>
     ),
