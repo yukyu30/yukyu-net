@@ -1,0 +1,32 @@
+name: textlint
+
+on:
+  pull_request:
+    paths:
+      - 'content/posts/**/*.mdx'
+      - '.textlintrc.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/textlint.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'content/posts/**/*.mdx'
+      - '.textlintrc.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/textlint.yml'
+
+jobs:
+  textlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run textlint
+        continue-on-error: true
+        run: npm run textlint
