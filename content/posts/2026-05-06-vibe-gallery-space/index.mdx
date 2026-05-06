@@ -97,6 +97,10 @@ claude mcp add --transport http vibe-gallery https://vibe-gallery.space/api/mcp
 ビハインドシーン記事もMCPから書ける（`create_behind_scenes` / `update_behind_scenes`）ので、Claude Codeで実装した直後に「今日やったこと、ビハインドシーンに書いといて」と言えばそのままドラフトに入る。
 記事は`status: "draft" | "published"`で公開状態を切り替えられて、デフォルトは下書き。意図せず公開されない安全側に倒している。
 
+## llms.txt
+
+公開されているすべてのページに`llms.txt`を持たせている。投稿されたアプリとビハインドシーン記事も含めて、各ページの末尾に`/llms.txt`を付ければそのページのLLM向けMarkdownが返ってくる。
+
 ## 技術スタック
 
 - **Framework**: Next.js 14 App Router (RSC)
