@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Link as ViewTransitionLink } from 'next-view-transitions'
 import { getAllPosts, getProfileExcerpt, getTopTags, getWorks } from '@/lib/posts'
 import { PostIndexTable, Pagination } from '@/components/post-index-table'
 
@@ -94,7 +95,7 @@ export default function Home() {
             <div className="whoami__works-head">// recent works</div>
             <div className="whoami__works-grid">
               {recentWorks.map(p => (
-                <Link
+                <ViewTransitionLink
                   key={p.slug}
                   href={`/posts/${p.slug}`}
                   className="whoami__work"
@@ -106,7 +107,7 @@ export default function Home() {
                     <span className="whoami__work-date">{p.frontMatter.date}</span>
                     <span className="whoami__work-title">{p.frontMatter.title}</span>
                   </div>
-                </Link>
+                </ViewTransitionLink>
               ))}
             </div>
           </div>

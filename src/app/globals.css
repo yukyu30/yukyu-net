@@ -36,6 +36,19 @@ a {
   text-decoration: none;
 }
 
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
 button {
   font: inherit;
   cursor: pointer;
@@ -1071,6 +1084,30 @@ button {
 
 .post-toc__link {
   color: var(--color-ink);
+  transition: color 0.2s ease;
+}
+
+.post-toc__item.is-active {
+  position: relative;
+}
+
+.post-toc__item.is-active::before {
+  content: '';
+  position: absolute;
+  left: -33px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-accent);
+}
+
+.post-toc__item.is-active .post-toc__no {
+  color: var(--color-accent);
+}
+
+.post-toc__link.is-active {
+  color: var(--color-accent);
+  font-weight: 700;
 }
 
 .post-body {
