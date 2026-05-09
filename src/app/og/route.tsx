@@ -30,7 +30,7 @@ async function loadFont(family: string, weight: number, text: string): Promise<A
     )
     if (!cssRes.ok) return null
     const css = await cssRes.text()
-    const match = css.match(/src:\s*url\(([^)]+)\)\s*format\(['"]?truetype['"]?\)/)
+    const match = css.match(/src:\s*url\(([^)]+)\)/)
     if (!match) return null
     const fontRes = await fetch(match[1])
     if (!fontRes.ok) return null
