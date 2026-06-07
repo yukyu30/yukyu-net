@@ -55,15 +55,15 @@ npm run textlint
 
 ### frontmatter 規約
 検証は 2 層構成。
-- **ビルド時の型付け・パース**: `src/lib/frontmatter.ts` の zod スキーマ。`date` の `YYYY-MM-DD` 形式などはここで担保。
-- **編集規約のリント**: [`@yukyu30/fluorite`](https://github.com/yukyu30/fluorite) + ルート直下の `fluorite.config.mjs`。`npm run lint:frontmatter`（CI でも実行）で記事の許可タグ・著者などをチェックする。
+- **ビルド時の型付け・パース**: `src/lib/frontmatter.ts` の zod スキーマ。frontmatter を型付きで読み込むために使う。
+- **編集規約のリント**: [`@yukyu30/fluorite`](https://github.com/yukyu30/fluorite) + ルート直下の `fluorite.config.mjs`。`npm run lint:frontmatter`（CI でも実行）で記事の許可タグ・著者・日付形式などをチェックする。
 
 記事 (`content/posts/{slug}/index.mdx`) の frontmatter:
 
 | キー | 必須 | 形式・規約 |
 | --- | --- | --- |
 | `title` | ✅ | 非空の文字列 |
-| `date` | ✅ | `YYYY-MM-DD`（クォート無しの YAML 日付。形式は zod が検証） |
+| `date` | ✅ | `YYYY-MM-DD`（クォート無しの YAML 日付。形式は fluorite の `isoDate()` が検証） |
 | `author` | ✅ | `fluorite.config.mjs` の `AUTHORS` のいずれか |
 | `tag` | ✅ | `CANONICAL_TAGS` のみで構成された非空配列 |
 | `description` | 任意 | 文字列。一覧/OGP の説明文 |
@@ -72,7 +72,7 @@ npm run textlint
 
 - 許可タグ (`CANONICAL_TAGS`) と著者 (`AUTHORS`) の正規セットは `fluorite.config.mjs` が単一の管理元。タグや著者を増やすときはここを更新する。
 - `me`（プロフィールページ）は通常記事ではないため fluorite の対象から除外している（`exclude`）。
-- YAML はクォート無し `date` を `Date` 型としてパースするため、fluorite では `date` の存在のみ検証している（形式は zod 側で担保）。
+- fluorite はクォート無しの YAML `date` も文字列のまま保持するため、`isoDate()` で `YYYY-MM-DD` 形式を直接検証している（`2026-2-3` や `2026-02-30` のような不正値も弾く）。
 
 ### ルーティング（App Router）
 - `/` - トップページ（whoami + カテゴリ + 直近一覧 + ページネーション）

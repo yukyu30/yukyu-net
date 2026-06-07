@@ -5,12 +5,12 @@ import { defineConfig } from '@yukyu30/fluorite'
  *
  * 実体としての検証は 2 層に分かれている:
  * - ビルド時の型付け・パース … src/lib/frontmatter.ts の zod スキーマ
- *   （date の YYYY-MM-DD 形式などはここで担保される）
+ *   （frontmatter を型付きで読み込むため）
  * - 編集規約(エディトリアル)のリント … 本ファイル + fluorite CLI
- *   （許可タグ・著者・任意項目の形式など、記事を書く人向けのルール）
+ *   （許可タグ・著者・日付形式・任意項目の形式など、記事を書く人向けのルール）
  *
- * 注意: YAML はクォート無しの `date: 2024-01-01` を Date 型としてパースするため、
- * fluorite では date の「存在」のみ検証し、形式は zod 側に委ねている。
+ * fluorite はクォート無しの YAML 日付（`date: 2024-01-01`）も文字列のまま保持するので、
+ * isoDate() で書かれたままの `YYYY-MM-DD` 形式を直接検証できる。
  */
 
 /** 記事に付けてよいタグ（カテゴリ）の正規セット。新規タグはここに追加して合意を取る。 */
@@ -41,8 +41,8 @@ export default defineConfig({
   rules: fm => {
     // --- 必須項目 ---
     fm.key('title').required().type('string').lengthMin(1)
-    // date は存在のみ検証（形式 YYYY-MM-DD は zod が build 時に担保）
-    fm.key('date').required()
+    // date は YYYY-MM-DD 形式まで検証（2026-2-3 や 2026-02-30 のような不正値も弾く）
+    fm.key('date').required().isoDate()
     fm.key('author').required().oneOf(AUTHORS)
     fm.key('tag').required().type('array').lengthMin(1).subsetOf(CANONICAL_TAGS)
     fm.key('tag').each.type('string')
