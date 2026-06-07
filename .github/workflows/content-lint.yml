@@ -31,7 +31,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run lint:frontmatter
+      - name: Run fluorite frontmatter check
+        run: npm run lint:frontmatter
 
   textlint:
     runs-on: ubuntu-latest
