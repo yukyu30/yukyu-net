@@ -13,7 +13,7 @@
     "test:watch": "vitest",
     "convert:posts": "tsx scripts/convert-posts.ts",
     "textlint": "textlint \"content/posts/**/*.mdx\"",
-    "lint:frontmatter": "tsx scripts/lint-frontmatter.ts"
+    "lint:frontmatter": "fluorite check"
   },
   "dependencies": {
     "@splidejs/splide": "^4.1.4",
@@ -30,6 +30,7 @@
     "@types/node": "20.19.0",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
+    "@yukyu30/fluorite": "^0.1.2",
     "pagefind": "1.4.0",
     "textlint": "^15.6.0",
     "textlint-rule-preset-ja-spacing": "^2.4.3",
