@@ -9,12 +9,11 @@ argument-hint: [記事のテーマや内容]
 ## コンテキスト
 
 - 今日の日付: !`date +%Y-%m-%d`
-- 現在時刻(UTC): !`date -u "+%Y-%m-%d %H:%M:%S"`
-- 既存記事(直近10件): !`ls public/source/ | sort -r | head -10`
+- 既存記事(直近10件): !`ls content/posts/ | sort -r | head -10`
 
 ## 許可されたタグ一覧
 
-以下のタグのみ使用可能。新しいタグを勝手に作らないこと。
+以下のタグ（`fluorite.config.mjs` の `CANONICAL_TAGS`）のみ使用可能。新しいタグを勝手に作らないこと。
 
 - 日記
 - つくったもの
@@ -36,13 +35,20 @@ argument-hint: [記事のテーマや内容]
 ```markdown
 ---
 title: "記事タイトル"
-tags: ["タグ1", "タグ2"]
-createdAt: YYYY-MM-DD HH:MM:SS
-updatedAt: YYYY-MM-DD HH:MM:SS
+date: YYYY-MM-DD
+tag:
+  - タグ1
+  - タグ2
+author: yukyu
 ---
 
 本文をここに書く
 ```
+
+- `date` はクォート無しで `YYYY-MM-DD`（今日の日付）
+- `tag` は許可タグから 1 つ以上
+- `author` は `yukyu`
+- 説明文を付けたいときは任意で `description: "..."` を追加してよい
 
 ## 手順
 
@@ -51,8 +57,8 @@ updatedAt: YYYY-MM-DD HH:MM:SS
    - タグの選択（許可リストから選ぶ、複数選択可）
    - 記事タイトルの確認
 3. スラッグ(ディレクトリ名)は今日の日付 `YYYY-MM-DD` を使う。同日に既存記事がある場合は `YYYY-MM-DD-{識別子}` にする
-4. `public/source/{slug}/` ディレクトリを作成し、`index.md` を書き込む
-5. frontmatterの `createdAt` と `updatedAt` は現在のUTC時刻を使う
+4. `content/posts/{slug}/` ディレクトリを作成し、`index.mdx` を書き込む
+5. 書き込み後に `npm run lint:frontmatter` で frontmatter 規約に通ることを確認する
 
 ## 記事執筆ルール
 
