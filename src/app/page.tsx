@@ -133,7 +133,7 @@ export default function Home() {
         ))}
       </section>
 
-      <PostIndexTable posts={visible} total={total} startNo={total} highlightFirst />
+      <PostIndexTable posts={visible} />
 
       <Pagination
         page={1}

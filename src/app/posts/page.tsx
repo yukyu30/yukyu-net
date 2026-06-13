@@ -30,7 +30,7 @@ export default function PostsIndex() {
         </div>
       </section>
 
-      <PostIndexTable posts={visible} total={total} startNo={total} />
+      <PostIndexTable posts={visible} />
 
       <Pagination
         page={1}
