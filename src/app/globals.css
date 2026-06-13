@@ -122,6 +122,17 @@ button {
   font-weight: 700;
 }
 
+/* トップページ専用: ヒーロー画像に重ねる透過ヘッダー。
+   文字色は元から明色なので、暗いヒーロー画像の上でそのまま読める。 */
+.site-header--overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: transparent;
+}
+
 /* ============ Search (Nextra <Search />) ============ */
 /* These rules style Nextra's Combobox-based search dropdown via its
    `.nextra-search` / `.nextra-search-results` class names and the
@@ -294,6 +305,77 @@ button {
 
 .divider-faint {
   border-bottom: 1px solid var(--color-faint);
+}
+
+/* ============ Hero image (root masthead) ============ */
+/* 画像は全幅で最上部に敷き、透過ヘッダー(.site-header--overlay)が上に重なる。 */
+.hero-image {
+  position: relative;
+  height: min(82vh, 680px);
+  background: var(--color-ink);
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-ink);
+}
+
+.hero-image__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 上下に薄いスクリム。ヘッダー文字（上）とメニュー（下）の可読性を確保。 */
+.hero-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.34),
+    rgba(0, 0, 0, 0) 26%,
+    rgba(0, 0, 0, 0) 54%,
+    rgba(0, 0, 0, 0.52)
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-image__menu {
+  position: absolute;
+  left: 36px;
+  bottom: 48px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-image__menu-item {
+  width: max-content;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 6vw, 68px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  color: var(--color-bg);
+  transition: color 120ms ease, transform 120ms ease;
+}
+
+.hero-image__menu-item:hover {
+  color: var(--color-orange);
+  transform: translateX(10px);
+}
+
+@media (max-width: 880px) {
+  .hero-image {
+    height: min(72vh, 520px);
+  }
+  .hero-image__menu {
+    left: 20px;
+    bottom: 32px;
+  }
 }
 
 /* ============ Hero ============ */
@@ -481,42 +563,78 @@ button {
 }
 
 /* ============ Home works (root, standalone section) ============ */
+/* 左 = オレンジの見出し / 右 = 黒背景の横スクロールリスト。
+   右カラムは縦ホイールを横スクロールに変換する（home-works.tsx）。 */
 .home-works {
-  padding: 36px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
   border-bottom: 1px solid var(--color-ink);
-  background: var(--color-paper);
+}
+
+.home-works__intro {
+  background: var(--color-orange);
+  color: var(--color-bg);
+  padding: 36px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-
-.home-works__head {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--color-muted);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.home-works__grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 18px;
+  justify-content: center;
+}
+
+.home-works__heading {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 0.9;
+}
+
+.home-works__desc {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.home-works__scroller {
+  background: var(--color-ink);
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-muted) transparent;
+}
+
+.home-works__scroller::-webkit-scrollbar {
+  height: 8px;
+}
+
+.home-works__scroller::-webkit-scrollbar-thumb {
+  background: var(--color-muted);
+}
+
+.home-works__track {
+  display: flex;
+  gap: 20px;
+  padding: 36px;
+  width: max-content;
 }
 
 .home-works__item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  color: var(--color-ink);
+  gap: 12px;
+  width: 380px;
+  flex-shrink: 0;
+  color: var(--color-bg);
 }
 
 .home-works__thumb {
   display: block;
   aspect-ratio: 16 / 10;
-  background: var(--color-bg);
+  background: #1a1a1a;
   overflow: hidden;
-  border: 1px solid var(--color-faint);
+  border: 1px solid rgba(250, 250, 247, 0.18);
 }
 
 .home-works__thumb img {
@@ -524,16 +642,21 @@ button {
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 200ms ease;
 }
 
 .home-works__item:hover .home-works__thumb {
-  border-color: var(--color-accent);
+  border-color: var(--color-orange);
+}
+
+.home-works__item:hover .home-works__thumb img {
+  transform: scale(1.04);
 }
 
 .home-works__meta {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .home-works__date {
@@ -545,7 +668,7 @@ button {
 
 .home-works__title {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.01em;
@@ -556,30 +679,21 @@ button {
     padding: 24px 20px;
   }
   .home-works {
-    padding: 24px 20px;
+    grid-template-columns: 1fr;
   }
-  .home-works__grid {
-    grid-template-columns: repeat(2, 1fr);
+  .home-works__intro {
+    padding: 24px 20px;
     gap: 12px;
   }
-  .home-works__thumb {
-    aspect-ratio: 1 / 1;
+  .home-works__heading {
+    font-size: 40px;
   }
-  .home-works__title {
-    font-size: 12px;
+  .home-works__track {
+    padding: 24px 20px;
+    gap: 16px;
   }
-}
-
-@media (max-width: 480px) {
-  .home-works__grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-  .home-works__thumb {
-    aspect-ratio: 16 / 10;
-  }
-  .home-works__title {
-    font-size: 13px;
+  .home-works__item {
+    width: 300px;
   }
 }
 
@@ -789,26 +903,18 @@ button {
   margin: 0;
 }
 
-/* トップの記事リスト下に置く read more ボタン */
-.index-more {
-  display: flex;
-  justify-content: center;
-  padding: 40px 36px;
+/* リスト末尾の read more 行（ボタンではなく最後の行として並べる） */
+.index-row--more .index-row__title {
+  color: var(--color-accent);
 }
 
-.index-more__button {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  padding: 16px 40px;
-  border: 1px solid var(--color-ink);
-  background: var(--color-paper);
-  color: var(--color-ink);
-  transition: background 0.12s ease, color 0.12s ease;
-}
-
-.index-more__button:hover {
-  background: var(--color-accent);
+.index-row--more:hover .index-row__title {
   color: var(--color-paper);
+}
+
+/* リスト最終行の下線は消して次セクションへ繋げる */
+.index-table .index-year:last-child .index-row:last-child {
+  border-bottom: none;
 }
 
 @media (max-width: 880px) {

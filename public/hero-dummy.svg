@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="dummy hero image">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#002ced"/>
+      <stop offset="1" stop-color="#0a0a0a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#g)"/>
+  <g fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="2">
+    <path d="M0 225 H1600 M0 450 H1600 M0 675 H1600 M400 0 V900 M800 0 V900 M1200 0 V900"/>
+  </g>
+  <text x="800" y="470" text-anchor="middle" font-family="monospace" font-size="58" letter-spacing="10" fill="rgba(255,255,255,0.55)">DUMMY HERO IMAGE</text>
+</svg>

@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { Link as ViewTransitionLink } from 'next-view-transitions'
 import { getAllPosts, getProfileExcerpt, getWorks } from '@/lib/posts'
 import { PostIndexTable } from '@/components/post-index-table'
+import { HomeWorks } from '@/components/home-works'
+import { HeroImage } from '@/components/hero-image'
 
 export const metadata = {
   title: 'yukyu.net',
@@ -28,59 +29,20 @@ export default function Home() {
   const visible = posts.slice(0, PAGE_SIZE)
   const total = posts.length
   const works = getWorks()
-  const recentWorks = works.filter(p => p.frontMatter.thumbnail).slice(0, 3)
+    .filter(p => p.frontMatter.thumbnail)
+    .slice(0, 5)
   const profileLines = getProfileExcerpt('me', 2).split('\n').filter(Boolean)
 
   return (
     <div className="page">
-      <section className="hero">
-        <div className="hero__grid">
-          <div>
-            <h1 className="hero__title">
-              <span className="hero__title-slash">/</span>index
-            </h1>
-          </div>
-          <div>
-            <div className="hero__meta-num">
-              {visible.length}
-              <span className="hero__meta-num-small"> / {total}</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroImage />
 
-      <PostIndexTable posts={visible} />
+      <PostIndexTable
+        posts={visible}
+        readMoreHref={total > PAGE_SIZE ? '/page/1' : undefined}
+      />
 
-      {total > PAGE_SIZE && (
-        <div className="index-more">
-          <Link href="/page/1" className="index-more__button">
-            read more →
-          </Link>
-        </div>
-      )}
-
-      {recentWorks.length > 0 && (
-        <section className="home-works">
-          <div className="home-works__head">// works</div>
-          <div className="home-works__grid">
-            {recentWorks.map(p => (
-              <ViewTransitionLink
-                key={p.slug}
-                href={`/posts/${p.slug}`}
-                className="home-works__item"
-              >
-                <span className="home-works__thumb">
-                  <img src={p.frontMatter.thumbnail} alt="" loading="lazy" />
-                </span>
-                <div className="home-works__meta">
-                  <span className="home-works__date">{p.frontMatter.date}</span>
-                  <span className="home-works__title">{p.frontMatter.title}</span>
-                </div>
-              </ViewTransitionLink>
-            ))}
-          </div>
-        </section>
-      )}
+      {works.length > 0 && <HomeWorks works={works} />}
 
       <section className="whoami">
         <div className="whoami__head">

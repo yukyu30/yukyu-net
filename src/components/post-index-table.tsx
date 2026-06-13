@@ -4,6 +4,8 @@ import type { PostListItem } from '@/lib/posts'
 
 interface Props {
   posts: PostListItem[]
+  // 渡されたとき、リスト末尾に「read more」行を追加する（トップページ用）
+  readMoreHref?: string
 }
 
 interface YearGroup {
@@ -26,11 +28,11 @@ function groupByYear(posts: PostListItem[]): YearGroup[] {
   return groups
 }
 
-export function PostIndexTable({ posts }: Props) {
+export function PostIndexTable({ posts, readMoreHref }: Props) {
   const groups = groupByYear(posts)
   return (
     <section className="index-table">
-      {groups.map(group => (
+      {groups.map((group, gi) => (
         <div className="index-year" key={group.year}>
           <div className="index-year__label">
             <span className="index-year__label-text">{group.year}</span>
@@ -48,6 +50,15 @@ export function PostIndexTable({ posts }: Props) {
                 <span className="index-row__title">{p.frontMatter.title}</span>
               </ViewTransitionLink>
             ))}
+            {readMoreHref && gi === groups.length - 1 && (
+              <ViewTransitionLink
+                href={readMoreHref}
+                className="index-row index-row--more"
+              >
+                <span className="index-row__date" aria-hidden="true" />
+                <span className="index-row__title">read more →</span>
+              </ViewTransitionLink>
+            )}
           </div>
         </div>
       ))}
