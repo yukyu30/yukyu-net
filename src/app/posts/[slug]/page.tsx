@@ -114,6 +114,7 @@ export default async function PostPage(props: PageProps) {
       </section>
 
       <section className="post-layout">
+        <PostToc toc={toc} />
         <article className="post-body">
           <MDXContent />
           <PostShare
@@ -129,7 +130,6 @@ export default async function PostPage(props: PageProps) {
             </span>
           </div>
         </article>
-        <PostToc toc={toc} />
       </section>
     </div>
   )

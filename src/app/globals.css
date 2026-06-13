@@ -480,13 +480,17 @@ button {
   display: inline-block;
 }
 
-.whoami__works {
+/* ============ Home works (root, standalone section) ============ */
+.home-works {
+  padding: 36px;
+  border-bottom: 1px solid var(--color-ink);
+  background: var(--color-paper);
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.whoami__works-head {
+.home-works__head {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-muted);
@@ -494,20 +498,20 @@ button {
   text-transform: uppercase;
 }
 
-.whoami__works-grid {
+.home-works__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
 
-.whoami__work {
+.home-works__item {
   display: flex;
   flex-direction: column;
   gap: 8px;
   color: var(--color-ink);
 }
 
-.whoami__work-thumb {
+.home-works__thumb {
   display: block;
   aspect-ratio: 16 / 10;
   background: var(--color-bg);
@@ -515,31 +519,31 @@ button {
   border: 1px solid var(--color-faint);
 }
 
-.whoami__work-thumb img {
+.home-works__thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.whoami__work:hover .whoami__work-thumb {
+.home-works__item:hover .home-works__thumb {
   border-color: var(--color-accent);
 }
 
-.whoami__work-meta {
+.home-works__meta {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.whoami__work-date {
+.home-works__date {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-muted);
   font-variant-numeric: tabular-nums;
 }
 
-.whoami__work-title {
+.home-works__title {
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
@@ -551,27 +555,30 @@ button {
   .whoami {
     padding: 24px 20px;
   }
-  .whoami__works-grid {
+  .home-works {
+    padding: 24px 20px;
+  }
+  .home-works__grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-  .whoami__work-thumb {
+  .home-works__thumb {
     aspect-ratio: 1 / 1;
   }
-  .whoami__work-title {
+  .home-works__title {
     font-size: 12px;
   }
 }
 
 @media (max-width: 480px) {
-  .whoami__works-grid {
+  .home-works__grid {
     grid-template-columns: 1fr;
     gap: 14px;
   }
-  .whoami__work-thumb {
+  .home-works__thumb {
     aspect-ratio: 16 / 10;
   }
-  .whoami__work-title {
+  .home-works__title {
     font-size: 13px;
   }
 }
@@ -720,48 +727,40 @@ button {
 }
 
 /* ============ Index table (年ごとにグルーピング) ============ */
-.index-table {
-  border-top: 1px solid var(--color-ink);
-}
-
 /* 左カラム = 年 / 右カラム = リスト。スマホでは 1 カラム。 */
 .index-year {
   display: grid;
   grid-template-columns: 220px 1fr;
-  border-bottom: 1px solid var(--color-ink);
 }
 
+/* 左カラム（年）は全体を常時アクセントの青で塗る */
 .index-year__label {
+  background: var(--color-accent);
+}
+
+.index-year__label-text {
+  display: block;
   padding: 28px 36px;
   font-family: var(--font-display);
   font-size: 44px;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1;
-  color: var(--color-ink);
+  color: var(--color-paper);
   font-variant-numeric: tabular-nums;
   position: sticky;
   top: 12px;
-  align-self: start;
-}
-
-.index-year__list {
-  border-left: 1px solid var(--color-faint);
 }
 
 .index-row {
   display: grid;
-  grid-template-columns: 64px 1fr 16px;
+  grid-template-columns: 64px 1fr;
   align-items: baseline;
   gap: 20px;
   padding: 20px 36px;
   border-bottom: 1px solid var(--color-faint);
   color: var(--color-ink);
   transition: background 0.12s ease, color 0.12s ease;
-}
-
-.index-year__list .index-row:last-child {
-  border-bottom: none;
 }
 
 /* ホバーでフッターと同じ青に反転 */
@@ -790,30 +789,36 @@ button {
   margin: 0;
 }
 
-.index-row__arrow {
-  align-self: center;
-  font-size: 14px;
-  color: var(--color-muted);
-  opacity: 0;
-  transition: opacity 0.12s ease, color 0.12s ease;
+/* トップの記事リスト下に置く read more ボタン */
+.index-more {
+  display: flex;
+  justify-content: center;
+  padding: 40px 36px;
 }
 
-.index-row:hover .index-row__arrow {
+.index-more__button {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 16px 40px;
+  border: 1px solid var(--color-ink);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.index-more__button:hover {
+  background: var(--color-accent);
   color: var(--color-paper);
-  opacity: 1;
 }
 
 @media (max-width: 880px) {
   .index-year {
     grid-template-columns: 1fr;
   }
-  .index-year__label {
+  .index-year__label-text {
     position: static;
     padding: 24px 24px 8px;
     font-size: 32px;
-  }
-  .index-year__list {
-    border-left: none;
   }
   .index-row {
     padding: 16px 24px;
@@ -1101,15 +1106,15 @@ button {
 
 .post-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-columns: 260px minmax(0, 1fr);
   max-width: 1100px;
   margin: 0 auto;
   padding: 40px 36px;
 }
 
 .post-toc {
-  padding-left: 32px;
-  border-left: 1px solid var(--color-faint);
+  padding-right: 32px;
+  border-right: 1px solid var(--color-faint);
   position: sticky;
   top: 20px;
   height: fit-content;
@@ -1155,7 +1160,7 @@ button {
 .post-toc__item.is-active::before {
   content: '';
   position: absolute;
-  left: -33px;
+  right: -33px;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -1172,7 +1177,7 @@ button {
 }
 
 .post-body {
-  padding-right: 40px;
+  padding-left: 40px;
   font-family: var(--font-display);
   max-width: 680px;
   font-size: 16px;
@@ -1420,14 +1425,14 @@ button {
   }
   .post-toc {
     order: -1;
-    border-left: none;
+    border-right: none;
     border-bottom: 1px solid var(--color-faint);
     padding: 0 0 20px;
     margin-bottom: 24px;
     position: static;
   }
   .post-body {
-    padding-right: 0;
+    padding-left: 0;
   }
   .pagination {
     flex-direction: column;

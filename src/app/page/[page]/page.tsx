@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getAllPosts } from '@/lib/posts'
 import { PostIndexTable, Pagination } from '@/components/post-index-table'
+import { CategoryGrid } from '@/components/category-grid'
 
 const PAGE_SIZE = 20
 
@@ -12,7 +13,7 @@ export function generateStaticParams() {
   const total = getAllPosts().length
   const totalPages = Math.ceil(total / PAGE_SIZE)
   const out = []
-  for (let i = 2; i <= totalPages; i += 1) {
+  for (let i = 1; i <= totalPages; i += 1) {
     out.push({ page: String(i) })
   }
   return out
@@ -57,6 +58,8 @@ export default async function PaginatedIndex(props: PageProps) {
           </div>
         </div>
       </section>
+
+      <CategoryGrid />
 
       <PostIndexTable posts={visible} />
 

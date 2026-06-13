@@ -32,7 +32,9 @@ export function PostIndexTable({ posts }: Props) {
     <section className="index-table">
       {groups.map(group => (
         <div className="index-year" key={group.year}>
-          <div className="index-year__label">{group.year}</div>
+          <div className="index-year__label">
+            <span className="index-year__label-text">{group.year}</span>
+          </div>
           <div className="index-year__list">
             {group.posts.map(p => (
               <ViewTransitionLink
@@ -44,7 +46,6 @@ export function PostIndexTable({ posts }: Props) {
                   {p.frontMatter.date.slice(5).replace('-', '.')}
                 </span>
                 <span className="index-row__title">{p.frontMatter.title}</span>
-                <span className="index-row__arrow" aria-hidden>↗</span>
               </ViewTransitionLink>
             ))}
           </div>
@@ -63,7 +64,7 @@ interface PaginationProps {
   pageHref?: (n: number) => string
 }
 
-const defaultPageHref = (n: number) => (n === 1 ? '/' : `/page/${n}`)
+const defaultPageHref = (n: number) => `/page/${n}`
 
 export function Pagination({
   page,

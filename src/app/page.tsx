@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Link as ViewTransitionLink } from 'next-view-transitions'
-import { getAllPosts, getProfileExcerpt, getTopTags, getWorks } from '@/lib/posts'
-import { PostIndexTable, Pagination } from '@/components/post-index-table'
+import { getAllPosts, getProfileExcerpt, getWorks } from '@/lib/posts'
+import { PostIndexTable } from '@/components/post-index-table'
 
 export const metadata = {
   title: 'yukyu.net',
@@ -26,7 +26,6 @@ const SOCIAL_LINKS: Array<{ name: string; url: string }> = [
 export default function Home() {
   const posts = getAllPosts()
   const visible = posts.slice(0, PAGE_SIZE)
-  const topTags = getTopTags(5)
   const total = posts.length
   const works = getWorks()
   const recentWorks = works.filter(p => p.frontMatter.thumbnail).slice(0, 3)
@@ -49,6 +48,39 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <PostIndexTable posts={visible} />
+
+      {total > PAGE_SIZE && (
+        <div className="index-more">
+          <Link href="/page/1" className="index-more__button">
+            read more →
+          </Link>
+        </div>
+      )}
+
+      {recentWorks.length > 0 && (
+        <section className="home-works">
+          <div className="home-works__head">// works</div>
+          <div className="home-works__grid">
+            {recentWorks.map(p => (
+              <ViewTransitionLink
+                key={p.slug}
+                href={`/posts/${p.slug}`}
+                className="home-works__item"
+              >
+                <span className="home-works__thumb">
+                  <img src={p.frontMatter.thumbnail} alt="" loading="lazy" />
+                </span>
+                <div className="home-works__meta">
+                  <span className="home-works__date">{p.frontMatter.date}</span>
+                  <span className="home-works__title">{p.frontMatter.title}</span>
+                </div>
+              </ViewTransitionLink>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="whoami">
         <div className="whoami__head">
@@ -90,58 +122,7 @@ export default function Home() {
             </ul>
           </div>
         </div>
-        {recentWorks.length > 0 && (
-          <div className="whoami__works">
-            <div className="whoami__works-head">// recent works</div>
-            <div className="whoami__works-grid">
-              {recentWorks.map(p => (
-                <ViewTransitionLink
-                  key={p.slug}
-                  href={`/posts/${p.slug}`}
-                  className="whoami__work"
-                >
-                  <span className="whoami__work-thumb">
-                    <img src={p.frontMatter.thumbnail} alt="" loading="lazy" />
-                  </span>
-                  <div className="whoami__work-meta">
-                    <span className="whoami__work-date">{p.frontMatter.date}</span>
-                    <span className="whoami__work-title">{p.frontMatter.title}</span>
-                  </div>
-                </ViewTransitionLink>
-              ))}
-            </div>
-          </div>
-        )}
       </section>
-
-      <section className="cat-grid">
-        <Link href="/posts" className="cat-grid__cell is-feature">
-          <div className="cat-grid__cell-no">01 / all</div>
-          <div className="cat-grid__cell-name">all</div>
-          <div className="cat-grid__cell-count">{total} entries →</div>
-        </Link>
-        {topTags.map((t, i) => (
-          <Link
-            key={t.tag}
-            href={`/tags/${encodeURIComponent(t.tag)}`}
-            className="cat-grid__cell"
-          >
-            <div className="cat-grid__cell-no">{String(i + 2).padStart(2, '0')} / #{t.tag}</div>
-            <div className="cat-grid__cell-name">{t.tag}</div>
-            <div className="cat-grid__cell-count">{t.count} entries →</div>
-          </Link>
-        ))}
-      </section>
-
-      <PostIndexTable posts={visible} />
-
-      <Pagination
-        page={1}
-        totalPages={Math.ceil(total / PAGE_SIZE)}
-        total={total}
-        shown={visible.length}
-        pageStart={1}
-      />
     </div>
   )
 }
