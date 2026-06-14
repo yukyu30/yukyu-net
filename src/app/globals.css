@@ -364,8 +364,19 @@ button {
 }
 
 .hero-image__menu-item:hover {
-  color: var(--color-orange);
+  color: var(--color-accent);
   transform: translateX(10px);
+}
+
+.hero-image__credit {
+  position: absolute;
+  right: 16px;
+  bottom: 12px;
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 @media (max-width: 880px) {
@@ -438,13 +449,43 @@ button {
 }
 
 /* ============ Whoami (root intro) ============ */
+/* 大きな「WHO ARE YOU?」を青で敷き詰めた背景の上に自己紹介を載せる */
 .whoami {
-  padding: 36px;
-  border-bottom: 1px solid var(--color-ink);
+  position: relative;
+  overflow: hidden;
+  padding: 72px 48px;
   background: var(--color-paper);
+  min-height: clamp(360px, 48vh, 560px);
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  justify-content: center;
+}
+
+.whoami__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.whoami__bg-row {
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(56px, 13vw, 200px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--color-accent);
+}
+
+.whoami__content {
+  position: relative;
+  z-index: 1;
 }
 
 .whoami__head {
@@ -472,6 +513,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  /* 上下の見出しに挟まれた中央に、背景なしでそのまま置く */
+  max-width: 560px;
 }
 
 .whoami__id {
@@ -491,9 +534,12 @@ button {
 .whoami__id dt {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--color-accent);
+  color: #ffffff;
   letter-spacing: 0.08em;
   font-weight: 700;
+  width: fit-content;
+  padding: 2px 8px;
+  background: var(--color-accent);
 }
 
 .whoami__id dd {
@@ -503,6 +549,11 @@ button {
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.4;
+  width: fit-content;
+  max-width: 100%;
+  padding: 2px 8px;
+  background: var(--color-accent);
+  color: #ffffff;
 }
 
 .whoami__bio {
@@ -517,6 +568,11 @@ button {
 
 .whoami__bio-line {
   margin: 0;
+  width: fit-content;
+  max-width: 100%;
+  padding: 2px 8px;
+  background: var(--color-accent);
+  color: #ffffff;
 }
 
 .whoami__bio-more {

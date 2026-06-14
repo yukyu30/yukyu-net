@@ -9,8 +9,7 @@ const HERO_MENU: Array<{ label: string; href: string }> = [
 export function HeroImage() {
   return (
     <section className="hero-image">
-      {/* TODO: 仮のダミー画像。実画像に差し替える */}
-      <img className="hero-image__media" src="/hero-dummy.svg" alt="" />
+      <img className="hero-image__media" src="/hero.jpg" alt="東京の街並み" />
       <nav className="hero-image__menu" aria-label="メインメニュー">
         {HERO_MENU.map(item => (
           <Link key={item.href} href={item.href} className="hero-image__menu-item">
@@ -18,6 +17,7 @@ export function HeroImage() {
           </Link>
         ))}
       </nav>
+      <span className="hero-image__credit">photo by yukyu</span>
     </section>
   )
 }

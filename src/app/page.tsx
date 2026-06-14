@@ -11,6 +11,10 @@ export const metadata = {
 
 const PAGE_SIZE = 20
 
+// whoami セクションの背景: 大きな「WHO ARE YOU?」を上下に1列ずつ配置する
+const WHOAMI_BG_ROWS = 2
+const WHOAMI_BG_TEXT = Array(8).fill('WHO ARE YOU?').join(' ')
+
 const SOCIAL_LINKS: Array<{ name: string; url: string }> = [
   { name: 'X', url: 'https://x.com/yukyu30' },
   { name: 'BlueSky', url: 'https://bsky.app/profile/yukyu.net' },
@@ -45,10 +49,14 @@ export default function Home() {
       {works.length > 0 && <HomeWorks works={works} />}
 
       <section className="whoami">
-        <div className="whoami__head">
-          <span className="whoami__label">// who</span>
+        <div className="whoami__bg" aria-hidden="true">
+          {Array.from({ length: WHOAMI_BG_ROWS }).map((_, i) => (
+            <span key={i} className="whoami__bg-row">
+              {WHOAMI_BG_TEXT}
+            </span>
+          ))}
         </div>
-        <div className="whoami__grid">
+        <div className="whoami__content">
           <div className="whoami__profile">
             <dl className="whoami__id">
               <div className="whoami__id-row">
