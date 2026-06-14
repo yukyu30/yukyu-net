@@ -4,34 +4,64 @@ import type { PostListItem } from '@/lib/posts'
 
 interface Props {
   posts: PostListItem[]
-  total: number
-  startNo: number
-  highlightFirst?: boolean
+  // 渡されたとき、リスト末尾に「read more」行を追加する（トップページ用）
+  readMoreHref?: string
 }
 
-export function PostIndexTable({ posts, total, startNo, highlightFirst = false }: Props) {
+interface YearGroup {
+  year: string
+  posts: PostListItem[]
+}
+
+// posts は date 降順で渡される前提。年ごとに連続したまとまりに畳み込む。
+function groupByYear(posts: PostListItem[]): YearGroup[] {
+  const groups: YearGroup[] = []
+  for (const post of posts) {
+    const year = post.frontMatter.date.slice(0, 4)
+    const last = groups[groups.length - 1]
+    if (last && last.year === year) {
+      last.posts.push(post)
+    } else {
+      groups.push({ year, posts: [post] })
+    }
+  }
+  return groups
+}
+
+export function PostIndexTable({ posts, readMoreHref }: Props) {
+  const groups = groupByYear(posts)
   return (
     <section className="index-table">
-      <div className="index-table__head">
-        <span>NO.</span>
-        <span>DATE</span>
-        <span>TITLE</span>
-      </div>
-      {posts.map((p, i) => {
-        const num = String(startNo - i).padStart(3, '0')
-        const isFirst = highlightFirst && i === 0
-        return (
-          <ViewTransitionLink
-            key={p.slug}
-            href={`/posts/${p.slug}`}
-            className={`index-row${isFirst ? ' is-first' : ''}`}
-          >
-            <span className="index-row__no">№{num}</span>
-            <span className="index-row__date">{p.frontMatter.date}</span>
-            <span className="index-row__title">{p.frontMatter.title}</span>
-          </ViewTransitionLink>
-        )
-      })}
+      {groups.map((group, gi) => (
+        <div className="index-year" key={group.year}>
+          <div className="index-year__label">
+            <span className="index-year__label-text">{group.year}</span>
+          </div>
+          <div className="index-year__list">
+            {group.posts.map(p => (
+              <ViewTransitionLink
+                key={p.slug}
+                href={`/posts/${p.slug}`}
+                className="index-row"
+              >
+                <span className="index-row__date">
+                  {p.frontMatter.date.slice(5).replace('-', '.')}
+                </span>
+                <span className="index-row__title">{p.frontMatter.title}</span>
+              </ViewTransitionLink>
+            ))}
+            {readMoreHref && gi === groups.length - 1 && (
+              <ViewTransitionLink
+                href={readMoreHref}
+                className="index-row index-row--more"
+              >
+                <span className="index-row__date" aria-hidden="true" />
+                <span className="index-row__title">read more →</span>
+              </ViewTransitionLink>
+            )}
+          </div>
+        </div>
+      ))}
     </section>
   )
 }
@@ -45,7 +75,7 @@ interface PaginationProps {
   pageHref?: (n: number) => string
 }
 
-const defaultPageHref = (n: number) => (n === 1 ? '/' : `/page/${n}`)
+const defaultPageHref = (n: number) => `/page/${n}`
 
 export function Pagination({
   page,

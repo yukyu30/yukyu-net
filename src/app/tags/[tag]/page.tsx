@@ -62,7 +62,7 @@ export default async function TagPage(props: PageProps) {
 
       <TagsSlider tags={allTags} currentTag={isAll ? null : tag} totalCount={totalCount} />
 
-      <PostIndexTable posts={posts} total={posts.length} startNo={posts.length} />
+      <PostIndexTable posts={posts} />
 
     </div>
   )

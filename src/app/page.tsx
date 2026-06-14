@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { Link as ViewTransitionLink } from 'next-view-transitions'
-import { getAllPosts, getProfileExcerpt, getTopTags, getWorks } from '@/lib/posts'
-import { PostIndexTable, Pagination } from '@/components/post-index-table'
+import { getAllPosts, getProfileExcerpt, getWorks } from '@/lib/posts'
+import { PostIndexTable } from '@/components/post-index-table'
+import { HomeWorks } from '@/components/home-works'
+import { HeroImage } from '@/components/hero-image'
 
 export const metadata = {
   title: 'yukyu.net',
@@ -9,6 +10,10 @@ export const metadata = {
 }
 
 const PAGE_SIZE = 20
+
+// whoami セクションの背景: 大きな「WHO ARE YOU?」を上下に1列ずつ配置する
+const WHOAMI_BG_ROWS = 2
+const WHOAMI_BG_TEXT = Array(8).fill('WHO ARE YOU?').join(' ')
 
 const SOCIAL_LINKS: Array<{ name: string; url: string }> = [
   { name: 'X', url: 'https://x.com/yukyu30' },
@@ -26,35 +31,32 @@ const SOCIAL_LINKS: Array<{ name: string; url: string }> = [
 export default function Home() {
   const posts = getAllPosts()
   const visible = posts.slice(0, PAGE_SIZE)
-  const topTags = getTopTags(5)
   const total = posts.length
   const works = getWorks()
-  const recentWorks = works.filter(p => p.frontMatter.thumbnail).slice(0, 3)
+    .filter(p => p.frontMatter.thumbnail)
+    .slice(0, 5)
   const profileLines = getProfileExcerpt('me', 2).split('\n').filter(Boolean)
 
   return (
     <div className="page">
-      <section className="hero">
-        <div className="hero__grid">
-          <div>
-            <h1 className="hero__title">
-              <span className="hero__title-slash">/</span>index
-            </h1>
-          </div>
-          <div>
-            <div className="hero__meta-num">
-              {visible.length}
-              <span className="hero__meta-num-small"> / {total}</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroImage />
+
+      <PostIndexTable
+        posts={visible}
+        readMoreHref={total > PAGE_SIZE ? '/page/1' : undefined}
+      />
+
+      {works.length > 0 && <HomeWorks works={works} />}
 
       <section className="whoami">
-        <div className="whoami__head">
-          <span className="whoami__label">// who</span>
+        <div className="whoami__bg" aria-hidden="true">
+          {Array.from({ length: WHOAMI_BG_ROWS }).map((_, i) => (
+            <span key={i} className="whoami__bg-row">
+              {WHOAMI_BG_TEXT}
+            </span>
+          ))}
         </div>
-        <div className="whoami__grid">
+        <div className="whoami__content">
           <div className="whoami__profile">
             <dl className="whoami__id">
               <div className="whoami__id-row">
@@ -90,58 +92,7 @@ export default function Home() {
             </ul>
           </div>
         </div>
-        {recentWorks.length > 0 && (
-          <div className="whoami__works">
-            <div className="whoami__works-head">// recent works</div>
-            <div className="whoami__works-grid">
-              {recentWorks.map(p => (
-                <ViewTransitionLink
-                  key={p.slug}
-                  href={`/posts/${p.slug}`}
-                  className="whoami__work"
-                >
-                  <span className="whoami__work-thumb">
-                    <img src={p.frontMatter.thumbnail} alt="" loading="lazy" />
-                  </span>
-                  <div className="whoami__work-meta">
-                    <span className="whoami__work-date">{p.frontMatter.date}</span>
-                    <span className="whoami__work-title">{p.frontMatter.title}</span>
-                  </div>
-                </ViewTransitionLink>
-              ))}
-            </div>
-          </div>
-        )}
       </section>
-
-      <section className="cat-grid">
-        <Link href="/posts" className="cat-grid__cell is-feature">
-          <div className="cat-grid__cell-no">01 / all</div>
-          <div className="cat-grid__cell-name">all</div>
-          <div className="cat-grid__cell-count">{total} entries →</div>
-        </Link>
-        {topTags.map((t, i) => (
-          <Link
-            key={t.tag}
-            href={`/tags/${encodeURIComponent(t.tag)}`}
-            className="cat-grid__cell"
-          >
-            <div className="cat-grid__cell-no">{String(i + 2).padStart(2, '0')} / #{t.tag}</div>
-            <div className="cat-grid__cell-name">{t.tag}</div>
-            <div className="cat-grid__cell-count">{t.count} entries →</div>
-          </Link>
-        ))}
-      </section>
-
-      <PostIndexTable posts={visible} total={total} startNo={total} highlightFirst />
-
-      <Pagination
-        page={1}
-        totalPages={Math.ceil(total / PAGE_SIZE)}
-        total={total}
-        shown={visible.length}
-        pageStart={1}
-      />
     </div>
   )
 }

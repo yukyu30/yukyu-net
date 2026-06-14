@@ -122,6 +122,17 @@ button {
   font-weight: 700;
 }
 
+/* トップページ専用: ヒーロー画像に重ねる透過ヘッダー。
+   文字色は元から明色なので、暗いヒーロー画像の上でそのまま読める。 */
+.site-header--overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: transparent;
+}
+
 /* ============ Search (Nextra <Search />) ============ */
 /* These rules style Nextra's Combobox-based search dropdown via its
    `.nextra-search` / `.nextra-search-results` class names and the
@@ -296,6 +307,88 @@ button {
   border-bottom: 1px solid var(--color-faint);
 }
 
+/* ============ Hero image (root masthead) ============ */
+/* 画像は全幅で最上部に敷き、透過ヘッダー(.site-header--overlay)が上に重なる。 */
+.hero-image {
+  position: relative;
+  height: min(82vh, 680px);
+  background: var(--color-ink);
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-ink);
+}
+
+.hero-image__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 上下に薄いスクリム。ヘッダー文字（上）とメニュー（下）の可読性を確保。 */
+.hero-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.34),
+    rgba(0, 0, 0, 0) 26%,
+    rgba(0, 0, 0, 0) 54%,
+    rgba(0, 0, 0, 0.52)
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-image__menu {
+  position: absolute;
+  left: 36px;
+  bottom: 48px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-image__menu-item {
+  width: max-content;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 6vw, 68px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  color: var(--color-bg);
+  transition: color 120ms ease, transform 120ms ease;
+}
+
+.hero-image__menu-item:hover {
+  color: var(--color-accent);
+  transform: translateX(10px);
+}
+
+.hero-image__credit {
+  position: absolute;
+  right: 16px;
+  bottom: 12px;
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 880px) {
+  .hero-image {
+    height: min(72vh, 520px);
+  }
+  .hero-image__menu {
+    left: 20px;
+    bottom: 32px;
+  }
+}
+
 /* ============ Hero ============ */
 .hero {
   padding: 48px 36px 36px;
@@ -356,13 +449,43 @@ button {
 }
 
 /* ============ Whoami (root intro) ============ */
+/* 大きな「WHO ARE YOU?」を青で敷き詰めた背景の上に自己紹介を載せる */
 .whoami {
-  padding: 36px;
-  border-bottom: 1px solid var(--color-ink);
+  position: relative;
+  overflow: hidden;
+  padding: 72px 48px;
   background: var(--color-paper);
+  min-height: clamp(360px, 48vh, 560px);
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  justify-content: center;
+}
+
+.whoami__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.whoami__bg-row {
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(56px, 13vw, 200px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--color-accent);
+}
+
+.whoami__content {
+  position: relative;
+  z-index: 1;
 }
 
 .whoami__head {
@@ -390,6 +513,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  /* 上下の見出しに挟まれた中央に、背景なしでそのまま置く */
+  max-width: 560px;
 }
 
 .whoami__id {
@@ -409,9 +534,12 @@ button {
 .whoami__id dt {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--color-accent);
+  color: #ffffff;
   letter-spacing: 0.08em;
   font-weight: 700;
+  width: fit-content;
+  padding: 2px 8px;
+  background: var(--color-accent);
 }
 
 .whoami__id dd {
@@ -421,6 +549,11 @@ button {
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.4;
+  width: fit-content;
+  max-width: 100%;
+  padding: 2px 8px;
+  background: var(--color-accent);
+  color: #ffffff;
 }
 
 .whoami__bio {
@@ -435,6 +568,11 @@ button {
 
 .whoami__bio-line {
   margin: 0;
+  width: fit-content;
+  max-width: 100%;
+  padding: 2px 8px;
+  background: var(--color-accent);
+  color: #ffffff;
 }
 
 .whoami__bio-more {
@@ -480,68 +618,113 @@ button {
   display: inline-block;
 }
 
-.whoami__works {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.whoami__works-head {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--color-muted);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.whoami__works-grid {
+/* ============ Home works (root, standalone section) ============ */
+/* 左 = オレンジの見出し / 右 = 黒背景の横スクロールリスト。
+   右カラムは縦ホイールを横スクロールに変換する（home-works.tsx）。 */
+.home-works {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  grid-template-columns: 300px 1fr;
+  border-bottom: 1px solid var(--color-ink);
 }
 
-.whoami__work {
+.home-works__intro {
+  background: var(--color-orange);
+  color: var(--color-bg);
+  padding: 36px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  color: var(--color-ink);
+  gap: 18px;
+  justify-content: center;
 }
 
-.whoami__work-thumb {
+.home-works__heading {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 0.9;
+}
+
+.home-works__desc {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.home-works__scroller {
+  background: var(--color-ink);
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-muted) transparent;
+}
+
+.home-works__scroller::-webkit-scrollbar {
+  height: 8px;
+}
+
+.home-works__scroller::-webkit-scrollbar-thumb {
+  background: var(--color-muted);
+}
+
+.home-works__track {
+  display: flex;
+  gap: 20px;
+  padding: 36px;
+  width: max-content;
+}
+
+.home-works__item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 380px;
+  flex-shrink: 0;
+  color: var(--color-bg);
+}
+
+.home-works__thumb {
   display: block;
   aspect-ratio: 16 / 10;
-  background: var(--color-bg);
+  background: #1a1a1a;
   overflow: hidden;
-  border: 1px solid var(--color-faint);
+  border: 1px solid rgba(250, 250, 247, 0.18);
 }
 
-.whoami__work-thumb img {
+.home-works__thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 200ms ease;
 }
 
-.whoami__work:hover .whoami__work-thumb {
-  border-color: var(--color-accent);
+.home-works__item:hover .home-works__thumb {
+  border-color: var(--color-orange);
 }
 
-.whoami__work-meta {
+.home-works__item:hover .home-works__thumb img {
+  transform: scale(1.04);
+}
+
+.home-works__meta {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
-.whoami__work-date {
+.home-works__date {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-muted);
   font-variant-numeric: tabular-nums;
 }
 
-.whoami__work-title {
+.home-works__title {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.01em;
@@ -551,28 +734,22 @@ button {
   .whoami {
     padding: 24px 20px;
   }
-  .whoami__works-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .home-works {
+    grid-template-columns: 1fr;
+  }
+  .home-works__intro {
+    padding: 24px 20px;
     gap: 12px;
   }
-  .whoami__work-thumb {
-    aspect-ratio: 1 / 1;
+  .home-works__heading {
+    font-size: 40px;
   }
-  .whoami__work-title {
-    font-size: 12px;
+  .home-works__track {
+    padding: 24px 20px;
+    gap: 16px;
   }
-}
-
-@media (max-width: 480px) {
-  .whoami__works-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-  .whoami__work-thumb {
-    aspect-ratio: 16 / 10;
-  }
-  .whoami__work-title {
-    font-size: 13px;
+  .home-works__item {
+    width: 300px;
   }
 }
 
@@ -719,47 +896,58 @@ button {
   right: 8px;
 }
 
-/* ============ Index table ============ */
-.index-table__head,
+/* ============ Index table (年ごとにグルーピング) ============ */
+/* 左カラム = 年 / 右カラム = リスト。スマホでは 1 カラム。 */
+.index-year {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+}
+
+/* 左カラム（年）は全体を常時アクセントの青で塗る */
+.index-year__label {
+  background: var(--color-accent);
+}
+
+.index-year__label-text {
+  display: block;
+  padding: 28px 36px;
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--color-paper);
+  font-variant-numeric: tabular-nums;
+  position: sticky;
+  top: 12px;
+}
+
 .index-row {
   display: grid;
-  grid-template-columns: 60px 110px 1fr;
+  grid-template-columns: 64px 1fr;
   align-items: baseline;
-}
-
-.index-table__head {
-  padding: 12px 36px;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: var(--color-muted);
-  border-bottom: 1px solid var(--color-ink);
-}
-
-.index-row {
+  gap: 20px;
   padding: 20px 36px;
   border-bottom: 1px solid var(--color-faint);
   color: var(--color-ink);
+  transition: background 0.12s ease, color 0.12s ease;
 }
 
-.index-row.is-first {
-  background: #f6f8ff;
-}
-
-.index-row__no {
-  font-size: 11px;
-  color: var(--color-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.index-row.is-first .index-row__no {
-  color: var(--color-accent);
-  font-weight: 700;
+/* ホバーでフッターと同じ青に反転 */
+.index-row:hover {
+  background: var(--color-accent);
+  color: var(--color-paper);
 }
 
 .index-row__date {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-muted);
   font-variant-numeric: tabular-nums;
+}
+
+.index-row:hover .index-row__date {
+  color: var(--color-paper);
+  opacity: 0.8;
 }
 
 .index-row__title {
@@ -767,25 +955,37 @@ button {
   font-size: 19px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1.2;
+  line-height: 1.3;
   margin: 0;
 }
 
-.index-row.is-first .index-row__title {
-  font-size: 28px;
+/* リスト末尾の read more 行（ボタンではなく最後の行として並べる） */
+.index-row--more .index-row__title {
+  color: var(--color-accent);
 }
 
-.index-row__tags {
-  font-size: 10px;
-  color: var(--color-muted);
-  line-height: 1.6;
+.index-row--more:hover .index-row__title {
+  color: var(--color-paper);
 }
 
-.index-row__read {
-  font-size: 11px;
-  color: var(--color-muted);
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+/* リスト最終行の下線は消して次セクションへ繋げる */
+.index-table .index-year:last-child .index-row:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 880px) {
+  .index-year {
+    grid-template-columns: 1fr;
+  }
+  .index-year__label-text {
+    position: static;
+    padding: 24px 24px 8px;
+    font-size: 32px;
+  }
+  .index-row {
+    padding: 16px 24px;
+    gap: 14px;
+  }
 }
 
 /* ============ Works grid (thumbnail cards) ============ */
@@ -1068,15 +1268,15 @@ button {
 
 .post-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-columns: 260px minmax(0, 1fr);
   max-width: 1100px;
   margin: 0 auto;
   padding: 40px 36px;
 }
 
 .post-toc {
-  padding-left: 32px;
-  border-left: 1px solid var(--color-faint);
+  padding-right: 32px;
+  border-right: 1px solid var(--color-faint);
   position: sticky;
   top: 20px;
   height: fit-content;
@@ -1122,7 +1322,7 @@ button {
 .post-toc__item.is-active::before {
   content: '';
   position: absolute;
-  left: -33px;
+  right: -33px;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -1139,7 +1339,7 @@ button {
 }
 
 .post-body {
-  padding-right: 40px;
+  padding-left: 40px;
   font-family: var(--font-display);
   max-width: 680px;
   font-size: 16px;
@@ -1378,16 +1578,6 @@ button {
   .cat-grid__cell:nth-child(3n) {
     border-right: none;
   }
-  .index-table__head,
-  .index-row {
-    grid-template-columns: 80px 1fr;
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-  .index-table__head > :nth-child(1),
-  .index-row__no {
-    display: none;
-  }
   .post-hero {
     padding: 32px 20px 24px;
   }
@@ -1397,14 +1587,14 @@ button {
   }
   .post-toc {
     order: -1;
-    border-left: none;
+    border-right: none;
     border-bottom: 1px solid var(--color-faint);
     padding: 0 0 20px;
     margin-bottom: 24px;
     position: static;
   }
   .post-body {
-    padding-right: 0;
+    padding-left: 0;
   }
   .pagination {
     flex-direction: column;

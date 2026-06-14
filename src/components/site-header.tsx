@@ -26,6 +26,8 @@ function pickActive(pathname: string): string {
 export function SiteHeader() {
   const pathname = usePathname() ?? '/'
   const active = pickActive(pathname)
+  // トップページだけヒーロー画像の上に重ねる（背景透過）
+  const overlay = pathname === '/'
   const [searchOpen, setSearchOpen] = useState(false)
   const searchSlotRef = useRef<HTMLDivElement>(null)
 
@@ -57,7 +59,10 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="site-header" data-pagefind-ignore>
+    <header
+      className={`site-header${overlay ? ' site-header--overlay' : ''}`}
+      data-pagefind-ignore
+    >
       <Link href="/" className="site-header__brand">
         yukyu.net
       </Link>
@@ -87,17 +92,19 @@ export function SiteHeader() {
           errorText="failed to load search index"
         />
       </div>
-      <nav className="site-header__nav">
-        {NAV.map(({ key, label, href }) => (
-          <Link
-            key={key}
-            href={href}
-            className={`site-header__link${active === key ? ' is-active' : ''}`}
-          >
-            {label}
-          </Link>
-        ))}
-      </nav>
+      {!overlay && (
+        <nav className="site-header__nav">
+          {NAV.map(({ key, label, href }) => (
+            <Link
+              key={key}
+              href={href}
+              className={`site-header__link${active === key ? ' is-active' : ''}`}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   )
 }

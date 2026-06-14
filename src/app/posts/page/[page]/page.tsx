@@ -33,7 +33,6 @@ export default async function PaginatedPosts(props: PageProps) {
 
   const start = (page - 1) * POSTS_PAGE_SIZE
   const visible = posts.slice(start, start + POSTS_PAGE_SIZE)
-  const startNo = total - start
   const pageStart = start + 1
 
   return (
@@ -54,7 +53,7 @@ export default async function PaginatedPosts(props: PageProps) {
         </div>
       </section>
 
-      <PostIndexTable posts={visible} total={total} startNo={startNo} />
+      <PostIndexTable posts={visible} />
 
       <Pagination
         page={page}
