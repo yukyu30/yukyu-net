@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
 import { ViewTransitions } from 'next-view-transitions'
-import { SiteHeader } from '@/components/site-header'
-import { SiteFooter } from '@/components/site-footer'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -12,6 +10,9 @@ export const metadata: Metadata = {
   }
 }
 
+// ルートは html/body と全体共有のシェルだけを担う。
+// ヘッダー/フッターなどのクロームは route group ((blog) / (memos)) ごとの
+// レイアウトで切り替える。
 export default function RootLayout({
   children
 }: {
@@ -20,11 +21,7 @@ export default function RootLayout({
   return (
     <ViewTransitions>
       <html lang="ja" suppressHydrationWarning>
-        <body>
-          <SiteHeader />
-          {children}
-          <SiteFooter />
-        </body>
+        <body>{children}</body>
       </html>
     </ViewTransitions>
   )
