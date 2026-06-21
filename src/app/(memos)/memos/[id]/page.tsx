@@ -1,8 +1,8 @@
 import { cache } from 'react'
 import { notFound } from 'next/navigation'
-import { Link } from 'next-view-transitions'
 import { createMemosClientFromEnv, isPublicMemo, type Memo } from '@/lib/memos'
 import { MemoDetail } from '@/components/memo-detail'
+import { MemoBackLink } from '@/components/memo-back-link'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,11 +44,9 @@ export default async function MemoDetailPage({
   if (!memo) notFound()
 
   return (
-    <div className="page">
-      <section className="memos">
-        <Link href="/memos" className="memo-detail__back">← memos</Link>
-        <MemoDetail memo={memo} />
-      </section>
-    </div>
+    <>
+      <MemoBackLink />
+      <MemoDetail memo={memo} />
+    </>
   )
 }

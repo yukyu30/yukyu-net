@@ -1,6 +1,7 @@
 import { Link } from 'next-view-transitions'
 import type { Memo } from '@/lib/memos'
 import { MemoTime } from '@/components/memo-time'
+import { MemoMedia } from '@/components/memo-media'
 
 interface Props {
   memos: Memo[]
@@ -27,21 +28,7 @@ export function MemoTimeline({ memos }: Props) {
 
             {memo.content && <p className="memo__body">{memo.content}</p>}
 
-            {images.length > 0 && (
-              <div className="memo__media">
-                {images.map(img => (
-                  // 署名付き外部URL。next/image の remotePatterns 設定を要さない素の img を使う。
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={img.externalLink}
-                    className="memo__image"
-                    src={img.externalLink}
-                    alt={img.filename}
-                    loading="lazy"
-                  />
-                ))}
-              </div>
-            )}
+            {images.length > 0 && <MemoMedia images={images} />}
 
             {files.length > 0 && (
               <ul className="memo__files">

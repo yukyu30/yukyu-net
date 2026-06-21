@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import {
   createMemosClient,
   isPublicMemo,
-  publicImages,
+  publicMemoImages,
   type Attachment,
   type Memo
 } from './memos'
@@ -205,72 +205,6 @@ describe('createMemosClient.getMemo', () => {
   })
 })
 
-function attachmentFixture(overrides: Record<string, unknown> = {}) {
-  return {
-    name: 'attachments/fpPGZx3i2QHEKs4SJNoYHb',
-    createTime: '2026-06-21T12:59:12Z',
-    filename: 'cover.png',
-    content: '',
-    externalLink: 'https://cdn.example.com/cover.png',
-    type: 'image/png',
-    size: '3106031',
-    memo: 'memos/nchFRjYGryKD8KdiXJnLZT',
-    motionMedia: null,
-    ...overrides
-  }
-}
-
-describe('createMemosClient.listAttachments', () => {
-  it('attachments エンドポイントを Bearer トークン付きで呼ぶ', async () => {
-    const { client, fetchFn } = clientWith(jsonResponse({ attachments: [] }))
-
-    await client.listAttachments()
-
-    const [url, init] = fetchFn.mock.calls[0]
-    expect(url).toMatch(/\/attachments\?pageSize=\d+$/)
-    expect(init?.headers).toMatchObject({ Authorization: 'Bearer secret-token' })
-  })
-
-  it('name から id、memo から memoId を抽出し size を数値化する', async () => {
-    const { client } = clientWith(
-      jsonResponse({
-        attachments: [
-          attachmentFixture({
-            name: 'attachments/att1',
-            memo: 'memos/m1',
-            size: '3106031'
-          })
-        ]
-      })
-    )
-
-    const [att] = await client.listAttachments()
-
-    expect(att.id).toBe('att1')
-    expect(att.memoId).toBe('m1')
-    expect(att.size).toBe(3106031)
-    expect(att.isImage).toBe(true)
-  })
-
-  it('画像でない type は isImage=false になる', async () => {
-    const { client } = clientWith(
-      jsonResponse({
-        attachments: [attachmentFixture({ type: 'application/pdf' })]
-      })
-    )
-
-    const [att] = await client.listAttachments()
-
-    expect(att.isImage).toBe(false)
-  })
-
-  it('attachments が空なら空配列を返す', async () => {
-    const { client } = clientWith(jsonResponse({ attachments: [] }))
-
-    expect(await client.listAttachments()).toEqual([])
-  })
-})
-
 function memo(overrides: Partial<Memo>): Memo {
   return {
     id: 'm',
@@ -321,35 +255,47 @@ describe('isPublicMemo', () => {
   })
 })
 
-describe('publicImages', () => {
-  it('PUBLIC memo に紐づく画像だけを返す', () => {
+describe('publicMemoImages', () => {
+  it('PUBLIC memo に埋め込まれた画像だけを返す', () => {
     const memos = [
-      memo({ id: 'pub', visibility: 'PUBLIC' }),
-      memo({ id: 'priv', visibility: 'PRIVATE' })
+      memo({ id: 'pub', visibility: 'PUBLIC', attachments: [image('pub')] }),
+      memo({ id: 'priv', visibility: 'PRIVATE', attachments: [image('priv')] })
     ]
-    const attachments = [image('pub'), image('priv')]
 
-    const result = publicImages(memos, attachments)
+    const result = publicMemoImages(memos)
 
     expect(result.map(a => a.memoId)).toEqual(['pub'])
   })
 
-  it('非公開 memo・孤立添付・非画像はすべて除外する（fail-closed）', () => {
+  it('非公開 memo・アーカイブ・非画像はすべて除外する（fail-closed）', () => {
     const memos = [
-      memo({ id: 'pub', visibility: 'PUBLIC' }),
-      memo({ id: 'arch', visibility: 'PUBLIC', state: 'ARCHIVED' })
-    ]
-    const attachments = [
-      image('pub'), // 表示される唯一の画像
-      image('arch'), // アーカイブ memo の画像 → 除外
-      image('orphan', { memoId: '' }), // どの memo にも紐づかない → 除外
-      image('pub', { id: 'pdf', isImage: false, type: 'application/pdf' }) // 非画像 → 除外
+      memo({
+        id: 'pub',
+        visibility: 'PUBLIC',
+        attachments: [
+          image('pub'),
+          image('pub', { id: 'pdf', isImage: false, type: 'application/pdf' })
+        ]
+      }),
+      memo({ id: 'arch', visibility: 'PUBLIC', state: 'ARCHIVED', attachments: [image('arch')] }),
+      memo({ id: 'priv', visibility: 'PROTECTED', attachments: [image('priv')] })
     ]
 
-    const result = publicImages(memos, attachments)
+    const result = publicMemoImages(memos)
 
     expect(result).toHaveLength(1)
     expect(result[0].memoId).toBe('pub')
     expect(result[0].isImage).toBe(true)
+  })
+
+  it('埋め込み添付の memoId が空なら親 memo の id で補完する', () => {
+    const memos = [
+      memo({ id: 'parent', visibility: 'PUBLIC', attachments: [image('parent', { memoId: '' })] })
+    ]
+
+    const result = publicMemoImages(memos)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].memoId).toBe('parent')
   })
 })

@@ -6,7 +6,6 @@ import { z } from 'zod'
 // レコード単位で safeParse する。
 
 const DEFAULT_PAGE_SIZE = 30
-const DEFAULT_ATTACHMENTS_PAGE_SIZE = 200
 
 const RawAttachmentSchema = z.object({
   name: z.string().default(''),
@@ -34,12 +33,6 @@ const RawMemoSchema = z.object({
 const ListMemosResponseSchema = z.object({
   memos: z.array(z.unknown()).default([]),
   nextPageToken: z.string().default('')
-})
-
-const ListAttachmentsResponseSchema = z.object({
-  attachments: z.array(z.unknown()).default([]),
-  nextPageToken: z.string().default(''),
-  totalSize: z.coerce.number().catch(0).default(0)
 })
 
 export interface Attachment {
@@ -85,14 +78,9 @@ export interface ListMemosOptions {
   pageSize?: number
 }
 
-export interface ListAttachmentsOptions {
-  pageSize?: number
-}
-
 export interface MemosClient {
   listMemos(options?: ListMemosOptions): Promise<Memo[]>
   getMemo(id: string): Promise<Memo | null>
-  listAttachments(options?: ListAttachmentsOptions): Promise<Attachment[]>
 }
 
 /** "memos/{uid}" や "attachments/{uid}" から uid 部分を取り出す。 */
@@ -180,17 +168,6 @@ export function createMemosClient(config: MemosClientConfig): MemosClient {
       if (!res.ok) throw failed(res)
       const parsed = RawMemoSchema.safeParse(await res.json())
       return parsed.success ? toMemo(parsed.data) : null
-    },
-
-    async listAttachments(options = {}) {
-      const pageSize = options.pageSize ?? DEFAULT_ATTACHMENTS_PAGE_SIZE
-      const res = await get(`/attachments?pageSize=${pageSize}`)
-      if (!res.ok) throw failed(res)
-      const envelope = ListAttachmentsResponseSchema.safeParse(await res.json())
-      const raw = envelope.success ? envelope.data.attachments : []
-      return parseAttachments(raw).sort((a, b) =>
-        b.createTime.localeCompare(a.createTime)
-      )
     }
   }
 }
@@ -204,13 +181,22 @@ export function isPublicMemo(memo: Pick<Memo, 'visibility' | 'state'>): boolean 
 }
 
 /**
- * PUBLIC な memo に紐づく画像添付だけを返す（アルバム用）。
- * 非公開 memo の画像・どの memo にも紐づかない孤立添付・非画像は
- * すべて fail-closed で除外する。
+ * PUBLIC な memo に「埋め込まれた」画像添付を返す（アルバム用）。
+ * ListAttachments(/attachments) はトークン所有者にスコープされ、別ユーザの
+ * トークンでは空になるため、memo 一覧に埋め込まれた添付から組み立てる。
+ * 非公開（PRIVATE/PROTECTED）・アーカイブ・非画像は fail-closed で除外する。
+ * 添付に memoId が無い場合は親 memo の id で補完する。
  */
-export function publicImages(memos: Memo[], attachments: Attachment[]): Attachment[] {
-  const publicIds = new Set(memos.filter(isPublicMemo).map(m => m.id))
-  return attachments.filter(a => a.isImage && publicIds.has(a.memoId))
+export function publicMemoImages(memos: Memo[]): Attachment[] {
+  const out: Attachment[] = []
+  for (const memo of memos) {
+    if (!isPublicMemo(memo)) continue
+    for (const a of memo.attachments) {
+      if (!a.isImage) continue
+      out.push(a.memoId ? a : { ...a, memoId: memo.id })
+    }
+  }
+  return out
 }
 
 /**
