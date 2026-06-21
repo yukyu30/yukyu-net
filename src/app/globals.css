@@ -389,6 +389,99 @@ button {
   }
 }
 
+/* ヒーローの吹き出し（最新 memo・zen ミニマル） */
+.hero-bubbles {
+  position: absolute;
+  top: clamp(84px, 16vh, 150px);
+  /* PC は右端固定をやめて中央寄りに置く */
+  left: 50%;
+  z-index: 2;
+  width: min(340px, 42vw);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+.hero-bubble {
+  display: block;
+  text-decoration: none;
+  width: fit-content;
+  max-width: 100%;
+}
+/* 吹き出しを左右にずらして不規則な揺らぎを出す（モバイルは控えめ） */
+.hero-bubble:nth-child(1) {
+  transform: translateX(-10px) rotate(-1.6deg);
+}
+.hero-bubble:nth-child(2) {
+  transform: translateX(16px) rotate(1.4deg);
+}
+.hero-bubble:nth-child(3) {
+  transform: translateX(-4px) rotate(-1deg);
+}
+/* PC はより大きくずらす */
+@media (min-width: 881px) {
+  .hero-bubble:nth-child(1) {
+    transform: translateX(-28px) rotate(-2deg);
+  }
+  .hero-bubble:nth-child(2) {
+    transform: translateX(52px) rotate(1.6deg);
+  }
+  .hero-bubble:nth-child(3) {
+    transform: translateX(4px) rotate(-1deg);
+  }
+}
+.hero-bubble__body {
+  position: relative;
+  background: var(--color-accent);
+  color: #fff;
+  border-radius: 18px;
+  padding: 13px 17px;
+  transition: transform 160ms ease;
+}
+.hero-bubble:hover .hero-bubble__body {
+  transform: translateY(-2px);
+}
+/* しっぽ（左下・下向き） */
+.hero-bubble__body::after {
+  content: '';
+  position: absolute;
+  left: 24px;
+  bottom: -7px;
+  width: 16px;
+  height: 16px;
+  background: inherit;
+  transform: rotate(45deg);
+  border-bottom-right-radius: 3px;
+}
+.hero-bubble__text {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  /* 最大3行でクランプ */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 880px) {
+  .hero-bubbles {
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    /* ずらし分の余白を確保 */
+    width: min(280px, calc(100vw - 60px));
+    gap: 12px;
+  }
+  /* モバイルは2つまで */
+  .hero-bubble--pc-only {
+    display: none;
+  }
+}
+
 /* ============ Hero ============ */
 .hero {
   padding: 48px 36px 36px;
