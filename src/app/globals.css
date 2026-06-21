@@ -1700,3 +1700,123 @@ button {
     padding: 24px 24px 60px;
   }
 }
+
+/* memos: timeline / album の切り替えタブ */
+.memos__tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 36px 16px;
+}
+.memos__tab {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  text-decoration: none;
+  padding: 4px 10px;
+  border: 1px solid var(--color-faint);
+  border-radius: 999px;
+}
+.memos__tab.is-active {
+  color: var(--color-bg);
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+}
+.memo__permalink {
+  text-decoration: none;
+}
+.memo__permalink:hover .memo__time {
+  color: var(--color-accent);
+}
+
+/* memos: insta 風アルバム（正方形グリッド） */
+.memo-album {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 0 36px;
+}
+.memo-album__cell {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--color-faint);
+}
+.memo-album__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 200ms ease;
+}
+.memo-album__cell:hover .memo-album__image {
+  transform: scale(1.04);
+}
+
+/* memos: 単一 memo の詳細 */
+.memo-detail {
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.memo-detail__back {
+  display: inline-block;
+  margin-bottom: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.memo-detail__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.memo-detail__body {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.9;
+  color: var(--color-ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.memo-detail__media {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.memo-detail__image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--color-faint);
+  border-radius: 4px;
+}
+.memo-detail__tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.memo-detail__tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-accent);
+}
+
+@media (max-width: 880px) {
+  .memos__tabs {
+    padding: 0 24px 16px;
+  }
+  .memo-album {
+    gap: 2px;
+    padding: 0 24px;
+  }
+}

@@ -1,5 +1,11 @@
-import { createMemosClientFromEnv, type Memo } from '@/lib/memos'
+import { Link } from 'next-view-transitions'
+import {
+  createMemosClientFromEnv,
+  type Attachment,
+  type Memo
+} from '@/lib/memos'
 import { MemoTimeline } from '@/components/memo-timeline'
+import { MemoAlbum } from '@/components/memo-album'
 
 // リクエスト時にレンダリングし、ビルド時に API を叩かない（env 未設定や
 // インスタンス不達でビルドを壊さないため）。
@@ -18,18 +24,49 @@ function visibleMemos(memos: Memo[]): Memo[] {
   return memos.filter(m => m.visibility === 'PUBLIC' && m.state === 'NORMAL')
 }
 
-async function loadMemos(): Promise<{ memos: Memo[]; error: string | null }> {
+async function loadTimeline(): Promise<{ memos: Memo[]; error: boolean }> {
   try {
-    const client = createMemosClientFromEnv()
-    const memos = await client.listMemos({ pageSize: 50 })
-    return { memos: visibleMemos(memos), error: null }
-  } catch (e) {
-    return { memos: [], error: e instanceof Error ? e.message : String(e) }
+    const memos = await createMemosClientFromEnv().listMemos({ pageSize: 50 })
+    return { memos: visibleMemos(memos), error: false }
+  } catch {
+    return { memos: [], error: true }
   }
 }
 
-export default async function MemosPage() {
-  const { memos, error } = await loadMemos()
+async function loadAlbum(): Promise<{ images: Attachment[]; error: boolean }> {
+  try {
+    const client = createMemosClientFromEnv()
+    // /attachments で全添付を取得しつつ、PUBLIC memo に紐づく画像だけに絞る。
+    const [attachments, memos] = await Promise.all([
+      client.listAttachments(),
+      client.listMemos({ pageSize: 200 })
+    ])
+    const publicIds = new Set(visibleMemos(memos).map(m => m.id))
+    const images = attachments.filter(a => a.isImage && publicIds.has(a.memoId))
+    return { images, error: false }
+  } catch {
+    return { images: [], error: true }
+  }
+}
+
+const TABS: Array<{ key: 'timeline' | 'album'; label: string; href: string }> = [
+  { key: 'timeline', label: 'timeline', href: '/memos' },
+  { key: 'album', label: 'album', href: '/memos?mode=album' }
+]
+
+export default async function MemosPage({
+  searchParams
+}: {
+  searchParams: Promise<{ mode?: string }>
+}) {
+  const { mode } = await searchParams
+  const isAlbum = mode === 'album'
+
+  const timeline = isAlbum ? null : await loadTimeline()
+  const album = isAlbum ? await loadAlbum() : null
+
+  const count = isAlbum ? album!.images.length : timeline!.memos.length
+  const error = isAlbum ? album!.error : timeline!.error
 
   return (
     <div className="page">
@@ -41,17 +78,33 @@ export default async function MemosPage() {
             </h1>
           </div>
           <div>
-            <div className="hero__meta-num">{memos.length}</div>
-            <div className="hero__meta-sub">memos</div>
+            <div className="hero__meta-num">{count}</div>
+            <div className="hero__meta-sub">{isAlbum ? 'photos' : 'memos'}</div>
           </div>
         </div>
       </section>
 
+      <nav className="memos__tabs" aria-label="表示切り替え">
+        {TABS.map(tab => (
+          <Link
+            key={tab.key}
+            href={tab.href}
+            className={`memos__tab${(isAlbum ? 'album' : 'timeline') === tab.key ? ' is-active' : ''}`}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </nav>
+
       {error ? (
         <p className="memos__empty">memo を読み込めませんでした。</p>
+      ) : isAlbum ? (
+        <section className="memos">
+          <MemoAlbum images={album!.images} />
+        </section>
       ) : (
         <section className="memos">
-          <MemoTimeline memos={memos} />
+          <MemoTimeline memos={timeline!.memos} />
         </section>
       )}
     </div>

@@ -1,30 +1,14 @@
+import { Link } from 'next-view-transitions'
 import type { Memo } from '@/lib/memos'
+import { MemoTime } from '@/components/memo-time'
 
 interface Props {
   memos: Memo[]
 }
 
-const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
-  timeZone: 'Asia/Tokyo',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit'
-})
-
-function formatTime(iso: string): string {
-  if (!iso) return ''
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return dateFormatter.format(d)
-}
-
 export function MemoTimeline({ memos }: Props) {
   if (memos.length === 0) {
-    return (
-      <p className="memos__empty">まだ memo がありません。</p>
-    )
+    return <p className="memos__empty">まだ memo がありません。</p>
   }
 
   return (
@@ -35,9 +19,9 @@ export function MemoTimeline({ memos }: Props) {
         return (
           <li key={memo.id} className="memo">
             <div className="memo__head">
-              <time className="memo__time" dateTime={memo.createTime}>
-                {formatTime(memo.createTime)}
-              </time>
+              <Link href={`/memos/${memo.id}`} className="memo__permalink">
+                <MemoTime iso={memo.createTime} className="memo__time" />
+              </Link>
               {memo.pinned && <span className="memo__pin">PINNED</span>}
             </div>
 
