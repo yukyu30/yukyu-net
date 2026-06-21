@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createMemosClient } from './memos'
+import {
+  createMemosClient,
+  isPublicMemo,
+  publicImages,
+  type Attachment,
+  type Memo
+} from './memos'
 
 // Memos v1 API（grpc-gateway / protojson）の実レスポンス形状に合わせたフィクスチャ。
 // キーは camelCase、name は "memos/{uid}"、画像は attachments[].externalLink。
@@ -262,5 +268,88 @@ describe('createMemosClient.listAttachments', () => {
     const { client } = clientWith(jsonResponse({ attachments: [] }))
 
     expect(await client.listAttachments()).toEqual([])
+  })
+})
+
+function memo(overrides: Partial<Memo>): Memo {
+  return {
+    id: 'm',
+    name: 'memos/m',
+    content: '',
+    snippet: '',
+    createTime: '2026-06-21T00:00:00Z',
+    updateTime: '2026-06-21T00:00:00Z',
+    pinned: false,
+    visibility: 'PUBLIC',
+    state: 'NORMAL',
+    tags: [],
+    attachments: [],
+    ...overrides
+  }
+}
+
+function image(memoId: string, overrides: Partial<Attachment> = {}): Attachment {
+  return {
+    id: `att-${memoId}`,
+    name: `attachments/att-${memoId}`,
+    filename: 'photo.png',
+    externalLink: `https://cdn.example.com/${memoId}.png`,
+    type: 'image/png',
+    size: 1,
+    isImage: true,
+    memoId,
+    createTime: '2026-06-21T00:00:00Z',
+    ...overrides
+  }
+}
+
+describe('isPublicMemo', () => {
+  it('PUBLIC かつ NORMAL なら true', () => {
+    expect(isPublicMemo(memo({ visibility: 'PUBLIC', state: 'NORMAL' }))).toBe(true)
+  })
+
+  it('PROTECTED は false', () => {
+    expect(isPublicMemo(memo({ visibility: 'PROTECTED' }))).toBe(false)
+  })
+
+  it('PRIVATE は false', () => {
+    expect(isPublicMemo(memo({ visibility: 'PRIVATE' }))).toBe(false)
+  })
+
+  it('ARCHIVED（state）は PUBLIC でも false', () => {
+    expect(isPublicMemo(memo({ visibility: 'PUBLIC', state: 'ARCHIVED' }))).toBe(false)
+  })
+})
+
+describe('publicImages', () => {
+  it('PUBLIC memo に紐づく画像だけを返す', () => {
+    const memos = [
+      memo({ id: 'pub', visibility: 'PUBLIC' }),
+      memo({ id: 'priv', visibility: 'PRIVATE' })
+    ]
+    const attachments = [image('pub'), image('priv')]
+
+    const result = publicImages(memos, attachments)
+
+    expect(result.map(a => a.memoId)).toEqual(['pub'])
+  })
+
+  it('非公開 memo・孤立添付・非画像はすべて除外する（fail-closed）', () => {
+    const memos = [
+      memo({ id: 'pub', visibility: 'PUBLIC' }),
+      memo({ id: 'arch', visibility: 'PUBLIC', state: 'ARCHIVED' })
+    ]
+    const attachments = [
+      image('pub'), // 表示される唯一の画像
+      image('arch'), // アーカイブ memo の画像 → 除外
+      image('orphan', { memoId: '' }), // どの memo にも紐づかない → 除外
+      image('pub', { id: 'pdf', isImage: false, type: 'application/pdf' }) // 非画像 → 除外
+    ]
+
+    const result = publicImages(memos, attachments)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].memoId).toBe('pub')
+    expect(result[0].isImage).toBe(true)
   })
 })

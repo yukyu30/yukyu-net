@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { Link } from 'next-view-transitions'
-import { createMemosClientFromEnv, type Memo } from '@/lib/memos'
+import { createMemosClientFromEnv, isPublicMemo, type Memo } from '@/lib/memos'
 import { MemoDetail } from '@/components/memo-detail'
 
 export const dynamic = 'force-dynamic'
@@ -12,7 +12,7 @@ const loadMemo = cache(async (id: string): Promise<Memo | null> => {
     const memo = await createMemosClientFromEnv().getMemo(id)
     if (!memo) return null
     // 公開ページなので PUBLIC / NORMAL 以外は存在しない扱いにする。
-    if (memo.visibility !== 'PUBLIC' || memo.state !== 'NORMAL') return null
+    if (!isPublicMemo(memo)) return null
     return memo
   } catch {
     return null

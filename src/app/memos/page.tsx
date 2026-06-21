@@ -1,6 +1,8 @@
 import { Link } from 'next-view-transitions'
 import {
   createMemosClientFromEnv,
+  isPublicMemo,
+  publicImages,
   type Attachment,
   type Memo
 } from '@/lib/memos'
@@ -19,15 +21,11 @@ export const metadata = {
 }
 
 // この一覧は公開 HTML として配信されるため、誤って非公開 memo を晒さないよう
-// PUBLIC かつ NORMAL（非アーカイブ）だけを表示する。
-function visibleMemos(memos: Memo[]): Memo[] {
-  return memos.filter(m => m.visibility === 'PUBLIC' && m.state === 'NORMAL')
-}
-
+// isPublicMemo（PUBLIC かつ非アーカイブ）でフィルタする。
 async function loadTimeline(): Promise<{ memos: Memo[]; error: boolean }> {
   try {
     const memos = await createMemosClientFromEnv().listMemos({ pageSize: 50 })
-    return { memos: visibleMemos(memos), error: false }
+    return { memos: memos.filter(isPublicMemo), error: false }
   } catch {
     return { memos: [], error: true }
   }
@@ -41,9 +39,7 @@ async function loadAlbum(): Promise<{ images: Attachment[]; error: boolean }> {
       client.listAttachments(),
       client.listMemos({ pageSize: 200 })
     ])
-    const publicIds = new Set(visibleMemos(memos).map(m => m.id))
-    const images = attachments.filter(a => a.isImage && publicIds.has(a.memoId))
-    return { images, error: false }
+    return { images: publicImages(memos, attachments), error: false }
   } catch {
     return { images: [], error: true }
   }

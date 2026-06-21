@@ -196,6 +196,24 @@ export function createMemosClient(config: MemosClientConfig): MemosClient {
 }
 
 /**
+ * 公開ページに出してよい memo か（PUBLIC かつ非アーカイブ）。
+ * 公開 HTML として配信する一覧・詳細・アルバムの単一フィルタ。
+ */
+export function isPublicMemo(memo: Pick<Memo, 'visibility' | 'state'>): boolean {
+  return memo.visibility === 'PUBLIC' && memo.state === 'NORMAL'
+}
+
+/**
+ * PUBLIC な memo に紐づく画像添付だけを返す（アルバム用）。
+ * 非公開 memo の画像・どの memo にも紐づかない孤立添付・非画像は
+ * すべて fail-closed で除外する。
+ */
+export function publicImages(memos: Memo[], attachments: Attachment[]): Attachment[] {
+  const publicIds = new Set(memos.filter(isPublicMemo).map(m => m.id))
+  return attachments.filter(a => a.isImage && publicIds.has(a.memoId))
+}
+
+/**
  * 環境変数（MEMOS_API_URL / MEMOS_API_TOKEN）から設定済みクライアントを作る。
  * サーバー専用。トークンは公開されない（NEXT_PUBLIC_ ではない）。
  */
