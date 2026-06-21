@@ -3,6 +3,7 @@ import { Link } from 'next-view-transitions'
 const HERO_MENU: Array<{ label: string; href: string }> = [
   { label: 'posts', href: '/posts' },
   { label: 'works', href: '/works' },
+  { label: 'memos', href: '/memos' },
   { label: 'Me', href: '/me' }
 ]
 
