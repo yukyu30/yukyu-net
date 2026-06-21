@@ -166,3 +166,101 @@ describe('createMemosClient.listMemos', () => {
     expect(ids).toEqual(['new', 'mid', 'old'])
   })
 })
+
+describe('createMemosClient.getMemo', () => {
+  it('memos/{id} を Bearer トークン付きで取得し Memo を返す', async () => {
+    const { client, fetchFn } = clientWith(
+      jsonResponse(memoFixture({ name: 'memos/abc123', content: 'やあ' }))
+    )
+
+    const memo = await client.getMemo('abc123')
+
+    const [url, init] = fetchFn.mock.calls[0]
+    expect(url).toBe('https://memos.example.com/api/v1/memos/abc123')
+    expect(init?.headers).toMatchObject({ Authorization: 'Bearer secret-token' })
+    expect(memo?.id).toBe('abc123')
+    expect(memo?.content).toBe('やあ')
+  })
+
+  it('404 のときは null を返す', async () => {
+    const { client } = clientWith(
+      jsonResponse({ message: 'not found' }, { ok: false, status: 404, statusText: 'Not Found' })
+    )
+
+    expect(await client.getMemo('missing')).toBeNull()
+  })
+
+  it('404 以外の非 2xx はエラーを投げる', async () => {
+    const { client } = clientWith(
+      jsonResponse({}, { ok: false, status: 500, statusText: 'Internal Server Error' })
+    )
+
+    await expect(client.getMemo('x')).rejects.toThrow(/500/)
+  })
+})
+
+function attachmentFixture(overrides: Record<string, unknown> = {}) {
+  return {
+    name: 'attachments/fpPGZx3i2QHEKs4SJNoYHb',
+    createTime: '2026-06-21T12:59:12Z',
+    filename: 'cover.png',
+    content: '',
+    externalLink: 'https://cdn.example.com/cover.png',
+    type: 'image/png',
+    size: '3106031',
+    memo: 'memos/nchFRjYGryKD8KdiXJnLZT',
+    motionMedia: null,
+    ...overrides
+  }
+}
+
+describe('createMemosClient.listAttachments', () => {
+  it('attachments エンドポイントを Bearer トークン付きで呼ぶ', async () => {
+    const { client, fetchFn } = clientWith(jsonResponse({ attachments: [] }))
+
+    await client.listAttachments()
+
+    const [url, init] = fetchFn.mock.calls[0]
+    expect(url).toMatch(/\/attachments\?pageSize=\d+$/)
+    expect(init?.headers).toMatchObject({ Authorization: 'Bearer secret-token' })
+  })
+
+  it('name から id、memo から memoId を抽出し size を数値化する', async () => {
+    const { client } = clientWith(
+      jsonResponse({
+        attachments: [
+          attachmentFixture({
+            name: 'attachments/att1',
+            memo: 'memos/m1',
+            size: '3106031'
+          })
+        ]
+      })
+    )
+
+    const [att] = await client.listAttachments()
+
+    expect(att.id).toBe('att1')
+    expect(att.memoId).toBe('m1')
+    expect(att.size).toBe(3106031)
+    expect(att.isImage).toBe(true)
+  })
+
+  it('画像でない type は isImage=false になる', async () => {
+    const { client } = clientWith(
+      jsonResponse({
+        attachments: [attachmentFixture({ type: 'application/pdf' })]
+      })
+    )
+
+    const [att] = await client.listAttachments()
+
+    expect(att.isImage).toBe(false)
+  })
+
+  it('attachments が空なら空配列を返す', async () => {
+    const { client } = clientWith(jsonResponse({ attachments: [] }))
+
+    expect(await client.listAttachments()).toEqual([])
+  })
+})

@@ -3,14 +3,19 @@ import { z } from 'zod'
 // Memos v1 API（https://usememos.com/docs/api/latest）のクライアント。
 // レスポンスは grpc-gateway / protojson 由来で JSON キーは camelCase。
 // 外部データなのでスキーマは寛容にし、壊れた 1 件で一覧全体が落ちないよう
-// memo 単位で safeParse する。
+// レコード単位で safeParse する。
 
 const DEFAULT_PAGE_SIZE = 30
+const DEFAULT_ATTACHMENTS_PAGE_SIZE = 200
 
 const RawAttachmentSchema = z.object({
+  name: z.string().default(''),
   filename: z.string().default(''),
   externalLink: z.string().default(''),
-  type: z.string().default('')
+  type: z.string().default(''),
+  size: z.coerce.number().catch(0).default(0),
+  memo: z.string().default(''),
+  createTime: z.string().default('')
 })
 
 const RawMemoSchema = z.object({
@@ -31,11 +36,26 @@ const ListMemosResponseSchema = z.object({
   nextPageToken: z.string().default('')
 })
 
-export interface MemoAttachment {
+const ListAttachmentsResponseSchema = z.object({
+  attachments: z.array(z.unknown()).default([]),
+  nextPageToken: z.string().default(''),
+  totalSize: z.coerce.number().catch(0).default(0)
+})
+
+export interface Attachment {
+  /** name から取り出した uid（例: "fpPGZx3i2QHEKs4SJNoYHb"） */
+  id: string
+  /** API のリソース名（例: "attachments/fpPGZx3i2QHEKs4SJNoYHb"） */
+  name: string
   filename: string
   externalLink: string
   type: string
+  /** バイト数（API は文字列で返すので数値化） */
+  size: number
   isImage: boolean
+  /** 紐づく memo の uid（例: "nchFRjYGryKD8KdiXJnLZT"）。未紐付けなら "" */
+  memoId: string
+  createTime: string
 }
 
 export interface Memo {
@@ -51,7 +71,7 @@ export interface Memo {
   visibility: string
   state: string
   tags: string[]
-  attachments: MemoAttachment[]
+  attachments: Attachment[]
 }
 
 export interface MemosClientConfig {
@@ -65,32 +85,48 @@ export interface ListMemosOptions {
   pageSize?: number
 }
 
-export interface MemosClient {
-  listMemos(options?: ListMemosOptions): Promise<Memo[]>
+export interface ListAttachmentsOptions {
+  pageSize?: number
 }
 
-function attachmentId(name: string): string {
+export interface MemosClient {
+  listMemos(options?: ListMemosOptions): Promise<Memo[]>
+  getMemo(id: string): Promise<Memo | null>
+  listAttachments(options?: ListAttachmentsOptions): Promise<Attachment[]>
+}
+
+/** "memos/{uid}" や "attachments/{uid}" から uid 部分を取り出す。 */
+function resourceId(name: string): string {
   const i = name.indexOf('/')
   return i === -1 ? name : name.slice(i + 1)
 }
 
-function toAttachment(raw: z.infer<typeof RawAttachmentSchema>): MemoAttachment {
+function toAttachment(raw: z.infer<typeof RawAttachmentSchema>): Attachment {
   return {
+    id: resourceId(raw.name),
+    name: raw.name,
     filename: raw.filename,
     externalLink: raw.externalLink,
     type: raw.type,
-    isImage: raw.type.startsWith('image/')
+    size: raw.size,
+    isImage: raw.type.startsWith('image/'),
+    memoId: raw.memo ? resourceId(raw.memo) : '',
+    createTime: raw.createTime
   }
 }
 
-function toMemo(raw: z.infer<typeof RawMemoSchema>): Memo {
-  const attachments: MemoAttachment[] = []
-  for (const a of raw.attachments) {
+function parseAttachments(rawList: unknown[]): Attachment[] {
+  const out: Attachment[] = []
+  for (const a of rawList) {
     const parsed = RawAttachmentSchema.safeParse(a)
-    if (parsed.success) attachments.push(toAttachment(parsed.data))
+    if (parsed.success) out.push(toAttachment(parsed.data))
   }
+  return out
+}
+
+function toMemo(raw: z.infer<typeof RawMemoSchema>): Memo {
   return {
-    id: attachmentId(raw.name),
+    id: resourceId(raw.name),
     name: raw.name,
     content: raw.content,
     snippet: raw.snippet,
@@ -100,7 +136,7 @@ function toMemo(raw: z.infer<typeof RawMemoSchema>): Memo {
     visibility: raw.visibility,
     state: raw.state,
     tags: raw.tags,
-    attachments
+    attachments: parseAttachments(raw.attachments)
   }
 }
 
@@ -118,20 +154,43 @@ function parseMemos(json: unknown): Memo[] {
 export function createMemosClient(config: MemosClientConfig): MemosClient {
   const { apiUrl, apiToken, fetchFn = fetch } = config
   const base = apiUrl.replace(/\/+$/, '')
+  const authHeaders = { Authorization: `Bearer ${apiToken}` }
+
+  function get(path: string): Promise<Response> {
+    return fetchFn(`${base}${path}`, { headers: authHeaders })
+  }
+
+  function failed(res: Response): Error {
+    return new Error(
+      `Memos API request failed: ${res.status} ${res.statusText}`.trim()
+    )
+  }
 
   return {
     async listMemos(options = {}) {
       const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE
-      const url = `${base}/memos?pageSize=${pageSize}`
-      const res = await fetchFn(url, {
-        headers: { Authorization: `Bearer ${apiToken}` }
-      })
-      if (!res.ok) {
-        throw new Error(
-          `Memos API request failed: ${res.status} ${res.statusText}`.trim()
-        )
-      }
+      const res = await get(`/memos?pageSize=${pageSize}`)
+      if (!res.ok) throw failed(res)
       return parseMemos(await res.json())
+    },
+
+    async getMemo(id) {
+      const res = await get(`/memos/${encodeURIComponent(id)}`)
+      if (res.status === 404) return null
+      if (!res.ok) throw failed(res)
+      const parsed = RawMemoSchema.safeParse(await res.json())
+      return parsed.success ? toMemo(parsed.data) : null
+    },
+
+    async listAttachments(options = {}) {
+      const pageSize = options.pageSize ?? DEFAULT_ATTACHMENTS_PAGE_SIZE
+      const res = await get(`/attachments?pageSize=${pageSize}`)
+      if (!res.ok) throw failed(res)
+      const envelope = ListAttachmentsResponseSchema.safeParse(await res.json())
+      const raw = envelope.success ? envelope.data.attachments : []
+      return parseAttachments(raw).sort((a, b) =>
+        b.createTime.localeCompare(a.createTime)
+      )
     }
   }
 }
