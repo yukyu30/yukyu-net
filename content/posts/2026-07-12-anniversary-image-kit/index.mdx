@@ -1,0 +1,70 @@
+---
+title: 周年記念画像ジェネレーターのテンプレートを公開した
+date: 2026-07-12
+tag:
+  - つくったもの
+  - お知らせ
+author: yukyu
+coAuthors:
+  - gpt-5-6-terra
+---
+
+[anniversary-image-kit](https://github.com/yukyu30/anniversary-image-kit) を公開した。
+
+アバターやキャラクターの周年記念に、チェキ風の画像を作って配るためのNext.jsテンプレートである。
+写真とフレームの色を選ぶと、下部にID、ハッシュタグ、QRコードを入れた画像を生成できる。
+生成した画像は保存してSNSに投稿できる。
+
+もともとは [墨澄2周年記念ジェネレーター](https://sumisumi-anniversary.lolipop-now.app/) を作ったときの仕組みである。
+アバターやキャラクターを差し替えて使える構成だったので、テンプレートとして切り出した。
+
+## チェキ画像への署名
+
+このテンプレートでは、生成したチェキ画像のQRコードに、署名済みのデータを入れている。
+
+周年記念の画像には、「このタイミングで発行された画像」という扱いを持たせたかった。
+そのため、サイトが発行したデータに電子署名を付けている。
+
+ここでいう署名は、画像そのものに手書きサインを入れることではない。
+
+サーバーが秘密鍵で署名を作り、検証画面が公開鍵でその署名を確かめる仕組みである。
+秘密鍵を持つサーバーだけが有効な署名を作れるため、第三者が同じ形式のQRコードを作っても検証には通らない。
+
+署名対象のデータは、周年、ID、発行時刻である。
+`/api/issue`がこれらにEd25519で署名し、`payload + signature`をQRコードへ埋め込む。
+`/api/verify`はQRコードから取り出したデータを公開鍵で検証し、署名が正しいときだけID、周年、発行時刻を表示する。
+
+秘密鍵はサーバーの環境変数にだけ置く。
+公開鍵は検証にしか使えないため、クライアント側のコードに含めてもよい。
+
+流れは次のとおりである。
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Generate as 生成画面
+    participant Issue as /api/issue
+    participant PrivateKey as 秘密鍵
+    participant Cheki as チェキ画像
+    participant Verify as /api/verify
+    participant PublicKey as 公開鍵
+
+    User->>Generate: ID、フレーム、写真を入力
+    Generate->>Issue: 周年、ID、発行時刻を送る
+    Issue->>PrivateKey: payload に Ed25519 署名を付ける
+    PrivateKey-->>Issue: signature を返す
+    Issue-->>Generate: payload と signature を返す
+    Generate->>Cheki: QR コードとして埋め込む
+    User->>Verify: QR コードを読み込む
+    Verify->>PublicKey: payload と signature を検証する
+    PublicKey-->>Verify: 検証結果を返す
+    Verify-->>User: 有効なら ID、周年、発行時刻を表示する
+```
+
+## デプロイ先はロリポップ！デプロイナウを使った
+
+デプロイは [ロリポップ！デプロイナウ](https://lolipop.jp/deploy-now) を利用した。
+
+勤務先のサービスではあるが、無料プランでもサイトを公開できる。
+
+アバターやキャラクターの周年を祝うサイトを作りたい人は、[anniversary-image-kit](https://github.com/yukyu30/anniversary-image-kit) を使ってみてください。
