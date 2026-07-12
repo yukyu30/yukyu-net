@@ -33,6 +33,7 @@ export const NextraFrontmatterSchema = z.object({
     v => (v instanceof Date ? formatLocalDate(v) : v),
     z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD')
   ),
+  coAuthor: z.string().optional(),
   description: z.string().optional(),
   tag: z.array(z.string()).optional(),
   thumbnail: z.string().optional(),

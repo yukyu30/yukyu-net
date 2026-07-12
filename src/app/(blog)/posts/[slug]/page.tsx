@@ -100,6 +100,11 @@ export default async function PostPage(props: PageProps) {
           <div>
             <span className="post-hero__meta-key">read:</span> {post.readTime} min
           </div>
+          {post.frontMatter.coAuthor && (
+            <div>
+              <span className="post-hero__meta-key">co-author:</span> {post.frontMatter.coAuthor}
+            </div>
+          )}
           {tags.length > 0 && (
             <div>
               <span className="post-hero__meta-key">tags:</span>{' '}
