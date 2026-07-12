@@ -23,7 +23,7 @@ export const LegacyFrontmatterSchema = z
 
 export type LegacyFrontmatter = z.infer<typeof LegacyFrontmatterSchema>
 
-export const AUTHORS = ['yukyu', 'claude-opus-4-7'] as const
+export const AUTHORS = ['yukyu', 'claude-opus-4-7', 'gpt-5-6-terra'] as const
 export const AuthorSchema = z.enum(AUTHORS)
 export type Author = z.infer<typeof AuthorSchema>
 
