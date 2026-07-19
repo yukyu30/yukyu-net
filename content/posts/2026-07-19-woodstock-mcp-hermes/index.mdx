@@ -1,0 +1,186 @@
+---
+title: Woodstock MCPをHermes Agentにつなぐまで
+date: 2026-07-19
+description: ローカルのCodex CLIでWoodstockのOAuth認証を行い、取得したアクセストークンをHermes Agentへ安全に渡してMCP接続を確認するまでの記録です。
+tag:
+  - 日記
+author: yukyu
+coAuthors:
+  - gpt-5-6-terra
+---
+
+[Woodstock](https://woodstock.co)のMCPサーバーを、Discordで動かしているHermes Agentから使えるようにした。
+
+最終的には、Hermes Agentから`https://mcp.app.woodstock.co/mcp`へ接続し、149個のMCPツールを読み込めた。
+ここでは、ローカルのCodex CLIでOAuth認証を行い、その認証情報をHermes Agentが動くサーバーへ渡すまでの手順を残す。
+
+## Codex CLIからWoodstockへ接続する
+
+まず、ブラウザを使えるMac上のCodex CLIへWoodstockを追加した。
+
+```bash
+codex mcp add woodstock --url https://mcp.app.woodstock.co/mcp
+```
+
+Codex CLIはWoodstockのOAuth対応を検出し、認可URLを表示する。
+
+```text
+Added global MCP server 'woodstock'.
+Detected OAuth support. Starting OAuth flow…
+Authorize `woodstock` by opening this URL in your browser:
+https://mcp.app.woodstock.co/authorize?...
+```
+
+表示されたURLをブラウザで開いて認可すると、Codex CLI側の接続は完了する。
+
+## Codex CLIの認証情報を確認する
+
+Codex CLIのMCPサーバー設定は`~/.codex/config.toml`に保存される。
+一方、OAuthの認証情報は、デフォルトではOSのキーチェーンへ保存される。
+macOSでは「Codex MCP Credentials」というサービス名でKeychainに格納される。
+
+認証情報をファイルとして確認したい場合は、`~/.codex/config.toml`へ次の設定を追加する。
+
+```toml
+mcp_oauth_credentials_store = "file"
+```
+
+その後、Woodstockへのログインをやり直す。
+
+```bash
+codex mcp login woodstock
+```
+
+ファイル保存を選んだ場合、認証情報は次の場所へ保存される。
+
+```text
+~/.codex/.credentials.json
+```
+
+`CODEX_HOME`を変更している場合は、`$CODEX_HOME/.credentials.json`になる。
+このファイルには、次の情報が含まれていた。
+
+- `client_id`
+- `access_token`
+- `refresh_token`
+
+これらはパスワードと同じように扱う必要がある。
+値をチャットへ貼ったり、Gitへコミットしたりしない。
+
+## Hermes AgentのOAuthで詰まったところ
+
+Hermes Agent側にも、最初はOAuth方式でWoodstockを追加した。
+
+```bash
+hermes mcp add Woodstock \
+  --url https://mcp.app.woodstock.co/mcp \
+  --auth oauth
+```
+
+設定後に接続を確認した。
+
+```bash
+hermes mcp test Woodstock
+```
+
+しかし、DiscordのGatewayから動くHermes Agentは非対話環境である。
+ブラウザ認証を開始できず、キャッシュ済みのOAuthトークンもないため、次のエラーになった。
+
+```text
+Auth: OAuth 2.1 PKCE
+Connection failed:
+non-interactive environment and no cached tokens found.
+Run `hermes mcp login Woodstock` interactively first.
+```
+
+`hermes mcp login Woodstock`を対話可能なターミナルで実行できれば、そのままOAuth認証を完了できる。
+今回はCodex CLI側ですでに認証していたため、取得済みのアクセストークンをHermes Agentへ渡す方法へ切り替えた。
+
+## 資格情報をHermes Agentへ渡す
+
+Hermes Agentが動くサーバーで、認証情報を環境変数として設定する。
+実際の値は、ローカルの`.credentials.json`から安全な方法で転送する。
+
+```bash
+export WOODSTOCK_ACCESS_TOKEN='ここにaccess_token'
+export WOODSTOCK_CLIENT_ID='ここにclient_id'
+export WOODSTOCK_REFRESH_TOKEN='ここにrefresh_token'
+```
+
+Hermes Agentが再起動後もアクセストークンを読めるように、Hermesの`.env`へ保存した。
+この環境では、保存先は`/opt/data/.env`である。
+
+```dotenv
+WOODSTOCK_ACCESS_TOKEN='ここにaccess_token'
+WOODSTOCK_CLIENT_ID='ここにclient_id'
+WOODSTOCK_REFRESH_TOKEN='ここにrefresh_token'
+```
+
+ファイルの読み取り権限は、実行ユーザーだけに限定する。
+
+```bash
+chmod 600 /opt/data/.env
+```
+
+なお、`.env`の場所はHermes Agentの構成によって異なる。
+利用中の環境では、Hermesの設定ファイルと同じディレクトリを使う。
+
+## Bearer認証へ切り替える
+
+WoodstockのMCPサーバーは、`Authorization`ヘッダーによるBearer tokenを受け付ける。
+Hermes Agent側の認証方式を`header`へ変更し、`.env`のアクセストークンを参照させた。
+
+```bash
+hermes config set mcp_servers.Woodstock.auth header
+hermes config set \
+  'mcp_servers.Woodstock.headers.Authorization' \
+  'Bearer ${WOODSTOCK_ACCESS_TOKEN}'
+hermes config set mcp_servers.Woodstock.enabled true
+```
+
+設定内容は次の形になる。
+
+```yaml
+mcp_servers:
+  Woodstock:
+    url: https://mcp.app.woodstock.co/mcp
+    auth: header
+    enabled: true
+    headers:
+      Authorization: Bearer ${WOODSTOCK_ACCESS_TOKEN}
+```
+
+`${WOODSTOCK_ACCESS_TOKEN}`は起動時に環境変数から展開される。
+設定ファイルへトークン本体を書かないため、設定内容を確認するときに資格情報を露出しにくい。
+
+## 接続を確認する
+
+最後に、Hermes AgentからWoodstockへの接続を確認した。
+
+```bash
+hermes mcp test Woodstock
+```
+
+結果は次のとおりだった。
+
+```text
+Testing 'Woodstock'...
+Transport: HTTP → https://mcp.app.woodstock.co/mcp
+Authorization: ***
+✓ Connected
+✓ Tools discovered: 149
+```
+
+`get_account`、`get_assets`、`get_orders`、`get_stock_bars`、各種テクニカル指標、バックテスト用のstrategyツールなどが読み込まれた。
+Hermes Agentを再起動するか、新しいセッションを開始すると、DiscordからWoodstockのツールを呼び出せる。
+
+## Bearer認証の制約
+
+今回の設定でHermes Agentが直接利用しているのは`WOODSTOCK_ACCESS_TOKEN`だけである。
+`WOODSTOCK_REFRESH_TOKEN`も安全な場所へ保存したが、`header`認証では自動更新に使われない。
+
+そのため、アクセストークンが失効した場合は、Codex CLIでOAuth認証を更新し、新しいアクセストークンをHermes Agent側の`.env`へ反映する必要がある。
+長期間の無人運用では、Hermes Agent側でOAuth認証を完了させ、refresh tokenによる自動更新を使う構成のほうが適している。
+
+今回のように、ブラウザ認証を行う端末とMCPを実行するサーバーが分かれている場合は、Bearer認証に切り替えることで接続を確認できる。
+その代わり、トークンの転送、保存、更新は自分で管理する必要がある。
