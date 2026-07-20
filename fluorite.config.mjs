@@ -32,7 +32,7 @@ export const CANONICAL_TAGS = [
 ]
 
 /** author / coAuthors に書いてよい著者の許可リスト。 */
-export const AUTHORS = ['yukyu', 'claude-opus-4-7', 'gpt-5-6-terra']
+export const AUTHORS = ['yukyu', 'claude-opus-4-7', 'gpt-5-6-terra', 'ederx']
 
 export default defineConfig({
   include: ['content/posts/**/*.mdx'],

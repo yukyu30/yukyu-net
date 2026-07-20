@@ -17,5 +17,9 @@ export const AUTHOR_INFO: Record<Author, AuthorInfo> = {
   'gpt-5-6-terra': {
     name: 'GPT-5.6-Terra',
     avatar: '/authors/gpt-5-6-terra.svg'
+  },
+  ederx: {
+    name: 'Ederx（エデルクス）',
+    avatar: '/authors/ederx.svg'
   }
 }

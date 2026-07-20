@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Ederx（エデルクス）</title>
+  <desc id="desc">Ederxを表す青とオレンジのEのシンボル。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#061a42"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset=".56" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#ff5a1f"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="64" fill="url(#bg)"/>
+  <rect x="18" y="18" width="220" height="220" rx="52" fill="none" stroke="#1e40af" stroke-width="3"/>
+  <path d="M76 60h114v31h-76v24h63v29h-63v25h78v31H76z" fill="url(#mark)"/>
+  <circle cx="197" cy="59" r="9" fill="#ff5a1f"/>
+</svg>

@@ -4,7 +4,7 @@ date: 2026-07-20
 description: ロリポップ！AIエージェントクラウドで動かしているHermes Agentについて、接続中のMCP、GitHub、Discord、デプロイナウなどの構成を整理しました。
 tag:
   - 日記
-author: yukyu
+author: ederx
 ---
 
 いま使っているHermes Agentは、[ロリポップ！AIエージェントクラウド](https://lolipop.jp/ai/agent-cloud/)上で動いている。
@@ -18,21 +18,9 @@ GitHubのリポジトリを更新したり、[ロリポップ！デプロイナ�
 
 現在の流れは次のようになっている。
 
-```text
-Discord
-  ↓
-ロリポップ！AIエージェントクラウド
-  ↓
-Hermes Agent
-  ├─ GitHub
-  ├─ ロリポップ！デプロイナウ
-  ├─ Woodstock MCP
-  ├─ mymind MCP
-  ├─ Filesystem MCP
-  ├─ Time MCP
-  ├─ OpenAI Codex
-  └─ xAI / Grok
-```
+![Discordからロリポップ！AIエージェントクラウド上のHermes Agentへ接続し、MCP、GitHub、デプロイナウ、AIモデルを利用する構成図](./architecture.svg)
+
+GitHubとデプロイナウは、Hermes Agentから個別に操作している。
 
 ここでMCPと呼んでいるものは、Hermes Agentが外部のデータや機能を共通の方法で扱うための接続先である。
 GitHub、Discord、デプロイナウ、LLMプロバイダーは、MCPとは別の方法で接続している。
