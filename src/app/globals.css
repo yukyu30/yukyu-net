@@ -1519,6 +1519,56 @@ button {
   padding: 0;
 }
 
+.post-table-scroll {
+  width: 100%;
+  margin: 28px 0;
+  overflow-x: auto;
+  border: 1px solid var(--color-ink);
+  background: var(--color-paper);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-muted) transparent;
+}
+
+.post-table-scroll table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.post-table-scroll th,
+.post-table-scroll td {
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: break-word;
+  border-right: 1px solid var(--color-faint);
+  border-bottom: 1px solid var(--color-faint);
+}
+
+.post-table-scroll th:last-child,
+.post-table-scroll td:last-child {
+  border-right: none;
+}
+
+.post-table-scroll thead th {
+  background: var(--color-ink);
+  color: var(--color-bg);
+  font-weight: 700;
+}
+
+.post-table-scroll tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.post-table-scroll tbody td:first-child {
+  background: var(--color-bg);
+  font-weight: 700;
+}
+
 .post-body ul,
 .post-body ol {
   padding-left: 1.4em;

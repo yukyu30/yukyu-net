@@ -1,4 +1,4 @@
-import type { HTMLAttributes, ImgHTMLAttributes, ReactNode } from 'react'
+import type { HTMLAttributes, ImgHTMLAttributes, ReactNode, TableHTMLAttributes } from 'react'
 import { useMDXComponents as getThemeComponents } from 'nextra-theme-blog'
 
 const themeComponents = getThemeComponents()
@@ -31,12 +31,21 @@ function PlainPre({ children, ...rest }: HTMLAttributes<HTMLPreElement>) {
   return <pre {...rest}>{children}</pre>
 }
 
+function ResponsiveTable({ children, ...rest }: TableHTMLAttributes<HTMLTableElement>) {
+  return (
+    <div className="post-table-scroll">
+      <table {...rest}>{children}</table>
+    </div>
+  )
+}
+
 export function useMDXComponents(components?: Record<string, React.ComponentType>) {
   return {
     ...themeComponents,
     wrapper: PassthroughWrapper,
     img: PlainImg,
     pre: PlainPre,
+    table: ResponsiveTable,
     ...components
   }
 }
