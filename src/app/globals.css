@@ -60,7 +60,7 @@ button {
   color: var(--color-bg);
   padding: 14px 36px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px 12px;
@@ -80,7 +80,10 @@ button {
 }
 
 .site-header__search-toggle {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
   background: transparent;
   border: 1px solid rgba(250, 250, 247, 0.28);
   color: var(--color-bg);
@@ -133,93 +136,116 @@ button {
   background: transparent;
 }
 
-/* ============ Search (Nextra <Search />) ============ */
-/* These rules style Nextra's Combobox-based search dropdown via its
-   `.nextra-search` / `.nextra-search-results` class names and the
-   internal `[role="option"]` markup it emits. Tuned against
-   nextra@4.6.x — re-check on upgrade. */
-.nextra-search {
-  position: relative;
-  display: inline-flex;
+/* ============ Search ============ */
+.site-search-pip-root,
+.site-search-panel {
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.site-search-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-search-panel__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
   align-items: center;
-  margin-left: 8px;
-}
-
-.nextra-search input[type='search'] {
-  font: inherit;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(250, 250, 247, 0.28);
-  border-radius: 0;
+  min-height: 48px;
+  padding-left: 14px;
+  background: var(--color-ink);
   color: var(--color-bg);
+  border-bottom: 2px solid var(--color-orange);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.site-search-panel__close {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  border: 0;
+  border-left: 1px solid rgba(250, 250, 247, 0.28);
+  background: transparent;
+  color: inherit;
+}
+
+.site-search-panel__close:hover {
+  background: var(--color-orange);
+}
+
+.site-search-panel__content {
+  flex: 1;
+  min-height: 0;
+  padding: 14px;
+}
+
+.site-search-panel__content .nextra-search {
+  display: block;
+  width: 100%;
+  color: var(--color-ink);
+}
+
+.site-search-panel__content .nextra-search input[type='search'] {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-ink);
+  border-radius: 0;
   outline: none;
-  width: 180px;
-  transition: border-color 120ms ease, background 120ms ease;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 16px;
   -webkit-appearance: none;
   appearance: none;
 }
 
-.nextra-search input[type='search']::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-  appearance: none;
+.site-search-panel__content .nextra-search input[type='search']:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
 }
 
-.nextra-search input[type='search']::placeholder {
-  color: rgba(250, 250, 247, 0.55);
-}
-
-.nextra-search input[type='search']:focus {
-  border-color: var(--color-orange);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.nextra-search kbd {
+.site-search-panel__content .nextra-search kbd {
   display: none;
 }
 
 .nextra-search-results {
-  width: min(560px, calc(100vw - 32px));
-  max-height: min(70vh, 480px);
+  width: min(576px, calc(100vw - 28px));
+  max-height: calc(100vh - 116px);
   overflow-y: auto;
+  padding: 6px 0;
+  border: 1px solid var(--color-ink);
+  border-radius: 0;
   background: var(--color-paper);
   color: var(--color-ink);
-  border: 1px solid var(--color-ink);
+  box-shadow: 0 10px 28px rgba(10, 10, 10, 0.18);
   font-family: var(--font-mono);
   font-size: 12px;
-  padding: 6px 0;
-  box-shadow: 0 10px 28px rgba(10, 10, 10, 0.18);
-  z-index: 100;
   list-style: none;
 }
 
-.nextra-search-results:empty {
-  display: none;
-}
-
-.nextra-search-results > div:not([role='option']) {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-  padding: 10px 14px 4px;
-  margin-top: 6px;
-  border-top: 1px solid var(--color-faint);
-}
-
-.nextra-search-results > div:not([role='option']):first-child {
-  margin-top: 0;
-  border-top: none;
+.nextra-search-results.site-search-results--below {
+  position: fixed !important;
+  inset: var(--site-search-results-top) auto auto
+    var(--site-search-results-left) !important;
+  width: var(--site-search-results-width) !important;
+  max-width: none !important;
+  max-height: var(--site-search-results-height) !important;
+  transform: none !important;
+  transform-origin: top !important;
 }
 
 .nextra-search-results [role='option'] {
   display: block;
   padding: 10px 14px;
-  color: var(--color-ink);
-  text-decoration: none;
   border-bottom: 1px solid var(--color-faint);
+  color: var(--color-ink);
   cursor: pointer;
 }
 
@@ -233,36 +259,47 @@ button {
 }
 
 .nextra-search-results [role='option'] > div:first-child {
+  margin-bottom: 4px;
+  color: var(--color-ink);
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
-  letter-spacing: -0.01em;
-  margin-bottom: 4px;
-  color: var(--color-ink);
   line-height: 1.3;
 }
 
 .nextra-search-results [role='option'] > div:nth-child(2) {
-  font-size: 11px;
-  color: var(--color-muted);
-  line-height: 1.55;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
   overflow: hidden;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .nextra-search-results mark {
+  padding: 0 2px;
   background: rgba(255, 90, 31, 0.18);
   color: var(--color-accent);
   font-weight: 700;
-  padding: 0 2px;
 }
 
-.site-header__search-empty {
-  display: block;
-  padding: 14px;
-  color: var(--color-muted);
+.site-search-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(10, 10, 10, 0.55);
+}
+
+.site-search-dialog .site-search-panel {
+  width: min(680px, 100%);
+  height: min(760px, calc(100vh - 40px));
+  min-height: 0;
+  border: 1px solid var(--color-ink);
+  background: var(--color-paper);
 }
 
 /* ============ Footer ============ */
@@ -1662,47 +1699,10 @@ button {
   .site-header__brand {
     flex: 1;
   }
-  .site-header__search-toggle {
-    display: inline-flex;
-  }
-  .site-header__search-slot {
-    order: 1;
-    flex-basis: 100%;
-    display: none;
-  }
-  .site-header__search-slot.is-open {
-    display: block;
-  }
   .site-header__nav {
     order: 2;
     flex-basis: 100%;
     flex-wrap: wrap;
-  }
-  .nextra-search {
-    margin-left: 0;
-    width: 100%;
-  }
-  .nextra-search input[type='search'] {
-    width: 100%;
-    /* 16px+ keeps iOS Safari from auto-zooming on focus */
-    font-size: 16px;
-    padding: 8px 12px;
-  }
-  /* Override Headless UI's anchor positioning on mobile so the
-     dropdown always renders as a bottom sheet instead of flipping
-     above / off-screen. */
-  .nextra-search-results {
-    position: fixed !important;
-    inset: auto 0 0 0 !important;
-    width: 100% !important;
-    max-width: none !important;
-    max-height: 70vh !important;
-    transform: none !important;
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
-    border-top: 1px solid var(--color-ink);
-    box-shadow: 0 -10px 28px rgba(10, 10, 10, 0.18);
   }
   .site-footer {
     grid-template-columns: repeat(2, 1fr);

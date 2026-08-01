@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ViewTransitions } from 'next-view-transitions'
+import { ViewTransitionGuard } from '@/components/view-transition-guard'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -21,7 +22,10 @@ export default function RootLayout({
   return (
     <ViewTransitions>
       <html lang="ja" suppressHydrationWarning>
-        <body>{children}</body>
+        <body>
+          <ViewTransitionGuard />
+          {children}
+        </body>
       </html>
     </ViewTransitions>
   )
