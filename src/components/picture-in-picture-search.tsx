@@ -2,6 +2,11 @@
 
 import { SearchIcon, X } from 'lucide-react'
 import { Search } from 'nextra/components'
+import { useRouter } from 'next/navigation'
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  MouseEvent as ReactMouseEvent
+} from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -41,6 +46,7 @@ function copyStyles(targetDocument: Document) {
 }
 
 export function PictureInPictureSearch() {
+  const router = useRouter()
   const [pipRoot, setPipRoot] = useState<HTMLElement | null>(null)
   const [fallbackOpen, setFallbackOpen] = useState(false)
   const pipWindowRef = useRef<Window | null>(null)
@@ -169,6 +175,51 @@ export function PictureInPictureSearch() {
     }
   }
 
+  const navigateToSearchResult = (link: Element | null) => {
+    if (!pipRoot) return
+
+    const resultLink = link?.closest('a[href]')
+    if (!resultLink) return
+
+    const linkWindow = resultLink.ownerDocument.defaultView
+    if (
+      !linkWindow ||
+      !(resultLink instanceof linkWindow.HTMLAnchorElement)
+    ) {
+      return
+    }
+
+    const url = new URL(resultLink.href, window.location.href)
+    if (url.origin !== window.location.origin) return
+
+    router.push(`${url.pathname}${url.search}${url.hash}`)
+    return true
+  }
+
+  const navigateFromSearchClick = (
+    event: ReactMouseEvent<HTMLDivElement>
+  ) => {
+    if (!navigateToSearchResult(event.target as Element | null)) return
+
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
+  const navigateFromSearchKey = (
+    event: ReactKeyboardEvent<HTMLDivElement>
+  ) => {
+    if (event.key !== 'Enter' || !pipRoot) return
+
+    const targetDocument = event.currentTarget.ownerDocument
+    const focusedOption = targetDocument.querySelector<HTMLElement>(
+      '.nextra-search-results [role="option"][data-focus], .nextra-search-results [role="option"][aria-selected="true"]'
+    )
+    if (!navigateToSearchResult(focusedOption)) return
+
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
   const panel = (
     <section className="site-search-panel" aria-label="サイト内検索">
       <header className="site-search-panel__header">
@@ -183,7 +234,12 @@ export function PictureInPictureSearch() {
           <X aria-hidden="true" size={18} strokeWidth={1.8} />
         </button>
       </header>
-      <div className="site-search-panel__content" ref={searchContainerRef}>
+      <div
+        className="site-search-panel__content"
+        ref={searchContainerRef}
+        onClickCapture={navigateFromSearchClick}
+        onKeyDownCapture={navigateFromSearchKey}
+      >
         <Search
           placeholder="記事を検索..."
           emptyResult="検索結果がありません"
