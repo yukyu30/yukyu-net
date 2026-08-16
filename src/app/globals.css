@@ -1531,6 +1531,12 @@ button {
   aspect-ratio: 16 / 9;
 }
 
+.post-body iframe[src*="youtube.com/embed"].youtube-short {
+  width: min(100%, 315px);
+  aspect-ratio: 9 / 16;
+  margin-inline: auto;
+}
+
 .post-body pre {
   background: var(--color-paper);
   border: 1px solid var(--color-faint);
