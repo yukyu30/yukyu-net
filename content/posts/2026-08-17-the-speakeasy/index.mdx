@@ -1,0 +1,87 @@
+---
+title: The Speakeasyをつくっている
+date: 2026-08-17
+description: 好きなお酒をひっそりとまとめておく、スマホの中のバー。なぜ作っているのか、どう考えながら作っているのか。
+thumbnail: /posts/2026-08-17-the-speakeasy/og.png
+tag:
+  - つくったもの
+  - 日記
+author: yukyu
+---
+
+The Speakeasy という iPhone アプリをつくっている。
+
+<img
+  src="/posts/2026-08-17-the-speakeasy/the-speakeasy-text-logo.png"
+  alt="The Speakeasy"
+  style={{
+    display: 'block',
+    width: 'min(100%, 280px)',
+    height: 'auto',
+    margin: '12px auto 28px',
+  }}
+/>
+
+The Speakeasyはスマホの中の自分だけバーがコンセプトのアプリだ。
+
+具体的にできることは、ボトルの写真と撮ってあつめて、お気に入りのレシピ(割り方)をメモしておけるアプリ。
+
+
+
+TestFlightでベータ版をまわりの人に公開できたので、ここまで開発記録を残しておこうと思う。
+
+技術的な要素には深く触れず、動機やどんなことを考えたかをメインに書いていく。
+
+
+
+## お酒を飲むようになった
+
+2024年11月に[サントリー白州工場へ行った](./2024-11-03) ことをきっかけに、ウィスキーの良さを知り、そこからより好んでお酒を飲むようになった。
+
+それまで家ではお酒を飲んでいなかったが2,3週間に1回くらいは自宅でもお酒を飲むようになった。
+
+
+
+## 同期との飲み会での話がきっかけ
+
+同様にお酒が好きな同期であつまり、お酒を飲んでいた時に「お酒を買い集めるが、あけたお酒がどのくらい開けたものか忘れてしまう」といった会話をした記憶がある。もちろんお酒を飲みながら話していたのでおぼろげな記憶ではある。
+
+
+
+数日、簡単にアプリを作り友人に見せた。
+
+しかし、作っているうちに自分のお酒を記録して、溜まっていく感じがアプリを開発しようと思った。
+
+## The Speakeasy という名前
+
+名前は「The Speakeasy」にした。
+
+
+
+当初はtashina-meとして名付け、自分だけの嗜みみたいなことを表現していた。
+
+とある日にスピークイージーという言葉を思い出して、The Speakeasyとした。
+
+スピークイージーとは、禁酒法時代の隠れ酒場のことだ。
+
+スマホの中にある自分だけバーというコンセプトが隠れ酒場ともマッチしていたので  
+この名前にした。
+
+
+ちなみにこの理由は友人に、名前の由来を聞かれ、その場で咄嗟に答えた思いつきである。
+
+## アプリのデザイン
+
+Opalというスクリーンタイム管理アプリと、FocusFlightという集中時間のタイマーアプリ？をつかっていて、それらのアプリのデザインの影響を強く受けている。この2つのアプリは、リアルな質感のデザインがアプリ内におおい。
+
+<iframe
+  className="youtube-short"
+  src="https://www.youtube.com/embed/SwWKbrRJHng"
+  title="The Speakeasy"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  referrerPolicy="strict-origin-when-cross-origin"
+  allowFullScreen
+></iframe>
+
+
