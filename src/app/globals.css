@@ -2293,3 +2293,20 @@ button {
 .console-sticker img { width: 100%; height: auto; display: block; filter: drop-shadow(0 1px 1px #091d7d80); }
 .console-sticker:hover { filter: brightness(1.15) saturate(1.3); }
 .console-sticker:focus-visible { outline: 2px solid #edff56; outline-offset: 3px; border-radius: 8px; }
+
+.console-screen--interactive { display: block; padding: 0; border: 0; color: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
+.console-screen--interactive:focus-visible { outline: 2px solid var(--console-button); outline-offset: 3px; }
+.console-screen__cracks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: none; stroke: #f9ffff; stroke-width: 1.4; filter: drop-shadow(1px 1px 0 #566b7670); }
+.console-escape { position: fixed; inset: 0; z-index: 80; pointer-events: none; }
+.console-escaped-avatar { position: absolute; left: 0; top: 0; padding: 0; border: 0; background: none; cursor: grab; touch-action: none; user-select: none; pointer-events: auto; -webkit-tap-highlight-color: transparent; will-change: transform; }
+.console-escaped-avatar[aria-pressed="true"] { cursor: grabbing; }
+.console-escaped-avatar:focus-visible { outline: 2px dashed #edff56; outline-offset: 4px; border-radius: 50%; }
+.console-escaped-avatar .hero-avatar { width: 100%; height: 100%; margin: 0; filter: drop-shadow(0 14px 10px #07174655); }
+.console-escaped-avatar__pop { display: block; width: 100%; height: 100%; animation: console-pop .55s cubic-bezier(.2,.8,.3,1.2) both; }
+.console-escape__reset { position: fixed; bottom: max(18px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); pointer-events: auto; padding: 12px 18px; min-height: 44px; border: 1px solid #ffffff80; border-radius: 6px; color: white; background: #002ced; font-family: var(--font-mono); }
+.console-shards { position: fixed; pointer-events: none; }
+.console-shards i { position: absolute; inset: 0; background: linear-gradient(125deg,#ffffffa0,#dce6cc30); animation: console-shatter .85s ease-out both; }
+@keyframes console-pop { from { transform: scale(.85); } 45% { transform: scale(1.12); } to { transform: scale(1); } }
+@keyframes console-shatter { from { opacity: .9; transform: translate(0,0) rotate(0); } to { opacity: 0; transform: translate(var(--shard-x),var(--shard-y)) rotate(var(--shard-r)) scale(.65); } }
+@media (prefers-reduced-motion: reduce) { .console-shards { display: none; } .console-escaped-avatar__pop { animation: none; } }
+.console-escape__announcement { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

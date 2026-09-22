@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Environment, Html, Lightformer, RoundedBox } from '@react-three/drei'
 import { Group, Mesh, Shape, Path, ExtrudeGeometry, ShapeGeometry, RingGeometry, MathUtils, DataTexture, RepeatWrapping, RGBAFormat, type Texture } from 'three'
-import { HeroAvatar } from './hero-avatar'
+import { ConsoleBreakout } from './console-breakout'
 import { ConsoleScrew } from './console-screw'
 import { ConsoleRoom } from './console-room'
 import { ConsoleSurface } from './console-surface'
@@ -311,8 +311,8 @@ function Device({ onReady }: { onReady: () => void }) {
       <RoundedBox args={[2.63, 2.27, 0.04]} radius={0.06} smoothness={5} position={[0, 0.57, 0.5]}>
         <meshStandardMaterial color={MATERIAL.screen} roughness={0.4} />
       </RoundedBox>
-      {removedCount < 4 && <ConsoleSurface position={[0, 0.57, 0.532]} width={259} height={223} interactive={false}>
-        <div className="console-screen"><HeroAvatar showFallback={false} squint={squint} /><div className="console-screen__glass" /></div>
+      {removedCount < 4 && <ConsoleSurface position={[0, 0.57, 0.532]} width={259} height={223}>
+        <ConsoleBreakout squint={squint} />
       </ConsoleSurface>}
       {removedCount < 4 && <ConsoleSurface position={[0.5, 2.13, 0.365]} width={145} height={49} layer={20}>
         <a className="console-sticker" href="https://x.com/yukyu30" target="_blank" rel="noopener noreferrer" aria-label="Xで @yukyu30 を見る（新しいタブ）">
