@@ -5,7 +5,7 @@ import type { AnimationItem } from 'lottie-web'
 
 const POINTER_TRACKING_QUERY = '(hover: hover) and (pointer: fine)'
 
-export function HeroAvatar() {
+export function HeroAvatar({ showFallback = true, squint = false }: { showFallback?: boolean; squint?: boolean }) {
   const container = useRef<HTMLDivElement>(null)
   const animation = useRef<AnimationItem | null>(null)
   const bodyMotion = useRef<HTMLDivElement>(null)
@@ -33,7 +33,7 @@ export function HeroAvatar() {
       const trackPointer = window.matchMedia(POINTER_TRACKING_QUERY).matches
       for (const layer of animationData.layers) {
         if (layer.nm !== 'Eye left' && layer.nm !== 'Eye right') continue
-        layer.cl = 'hero-avatar__eye'
+        layer.cl = `hero-avatar__eye ${layer.nm === 'Eye left' ? 'hero-avatar__eye--left' : 'hero-avatar__eye--right'}`
         if (trackPointer && layer.ks.p.a === 1) {
           layer.ks.p = { a: 0, k: layer.ks.p.k[0].s }
         }
@@ -65,9 +65,33 @@ export function HeroAvatar() {
 
   useEffect(() => {
     if (!ready) return
-    if (paused) animation.current?.pause()
+    if (squint) animation.current?.goToAndStop(0, true)
+    else if (paused) animation.current?.pause()
     else animation.current?.play()
-  }, [paused, ready])
+  }, [paused, ready, squint])
+
+  useEffect(() => {
+    if (!ready || !container.current || !squint) return
+    const eyes = Array.from(container.current.querySelectorAll<SVGGElement>('.hero-avatar__eye'))
+    const paths = eyes.map(eye => {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      const left = eye.classList.contains('hero-avatar__eye--left')
+      path.setAttribute('d', left ? 'M -28 -32 L 24 0 L -28 32' : 'M 28 -32 L -24 0 L 28 32')
+      path.setAttribute('fill', 'none')
+      path.setAttribute('stroke', '#070807')
+      path.setAttribute('stroke-width', '16')
+      path.setAttribute('stroke-linecap', 'round')
+      path.setAttribute('stroke-linejoin', 'round')
+      path.classList.add('hero-avatar__squint')
+      eye.classList.add('is-squinting')
+      eye.append(path)
+      return path
+    })
+    return () => {
+      paths.forEach(path => path.remove())
+      eyes.forEach(eye => eye.classList.remove('is-squinting'))
+    }
+  }, [ready, squint])
 
   useEffect(() => {
     if (!ready || !container.current) return
@@ -125,7 +149,7 @@ export function HeroAvatar() {
       if (!finePointer.matches) reset()
     }
     const onPointerMove = (event: PointerEvent) => {
-      if (paused || !finePointer.matches || event.pointerType !== 'mouse') return
+      if (paused || squint || !finePointer.matches || event.pointerType !== 'mouse') return
       const bounds = avatar?.getBoundingClientRect()
       if (!bounds) return
       if (!bounds.width || !bounds.height) return
@@ -158,14 +182,14 @@ export function HeroAvatar() {
       finePointer.removeEventListener('change', syncPointer)
       for (const wrapper of wrappers) wrapper.replaceWith(...Array.from(wrapper.childNodes))
     }
-  }, [ready, paused])
+  }, [ready, paused, squint])
 
   return (
     <>
       <div className="hero-avatar" role="img" aria-label="yukyuのキャラクター">
         <div className={`hero-avatar__float${ready && !paused ? ' is-active' : ''}`}>
           <div ref={bodyMotion} className="hero-avatar__motion">
-            {!ready && <img className="hero-avatar__fallback" src="/authors/yukyu.jpg" alt="" />}
+            {showFallback && !ready && <img className="hero-avatar__fallback" src="/authors/yukyu.jpg" alt="" />}
             <div ref={container} className="hero-avatar__animation" aria-hidden="true" />
           </div>
         </div>

@@ -16,6 +16,8 @@
     "lint:frontmatter": "fluorite check"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
     "@splidejs/splide": "^4.1.4",
     "gray-matter": "4.0.3",
     "lottie-web": "^5.13.0",
@@ -26,12 +28,14 @@
     "nextra-theme-blog": "4.6.1",
     "react": "19.2.1",
     "react-dom": "19.2.1",
+    "three": "^0.186.0",
     "zod": "4.4.2"
   },
   "devDependencies": {
     "@types/node": "20.19.0",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
+    "@types/three": "^0.186.0",
     "@yukyu30/fluorite": "^0.1.2",
     "pagefind": "1.4.0",
     "textlint": "^15.6.0",

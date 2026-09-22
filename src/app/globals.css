@@ -2245,3 +2245,49 @@ button {
   .hero-avatar__float.is-active { animation: none; }
   .hero-avatar__motion { transform: none !important; }
 }
+
+/* A small, physical portal into the site. */
+.hero-image--console {
+  --console-shell: #002ced;
+  --console-bezel: #253347;
+  --console-screen: #dce6cc;
+  --console-ink: #efff4c;
+  --console-button: #edff56;
+  --console-shadow: rgb(5 18 88 / 28%);
+  --console-glass: rgb(255 255 255 / 23%);
+  padding: 68px 0 12px;
+  overflow: hidden;
+}
+.game-console { position: relative; width: min(100%, 760px); height: min(800px, calc(100svh - 80px)); min-height: 460px; }
+.game-console::before { content: ''; position: absolute; left: 23%; right: 23%; bottom: 5%; height: 6%; border-radius: 50%; background: var(--console-shadow); filter: blur(20px); }
+.console-screen { position: relative; width: 259px; height: 223px; border-radius: 5px; overflow: hidden; background: var(--console-screen); box-shadow: inset 0 3px 12px rgb(37 51 71 / 22%); }
+.console-screen .hero-avatar { width: 220px; height: 220px; margin: 8px auto 0; }
+.console-screen__glass { position: absolute; inset: 0; background: linear-gradient(128deg, var(--console-glass), transparent 42%, transparent 70%, var(--console-glass)); box-shadow: inset 0 0 0 1px var(--console-glass); border-radius: inherit; }
+.console-button { position: relative; display: block; width: 78px; height: 78px; border-radius: 50%; cursor: pointer; -webkit-tap-highlight-color: transparent; outline-offset: 4px; }
+.console-button:focus-visible { outline: 2px solid var(--console-ink); }
+.console-button__label { position: absolute; top: 72px; left: 50%; transform: translateX(-50%); color: var(--console-ink); font-family: var(--font-mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.console-unavailable { position: absolute; inset: 0; display: flex; gap: 16px; align-items: center; justify-content: center; }
+.console-unavailable a { border: 1px solid var(--color-on-blue-line); border-radius: 2px; padding: 16px; color: var(--color-paper); }
+@media (max-width: 600px) {
+  .hero-image--console { padding: 76px 0 8px; }
+  .game-console { height: min(660px, calc(100svh - 84px)); min-height: 410px; }
+}
+
+.console-screw { display: block; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.console-screw:focus-visible { outline: 2px solid var(--console-button); outline-offset: 2px; }
+.console-screw:disabled { cursor: default; box-shadow: none; }
+.console-disassembly { display: flex; align-items: center; gap: 16px; white-space: nowrap; font-family: var(--font-mono); font-size: 12px; color: var(--color-paper); }
+.console-disassembly button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--color-on-blue-line); border-radius: 2px; background: var(--color-accent); color: var(--color-paper); cursor: pointer; }
+.console-disassembly button:hover,
+.console-disassembly button:focus-visible { background: var(--color-paper); color: var(--color-accent); }
+
+.console-room__resident { width: 108px; height: 108px; }
+.console-room__resident .hero-avatar { width: 108px; height: 108px; }
+
+.console-skeleton { position: absolute; z-index: 30; pointer-events: none; inset: 0; display: grid; place-items: center; background: var(--color-accent); color: #c2e5ff; }
+.console-blueprint { width: min(95%, 560px); max-height: 100%; }
+.hero-avatar__eye.is-squinting > :not(.hero-avatar__squint) { visibility: hidden; }
+.console-sticker { display: block; width: 145px; min-height: 44px; transform: rotate(-7deg); transition: filter .2s; }
+.console-sticker img { width: 100%; height: auto; display: block; filter: drop-shadow(0 1px 1px #091d7d80); }
+.console-sticker:hover { filter: brightness(1.15) saturate(1.3); }
+.console-sticker:focus-visible { outline: 2px solid #edff56; outline-offset: 3px; border-radius: 8px; }
