@@ -13,7 +13,7 @@ const SHARDS = [
 
 type Origin = { x: number; y: number; width: number; height: number }
 
-function EscapedAvatar({ origin, onReset }: { origin: Origin; onReset: () => void }) {
+function EscapedAvatar({ origin }: { origin: Origin }) {
   const avatar = useRef<HTMLButtonElement>(null)
   const size = Math.min(230, Math.max(130, origin.width * 0.84), window.innerWidth * 0.48)
   const position = useRef({ x: origin.x + (origin.width - size) / 2, y: origin.y + (origin.height - size) / 2 })
@@ -53,7 +53,7 @@ function EscapedAvatar({ origin, onReset }: { origin: Origin; onReset: () => voi
     frame = requestAnimationFrame(step)
     const timer = window.setTimeout(() => setShards(false), 1000)
     return () => { cancelAnimationFrame(frame); clearTimeout(timer) }
-    // Each escape owns its position/velocity until it is reset or unmounted.
+    // Each escape owns its position/velocity until it is unmounted.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -73,6 +73,7 @@ function EscapedAvatar({ origin, onReset }: { origin: Origin; onReset: () => voi
       onPointerDown={event => {
         if (!event.isPrimary || event.button !== 0) return
         event.preventDefault()
+        event.currentTarget.dataset.pointerFocus = 'true'
         event.currentTarget.focus({ preventScroll: true })
         event.currentTarget.setPointerCapture(event.pointerId)
         drag.current = { id: event.pointerId, x: event.clientX - position.current.x, y: event.clientY - position.current.y, lastX: event.clientX, lastY: event.clientY, time: performance.now() }
@@ -89,8 +90,8 @@ function EscapedAvatar({ origin, onReset }: { origin: Origin; onReset: () => voi
       }}
       onPointerUp={release} onPointerCancel={release} onLostPointerCapture={() => { drag.current = null; setHeld(false) }}
       onKeyDown={event => {
+        delete event.currentTarget.dataset.pointerFocus
         const delta: Record<string, [number, number]> = { ArrowLeft: [-20, 0], ArrowRight: [20, 0], ArrowUp: [0, -20], ArrowDown: [0, 20] }
-        if (event.key === 'Escape') { onReset(); return }
         if (!delta[event.key]) return
         event.preventDefault(); velocity.current = { x: 0, y: 0 }
         position.current.x += delta[event.key][0]; position.current.y += delta[event.key][1]
@@ -98,7 +99,6 @@ function EscapedAvatar({ origin, onReset }: { origin: Origin; onReset: () => voi
       }}>
       <span className="console-escaped-avatar__pop"><HeroAvatar showFallback={false} squint={held} /></span>
     </button>
-    <button className="console-escape__reset" type="button" onClick={onReset}>液晶に戻す</button>
     <span className="console-escape__announcement" role="status">キャラクターが飛び出しました。つかんで動かせます。</span>
   </div>, document.body)
 }
@@ -111,15 +111,12 @@ export function ConsoleBreakout({ squint }: { squint: boolean }) {
   const [damage, setDamage] = useState(0)
   const [origin, setOrigin] = useState<Origin | null>(null)
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
-  const reset = () => {
-    setOrigin(null); setHits(0); setDamage(0); sequence.current = { hits: 0, last: 0 }
-    screen.current?.focus({ preventScroll: true })
-  }
   return <>
     <button ref={screen} type="button" className={`console-screen console-screen--interactive${origin ? ' is-broken' : ''}`}
-      aria-label={origin ? '割れた液晶。クリックで元に戻す' : '液晶。10回連続で押すとキャラクターが飛び出します'}
+      aria-disabled={!!origin}
+      aria-label={origin ? '割れた液晶' : '液晶。10回連続で押すとキャラクターが飛び出します'}
       onClick={() => {
-        if (origin) { reset(); return }
+        if (origin) return
         const now = performance.now()
         const count = now - sequence.current.last < 700 ? sequence.current.hits + 1 : 1
         sequence.current = { hits: count, last: now }; setHits(count)
@@ -137,6 +134,6 @@ export function ConsoleBreakout({ squint }: { squint: boolean }) {
         <path d="M0 0 65 57 119 107 176 50 259 0 M0 223 65 166 119 107 181 166 259 223 M119 107 51 105 0 105 M119 107 194 117 259 118 M119 107 135 165 140 223 M65 57 72 20 M65 166 20 157 M176 50 211 63 M181 166 175 204" />
       </svg>}
     </button>
-    {origin && <EscapedAvatar origin={origin} onReset={reset} />}
+    {origin && <EscapedAvatar origin={origin} />}
   </>
 }

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Environment, Html, Lightformer, RoundedBox } from '@react-three/drei'
+import { Environment, Lightformer, RoundedBox } from '@react-three/drei'
 import { Group, Mesh, Shape, Path, ExtrudeGeometry, ShapeGeometry, RingGeometry, MathUtils, DataTexture, RepeatWrapping, RGBAFormat, type Texture } from 'three'
 import { ConsoleBreakout } from './console-breakout'
 import { ConsoleScrew } from './console-screw'
@@ -150,8 +150,6 @@ function Device({ onReady }: { onReady: () => void }) {
   const cover = useRef<Group>(null)
   const opening = useRef(0)
   const [coverRemoved, setCoverRemoved] = useState(false)
-  const [resetKey, setResetKey] = useState(0)
-  const [started, setStarted] = useState(false)
   const [removedCount, setRemovedCount] = useState(0)
   const [squint, setSquint] = useState(false)
   const expressionTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -159,7 +157,6 @@ function Device({ onReady }: { onReady: () => void }) {
     if (expressionTimer.current) clearTimeout(expressionTimer.current)
   }, [])
   const onScrewTurn = useCallback(() => {
-    setStarted(true)
     setSquint(true)
     if (expressionTimer.current) clearTimeout(expressionTimer.current)
     expressionTimer.current = setTimeout(() => {
@@ -168,18 +165,6 @@ function Device({ onReady }: { onReady: () => void }) {
     }, 1000)
   }, [])
   const onScrewRemoved = useCallback(() => setRemovedCount(count => count + 1), [])
-  const resetScrews = () => {
-    if (expressionTimer.current) clearTimeout(expressionTimer.current)
-    expressionTimer.current = null
-    setSquint(false)
-    opening.current = 0
-    cover.current?.position.set(0, 0, 0)
-    cover.current?.rotation.set(0, 0, 0)
-    setCoverRemoved(false)
-    setResetKey(key => key + 1)
-    setStarted(false)
-    setRemovedCount(0)
-  }
   const grain = useMemo(() => {
     const pixels = new Uint8Array(128 * 128 * 4)
     let seed = 317
@@ -322,16 +307,10 @@ function Device({ onReady }: { onReady: () => void }) {
       {removedCount < 4 && CONSOLE_MENU.map((item, index) => <ConsoleButton key={item.href} index={index} grain={grain} />)}
       </group>}
       {[-1.65, 1.65].flatMap(x => [-2.01, 2.14].map(y => (
-        <ConsoleScrew key={`${resetKey}-${x}-${y}`} x={x} y={y}
+        <ConsoleScrew key={`${x}-${y}`} x={x} y={y}
           label={`${y > 0 ? '上' : '下'}${x < 0 ? '左' : '右'}`}
           reduced={reduced} colors={MATERIAL} onTurn={onScrewTurn} onRemoved={onScrewRemoved} />
       )))}
-      {started && <Html center position={[0, -2.7, 0.5]} zIndexRange={[30, 20]}>
-        <div className="console-disassembly">
-          <span role="status" aria-live="polite">{coverRemoved ? 'ひみつの部屋' : `${removedCount} / 4`}</span>
-          <button type="button" onClick={resetScrews}>{removedCount === 4 ? 'カバーを戻す' : 'ネジを戻す'}</button>
-        </div>
-      </Html>}
       <FoodCharms reduced={reduced} />
       <mesh position={[1.7, 2.34, -0.13]} rotation={[0, 0, -0.5]}>
         <torusGeometry args={[0.19, 0.065, 16, 48]} />
