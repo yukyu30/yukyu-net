@@ -17,8 +17,7 @@ export function SiteFooter() {
         <div className="site-footer__body"><a href="/rss.xml">/rss.xml</a></div>
       </div>
       <div className="site-footer__col-right">
-        <div className="site-footer__head">©</div>
-        <div className="site-footer__body">{new Date().getFullYear()} yukyu</div>
+        <div className="site-footer__body site-footer__copyright">© {new Date().getFullYear()} yukyu</div>
       </div>
     </footer>
   )

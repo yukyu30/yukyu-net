@@ -41,16 +41,15 @@ export default async function TagPage(props: PageProps) {
 
   const allTags = getAllTagCounts()
   const totalCount = getAllPosts().length
-  const heroSlash = isAll ? '/' : '#'
-  const heroLabel = isAll ? 'all' : tag
+  const heroLabel = isAll ? 'All' : `#${tag}`
 
   return (
-    <div className="page">
+    <div className="page page--portal">
       <section className="hero">
         <div className="hero__grid">
           <div>
             <h1 className="hero__title">
-              <span className="hero__title-slash">{heroSlash}</span>{heroLabel}
+              {heroLabel}
             </h1>
           </div>
           <div>

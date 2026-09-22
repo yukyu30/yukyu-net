@@ -16,7 +16,7 @@ export function generateStaticParams() {
 export async function generateMetadata(props: PageProps) {
   const { page } = await props.params
   return {
-    title: `Posts page ${page} | yukyu.net`,
+    title: `Blog page ${page} | yukyu.net`,
     description: `${page}ページ目の記事一覧`
   }
 }
@@ -36,12 +36,12 @@ export default async function PaginatedPosts(props: PageProps) {
   const pageStart = start + 1
 
   return (
-    <div className="page">
+    <div className="page page--portal">
       <section className="hero">
         <div className="hero__grid">
           <div>
             <h1 className="hero__title">
-              <span className="hero__title-slash">/</span>posts/{page}
+              Blog
             </h1>
           </div>
           <div>

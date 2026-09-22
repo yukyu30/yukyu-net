@@ -11,12 +11,12 @@ export default function TagsIndex() {
   const total = getAllPosts().length
 
   return (
-    <div className="page">
+    <div className="page page--portal">
       <section className="hero">
         <div className="hero__grid">
           <div>
             <h1 className="hero__title">
-              <span className="hero__title-slash">/</span>tags
+              Tags
             </h1>
           </div>
           <div>

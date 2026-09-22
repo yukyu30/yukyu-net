@@ -49,7 +49,7 @@ export function TagsSlider({ tags, currentTag, totalCount }: Props) {
             >
               <div className="tags-slider__no">01 / all</div>
               <div className="tags-slider__name">all</div>
-              <div className="tags-slider__count">{totalCount} entries →</div>
+              <div className="tags-slider__count">{totalCount} entries</div>
             </Link>
           </li>
           {tags.map((t, i) => (
@@ -62,7 +62,7 @@ export function TagsSlider({ tags, currentTag, totalCount }: Props) {
                   {String(i + 2).padStart(2, '0')} / #{t.tag}
                 </div>
                 <div className="tags-slider__name">{t.tag}</div>
-                <div className="tags-slider__count">{t.count} entries →</div>
+                <div className="tags-slider__count">{t.count} entries</div>
               </Link>
             </li>
           ))}

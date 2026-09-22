@@ -10,12 +10,12 @@ export default function WorksPage() {
   const works = getWorks()
 
   return (
-    <div className="page">
+    <div className="page page--portal">
       <section className="hero">
         <div className="hero__grid">
           <div>
             <h1 className="hero__title">
-              <span className="hero__title-slash">/</span>works
+              Works
             </h1>
           </div>
           <div>

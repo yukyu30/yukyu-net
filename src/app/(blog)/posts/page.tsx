@@ -2,7 +2,7 @@ import { getAllPosts, POSTS_PAGE_SIZE, postsPageHref } from '@/lib/posts'
 import { PostIndexTable, Pagination } from '@/components/post-index-table'
 
 export const metadata = {
-  title: 'Posts | yukyu.net',
+  title: 'Blog | yukyu.net',
   description: 'すべての記事一覧'
 }
 
@@ -13,12 +13,12 @@ export default function PostsIndex() {
   const visible = posts.slice(0, POSTS_PAGE_SIZE)
 
   return (
-    <div className="page">
+    <div className="page page--portal">
       <section className="hero">
         <div className="hero__grid">
           <div>
             <h1 className="hero__title">
-              <span className="hero__title-slash">/</span>posts
+              Blog
             </h1>
           </div>
           <div>
