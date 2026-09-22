@@ -1,7 +1,8 @@
 'use client'
 
-import { Html, RoundedBox } from '@react-three/drei'
+import { RoundedBox } from '@react-three/drei'
 import { HeroAvatar } from './hero-avatar'
+import { ConsoleSurface } from './console-surface'
 
 const ROOM = {
   sky: '#9cbfe6', wall: '#d4e9dc', floor: '#ceb694', wood: '#ab7955', edge: '#74553f',
@@ -39,9 +40,9 @@ export function ConsoleRoom({ showCharacter }: { showCharacter: boolean }) {
     {/* The resident sits behind a desk. */}
     <RoundedBox args={[0.6, 0.78, 0.18]} radius={0.12} position={[-0.47, -0.66, 0.37]}><meshStandardMaterial color={ROOM.blue} roughness={0.9} /></RoundedBox>
     <RoundedBox args={[0.43, 0.48, 0.29]} radius={0.12} position={[-0.47, -0.35, 0.53]}><meshStandardMaterial color={ROOM.cream} roughness={0.9} /></RoundedBox>
-    {showCharacter && <Html transform position={[-0.47, 0.12, 0.64]} distanceFactor={4} zIndexRange={[12, 0]} style={{ pointerEvents: 'none' }}>
+    {showCharacter && <ConsoleSurface position={[-0.47, 0.12, 0.64]} width={108} height={108} interactive={false} layer={12}>
       <div className="console-room__resident"><HeroAvatar showFallback={false} /></div>
-    </Html>}
+    </ConsoleSurface>}
     <RoundedBox args={[2.22, 0.13, 0.76]} radius={0.055} position={[-0.24, -0.8, 0.78]}><meshStandardMaterial color={ROOM.wood} roughness={0.8} /></RoundedBox>
     {[-1.18, 0.68].map(x => <RoundedBox key={x} args={[0.085, 0.9, 0.1]} radius={0.02} position={[x, -1.31, 0.94]}><meshStandardMaterial color={ROOM.edge} roughness={0.8} /></RoundedBox>)}
     <RoundedBox args={[0.68, 0.47, 0.05]} radius={0.025} position={[-0.47, -0.49, 0.95]} rotation={[-0.1, 0, 0]}><meshStandardMaterial color={ROOM.blue} roughness={0.6} /></RoundedBox>

@@ -7,6 +7,7 @@ import { Group, Mesh, Shape, Path, ExtrudeGeometry, ShapeGeometry, RingGeometry,
 import { HeroAvatar } from './hero-avatar'
 import { ConsoleScrew } from './console-screw'
 import { ConsoleRoom } from './console-room'
+import { ConsoleSurface } from './console-surface'
 import { CONSOLE_MENU, ConsoleFallback, ConsoleSkeleton } from './game-console'
 
 // Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V5
@@ -68,7 +69,7 @@ function ConsoleButton({ index, grain }: { index: number; grain: Texture }) {
         <extrudeGeometry args={[star, { depth: 0.2, bevelEnabled: true, bevelSegments: 4, bevelSize: 0.022, bevelThickness: 0.035 }]} />
         <meshPhysicalMaterial color={MATERIAL.button} roughness={hovered ? 0.65 : 0.76} bumpMap={grain} bumpScale={0.008} clearcoat={0.06} />
       </mesh>
-      <Html transform position={[0, 0, 0.83]} distanceFactor={4} zIndexRange={[20, 10]}>
+      <ConsoleSurface position={[0, 0, 0.83]} width={78} height={78} layer={20}>
         <a href={item.href} className="console-button" aria-label={item.label}
           onPointerEnter={() => setHovered(true)}
           onPointerLeave={() => { setHovered(false); setPressed(false) }}
@@ -79,7 +80,7 @@ function ConsoleButton({ index, grain }: { index: number; grain: Texture }) {
           onKeyUp={() => setPressed(false)}>
           <span className="console-button__label">{item.label}</span>
         </a>
-      </Html>
+      </ConsoleSurface>
     </group>
   )
 }
@@ -310,14 +311,14 @@ function Device({ onReady }: { onReady: () => void }) {
       <RoundedBox args={[2.63, 2.27, 0.04]} radius={0.06} smoothness={5} position={[0, 0.57, 0.5]}>
         <meshStandardMaterial color={MATERIAL.screen} roughness={0.4} />
       </RoundedBox>
-      {removedCount < 4 && <Html transform position={[0, 0.57, 0.532]} distanceFactor={4} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
+      {removedCount < 4 && <ConsoleSurface position={[0, 0.57, 0.532]} width={259} height={223} interactive={false}>
         <div className="console-screen"><HeroAvatar showFallback={false} squint={squint} /><div className="console-screen__glass" /></div>
-      </Html>}
-      {removedCount < 4 && <Html transform position={[0.5, 2.13, 0.365]} distanceFactor={4} zIndexRange={[20, 10]}>
+      </ConsoleSurface>}
+      {removedCount < 4 && <ConsoleSurface position={[0.5, 2.13, 0.365]} width={145} height={49} layer={20}>
         <a className="console-sticker" href="https://x.com/yukyu30" target="_blank" rel="noopener noreferrer" aria-label="Xで @yukyu30 を見る（新しいタブ）">
           <img src="/images/console/yukyu30-hologram.png" alt="X @yukyu30" width={2172} height={724} />
         </a>
-      </Html>}
+      </ConsoleSurface>}
       {removedCount < 4 && CONSOLE_MENU.map((item, index) => <ConsoleButton key={item.href} index={index} grain={grain} />)}
       </group>}
       {[-1.65, 1.65].flatMap(x => [-2.01, 2.14].map(y => (
