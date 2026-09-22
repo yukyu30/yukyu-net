@@ -2259,6 +2259,8 @@ button {
   overflow: hidden;
 }
 .game-console { position: relative; width: min(100%, 760px); height: min(800px, calc(100svh - 80px)); min-height: 460px; }
+/* Keep WebGL and Drei HTML in the same viewport, including browser-bar resizes. */
+.game-console canvas { width: 100% !important; height: 100% !important; display: block; }
 .game-console::before { content: ''; position: absolute; left: 23%; right: 23%; bottom: 5%; height: 6%; border-radius: 50%; background: var(--console-shadow); filter: blur(20px); }
 .console-screen { position: relative; width: 259px; height: 223px; border-radius: 5px; overflow: hidden; background: var(--console-screen); box-shadow: inset 0 3px 12px rgb(37 51 71 / 22%); }
 .console-screen .hero-avatar { width: 220px; height: 220px; margin: 8px auto 0; }

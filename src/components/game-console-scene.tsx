@@ -152,9 +152,25 @@ function Device({ onReady }: { onReady: () => void }) {
   const [resetKey, setResetKey] = useState(0)
   const [started, setStarted] = useState(false)
   const [removedCount, setRemovedCount] = useState(0)
-  const onScrewTurn = useCallback(() => setStarted(true), [])
+  const [squint, setSquint] = useState(false)
+  const expressionTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (expressionTimer.current) clearTimeout(expressionTimer.current)
+  }, [])
+  const onScrewTurn = useCallback(() => {
+    setStarted(true)
+    setSquint(true)
+    if (expressionTimer.current) clearTimeout(expressionTimer.current)
+    expressionTimer.current = setTimeout(() => {
+      setSquint(false)
+      expressionTimer.current = null
+    }, 1000)
+  }, [])
   const onScrewRemoved = useCallback(() => setRemovedCount(count => count + 1), [])
   const resetScrews = () => {
+    if (expressionTimer.current) clearTimeout(expressionTimer.current)
+    expressionTimer.current = null
+    setSquint(false)
     opening.current = 0
     cover.current?.position.set(0, 0, 0)
     cover.current?.rotation.set(0, 0, 0)
@@ -295,7 +311,7 @@ function Device({ onReady }: { onReady: () => void }) {
         <meshStandardMaterial color={MATERIAL.screen} roughness={0.4} />
       </RoundedBox>
       {removedCount < 4 && <Html transform position={[0, 0.57, 0.532]} distanceFactor={4} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
-        <div className="console-screen"><HeroAvatar showFallback={false} squint={started} /><div className="console-screen__glass" /></div>
+        <div className="console-screen"><HeroAvatar showFallback={false} squint={squint} /><div className="console-screen__glass" /></div>
       </Html>}
       {removedCount < 4 && <Html transform position={[0.5, 2.13, 0.365]} distanceFactor={4} zIndexRange={[20, 10]}>
         <a className="console-sticker" href="https://x.com/yukyu30" target="_blank" rel="noopener noreferrer" aria-label="Xで @yukyu30 を見る（新しいタブ）">
@@ -332,7 +348,7 @@ export default function ConsoleScene() {
   return (
     <>
     {!ready && <ConsoleSkeleton />}
-    <Canvas camera={{ position: [0, 0, 10], fov: 35 }} dpr={[1, 1.75]}
+    <Canvas resize={{ debounce: { scroll: 0, resize: 0 } }} camera={{ position: [0, 0, 10], fov: 35 }} dpr={[1, 1.75]}
       gl={{ alpha: true, antialias: true }} fallback={<ConsoleFallback />}
       onCreated={({ gl }) => {
         gl.domElement.addEventListener('webglcontextlost', () => setLost(true), { once: true })
