@@ -1,17 +1,18 @@
 import { Link } from 'next-view-transitions'
 import { HeroMemoBubbles } from '@/components/hero-memo-bubble'
+import { HeroAvatar } from '@/components/hero-avatar'
 
 const HERO_MENU: Array<{ label: string; href: string }> = [
   { label: 'posts', href: '/posts' },
   { label: 'works', href: '/works' },
   { label: 'memos', href: '/memos' },
-  { label: 'Me', href: '/me' }
+  { label: 'me', href: '/me' }
 ]
 
 export function HeroImage() {
   return (
     <section className="hero-image">
-      <img className="hero-image__media" src="/hero.jpg" alt="東京の街並み" />
+      <HeroAvatar />
       <HeroMemoBubbles />
       <nav className="hero-image__menu" aria-label="メインメニュー">
         {HERO_MENU.map(item => (
@@ -20,7 +21,6 @@ export function HeroImage() {
           </Link>
         ))}
       </nav>
-      <span className="hero-image__credit">photo by yukyu</span>
     </section>
   )
 }

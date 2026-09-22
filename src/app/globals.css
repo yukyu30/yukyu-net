@@ -216,6 +216,8 @@ button {
 }
 
 .nextra-search-results {
+  /* Nextra portals results into body, outside the fallback search overlay. */
+  z-index: 1001;
   width: min(576px, calc(100vw - 28px));
   max-height: calc(100vh - 116px);
   overflow-y: auto;
@@ -296,7 +298,7 @@ button {
 
 .site-search-dialog .site-search-panel {
   width: min(680px, 100%);
-  height: min(760px, calc(100vh - 40px));
+  height: min(760px, calc(100dvh - 40px));
   min-height: 0;
   border: 1px solid var(--color-ink);
   background: var(--color-paper);
@@ -344,129 +346,118 @@ button {
   border-bottom: 1px solid var(--color-faint);
 }
 
-/* ============ Hero image (root masthead) ============ */
-/* 画像は全幅で最上部に敷き、透過ヘッダー(.site-header--overlay)が上に重なる。 */
+/* ============ Home hero ============ */
 .hero-image {
   position: relative;
-  height: min(82vh, 680px);
-  background: var(--color-ink);
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.5fr) minmax(220px, 1fr);
+  align-items: center;
+  gap: clamp(20px, 3vw, 48px);
+  min-height: 540px;
+  padding: 100px clamp(24px, 4vw, 64px) 76px;
+  background: radial-gradient(ellipse at 50% 55%, #243860 0%, #121c32 55%, #0c1220 100%);
   overflow: hidden;
   border-bottom: 1px solid var(--color-ink);
 }
 
-.hero-image__media {
+.hero-avatar {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 1;
+  justify-self: center;
+}
+
+.hero-avatar::before {
+  content: '';
+  position: absolute;
+  inset: 7%;
+  border-radius: 50%;
+  background: #d6e5ff;
+  box-shadow: 0 0 0 14px rgb(161 191 255 / 8%), 0 0 0 44px rgb(161 191 255 / 4%);
+}
+
+.hero-avatar__animation,
+.hero-avatar__fallback {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
 }
 
-/* 上下に薄いスクリム。ヘッダー文字（上）とメニュー（下）の可読性を確保。 */
-.hero-image::after {
-  content: '';
+.hero-avatar__fallback {
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.hero-avatar__toggle {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.34),
-    rgba(0, 0, 0, 0) 26%,
-    rgba(0, 0, 0, 0) 54%,
-    rgba(0, 0, 0, 0.52)
-  );
-  pointer-events: none;
-  z-index: 1;
+  right: 24px;
+  bottom: 16px;
+  z-index: 2;
+  min-height: 44px;
+  background: rgb(255 255 255 / 6%);
+  color: var(--color-bg);
+  border: 1px solid rgb(214 229 255 / 35%);
+  border-radius: 22px;
+  padding: 8px 14px;
+  font-size: 11px;
+  cursor: pointer;
 }
 
 .hero-image__menu {
-  position: absolute;
-  left: 36px;
-  bottom: 48px;
+  grid-column: 1;
+  grid-row: 1;
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-self: end;
+  gap: 4px;
 }
 
 .hero-image__menu-item {
   width: max-content;
+  min-height: 44px;
   font-family: var(--font-display);
-  font-size: clamp(34px, 6vw, 68px);
+  font-size: clamp(34px, 4.8vw, 68px);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.04;
+  line-height: 1.08;
   color: var(--color-bg);
   transition: color 120ms ease, transform 120ms ease;
 }
 
 .hero-image__menu-item:hover {
-  color: var(--color-accent);
-  transform: translateX(10px);
+  color: #aecaff;
+  transform: translateX(4px);
 }
 
-.hero-image__credit {
-  position: absolute;
-  right: 16px;
-  bottom: 12px;
-  z-index: 2;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-@media (max-width: 880px) {
-  .hero-image {
-    height: min(72vh, 520px);
-  }
-  .hero-image__menu {
-    left: 20px;
-    bottom: 32px;
-  }
-}
-
-/* ヒーローの吹き出し（最新 memo・zen ミニマル） */
 .hero-bubbles {
-  position: absolute;
-  top: clamp(84px, 16vh, 150px);
-  /* PC は右端固定をやめて中央寄りに置く */
-  left: 50%;
+  grid-column: 3;
+  grid-row: 1;
   z-index: 2;
-  width: min(340px, 42vw);
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 16px;
+  gap: 20px;
+  padding: 8px;
 }
+
 .hero-bubble {
   display: block;
   text-decoration: none;
   width: fit-content;
   max-width: 100%;
 }
-/* 吹き出しを左右にずらして不規則な揺らぎを出す（モバイルは控えめ） */
-.hero-bubble:nth-child(1) {
-  transform: translateX(-10px) rotate(-1.6deg);
-}
-.hero-bubble:nth-child(2) {
-  transform: translateX(16px) rotate(1.4deg);
-}
-.hero-bubble:nth-child(3) {
-  transform: translateX(-4px) rotate(-1deg);
-}
-/* PC はより大きくずらす */
-@media (min-width: 881px) {
-  .hero-bubble:nth-child(1) {
-    transform: translateX(-28px) rotate(-2deg);
-  }
-  .hero-bubble:nth-child(2) {
-    transform: translateX(52px) rotate(1.6deg);
-  }
-  .hero-bubble:nth-child(3) {
-    transform: translateX(4px) rotate(-1deg);
-  }
-}
+
+.hero-bubble:nth-child(1) { transform: rotate(-1.6deg); }
+.hero-bubble:nth-child(2) { transform: rotate(1.4deg); }
+.hero-bubble:nth-child(3) { transform: rotate(-1deg); }
+
 .hero-bubble__body {
   position: relative;
   background: var(--color-accent);
@@ -504,19 +495,48 @@ button {
   overflow: hidden;
 }
 
-@media (max-width: 880px) {
+@media (max-width: 1000px) {
+  .hero-image {
+    grid-template-columns: minmax(140px, 0.7fr) minmax(0, 1.3fr);
+    gap: 28px 24px;
+    min-height: 0;
+    padding: 88px 28px 76px;
+  }
   .hero-bubbles {
-    top: 64px;
-    left: 50%;
-    transform: translateX(-50%);
-    /* ずらし分の余白を確保 */
-    width: min(280px, calc(100vw - 60px));
-    gap: 12px;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
   }
-  /* モバイルは2つまで */
-  .hero-bubble--pc-only {
-    display: none;
+  .hero-bubble { max-width: 300px; }
+  .hero-bubble--pc-only { display: none; }
+  .hero-avatar { grid-row: 2; max-width: 380px; }
+  .hero-image__menu { grid-row: 2; align-self: center; }
+  .hero-image__menu-item { font-size: clamp(34px, 6vw, 56px); }
+}
+
+@media (max-width: 480px) {
+  .hero-image {
+    grid-template-columns: 116px minmax(0, 1fr);
+    gap: 22px 8px;
+    padding: 76px 16px 76px;
   }
+  .hero-bubbles {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 4px 8px;
+  }
+  .hero-bubble { width: 100%; max-width: 320px; }
+  .hero-image__menu-item { font-size: 34px; }
+  .hero-avatar::before {
+    box-shadow: 0 0 0 8px rgb(161 191 255 / 8%), 0 0 0 20px rgb(161 191 255 / 4%);
+  }
+  .hero-avatar__toggle { right: 16px; }
+  .site-search-dialog { padding: 8px; }
+  .site-search-dialog .site-search-panel { height: calc(100dvh - 16px); }
 }
 
 /* ============ Hero ============ */
@@ -1650,6 +1670,22 @@ button {
   cursor: pointer;
   text-decoration: none;
   line-height: 1.5;
+}
+
+.post-share__status {
+  flex-basis: 100%;
+  font-size: 12px;
+}
+
+.post-share__status:empty {
+  display: none;
+}
+
+.post-share__url {
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  font-size: 16px;
 }
 
 .post-share .post-share__btn:hover {

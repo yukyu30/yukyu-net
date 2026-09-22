@@ -2,7 +2,7 @@
 
 import { SearchIcon, X } from 'lucide-react'
 import { Search } from 'nextra/components'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import type {
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent
@@ -47,10 +47,15 @@ function copyStyles(targetDocument: Document) {
 
 export function PictureInPictureSearch() {
   const router = useRouter()
+  const pathname = usePathname()
   const [pipRoot, setPipRoot] = useState<HTMLElement | null>(null)
   const [fallbackOpen, setFallbackOpen] = useState(false)
   const pipWindowRef = useRef<Window | null>(null)
   const searchContainerRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    setFallbackOpen(false)
+  }, [pathname])
 
   const close = () => {
     const activeWindow =
@@ -172,12 +177,11 @@ export function PictureInPictureSearch() {
     } catch {
       pipWindowRef.current = null
       setPipRoot(null)
+      setFallbackOpen(true)
     }
   }
 
   const navigateToSearchResult = (link: Element | null) => {
-    if (!pipRoot) return
-
     const resultLink = link?.closest('a[href]')
     if (!resultLink) return
 
@@ -193,6 +197,7 @@ export function PictureInPictureSearch() {
     if (url.origin !== window.location.origin) return
 
     router.push(`${url.pathname}${url.search}${url.hash}`)
+    setFallbackOpen(false)
     return true
   }
 
@@ -208,7 +213,7 @@ export function PictureInPictureSearch() {
   const navigateFromSearchKey = (
     event: ReactKeyboardEvent<HTMLDivElement>
   ) => {
-    if (event.key !== 'Enter' || !pipRoot) return
+    if (event.key !== 'Enter') return
 
     const targetDocument = event.currentTarget.ownerDocument
     const focusedOption = targetDocument.querySelector<HTMLElement>(
