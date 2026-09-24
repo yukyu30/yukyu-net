@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="460" viewBox="0 0 800 460" role="img" aria-labelledby="title desc">
+  <title id="title">生活と開発の2つのチーム</title>
+  <desc id="desc">私が相談する先は、生活の頂点にいるジュイスと、開発の頂点にいるロクサン。生活側にはFP、開発側にはプロダクトマネージャー、コーダー、ブランドマネージャー、経理、サポートがいる。メーラーと購買部は両方を横断する。</desc>
+  <rect width="800" height="460" rx="16" fill="#fafaf7"/>
+  <g font-family="sans-serif" text-anchor="middle" fill="#0a0a0a">
+    <path d="M400 65V85H210V110M400 85H590V110" fill="none" stroke="#888" stroke-width="2"/>
+    <rect x="354" y="21" width="92" height="44" rx="8" fill="#fff" stroke="#888"/>
+    <text x="400" y="50" font-size="22" font-weight="700">私</text>
+    <path d="M210 110L35 390H385Z" fill="#eef2ff" stroke="#002ced" stroke-width="2"/>
+    <path d="M590 110L415 390H765Z" fill="#fff1e9" stroke="#d94b18" stroke-width="2"/>
+    <text x="92" y="145" font-size="22" font-weight="700" fill="#002ced">生活</text>
+    <text x="708" y="145" font-size="22" font-weight="700" fill="#b63d12">開発</text>
+    <text x="210" y="203" font-size="24" font-weight="700">ジュイス</text>
+    <text x="210" y="232" font-size="18">生活中継</text>
+    <text x="590" y="203" font-size="24" font-weight="700">ロクサン</text>
+    <text x="590" y="232" font-size="16">参謀・段取り・判断</text>
+    <text x="210" y="296" font-size="22">FP</text>
+    <text x="210" y="322" font-size="18">家計管理・予算管理</text>
+    <text x="590" y="263" font-size="16">プロダクトマネージャー</text>
+    <text x="590" y="286" font-size="18">コーダー</text>
+    <text x="590" y="309" font-size="18">ブランドマネージャー</text>
+    <text x="590" y="332" font-size="18">経理・サポート</text>
+    <rect x="35" y="350" width="730" height="58" rx="8" fill="#fff" stroke="#444" stroke-width="2"/>
+    <text x="400" y="386" font-size="22" font-weight="700">メーラー・購買部</text>
+    <text x="400" y="439" font-size="18" fill="#555">生活と開発の両方を横断する共通の担当</text>
+  </g>
+</svg>
