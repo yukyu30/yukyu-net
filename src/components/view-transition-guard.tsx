@@ -9,6 +9,11 @@ export function ViewTransitionGuard() {
     const original = document.startViewTransition
     const guarded: typeof document.startViewTransition = (...args) => {
       const transition = original.call(document, ...args)
+      // The console owns its camera/reveal animation. Avoid capturing a second
+      // full-page transition over the live WebGL canvas or its screen contents.
+      if (document.querySelector('.console-stage, .console-site')) {
+        transition.skipTransition()
+      }
       void transition.ready.catch(() => undefined)
       void transition.updateCallbackDone.catch(() => undefined)
       void transition.finished.catch(() => undefined)
