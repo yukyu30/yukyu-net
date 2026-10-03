@@ -1,3 +1,4 @@
+import { ConsoleNavigation } from '@/components/console-navigation'
 import { SiteHeader } from '@/components/site-header'
 import { FooterVisibility } from '@/components/footer-visibility'
 import { SiteFooter } from '@/components/site-footer'
@@ -9,10 +10,10 @@ export default function BlogLayout({
   children: React.ReactNode
 }) {
   return (
-    <>
+    <ConsoleNavigation>
       <SiteHeader />
       {children}
       <FooterVisibility><SiteFooter /></FooterVisibility>
-    </>
+    </ConsoleNavigation>
   )
 }

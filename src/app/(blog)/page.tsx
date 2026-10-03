@@ -1,4 +1,3 @@
-import { HeroImage } from '@/components/hero-image'
 
 export const metadata = {
   title: 'yukyu.net',
@@ -6,9 +5,6 @@ export const metadata = {
 }
 
 export default function Home() {
-  return (
-    <div className="page">
-      <HeroImage />
-    </div>
-  )
+  // The persistent layout owns the console so it survives route navigation.
+  return null
 }

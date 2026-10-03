@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Environment, Lightformer, RoundedBox } from '@react-three/drei'
-import { Group, Mesh, Shape, Path, ExtrudeGeometry, ShapeGeometry, RingGeometry, MathUtils, DataTexture, RepeatWrapping, RGBAFormat, type Texture } from 'three'
+import { Group, Mesh, Shape, Path, ExtrudeGeometry, ShapeGeometry, RingGeometry, MathUtils, DataTexture, RepeatWrapping, RGBAFormat, type Texture, PerspectiveCamera } from 'three'
 import { ConsoleBreakout } from './console-breakout'
 import { ConsoleScrew } from './console-screw'
 import { ConsoleRoom } from './console-room'
@@ -29,7 +29,7 @@ function useReducedMotion() {
   return reduced
 }
 
-function ConsoleButton({ index, grain }: { index: number; grain: Texture }) {
+function ConsoleButton({ index, grain, onNavigate }: { index: number; grain: Texture; onNavigate?: (href: string) => void }) {
   const star = useMemo(() => {
     const shape = new Shape()
     const points = Array.from({ length: 10 }, (_, i) => {
@@ -71,6 +71,11 @@ function ConsoleButton({ index, grain }: { index: number; grain: Texture }) {
       </mesh>
       <ConsoleSurface position={[0, 0, 0.83]} width={78} height={78} layer={20}>
         <a href={item.href} className="console-button" aria-label={item.label}
+          onClick={event => {
+            if (!onNavigate || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+            event.preventDefault()
+            onNavigate(item.href)
+          }}
           onPointerEnter={() => setHovered(true)}
           onPointerLeave={() => { setHovered(false); setPressed(false) }}
           onPointerDown={() => setPressed(true)} onPointerUp={() => setPressed(false)}
@@ -144,7 +149,7 @@ function FoodCharms({ reduced }: { reduced: boolean }) {
   </group>
 }
 
-function Device({ onReady }: { onReady: () => void }) {
+function Device({ onReady, zoomed, onNavigate, onZoomComplete }: ConsoleSceneProps & { onReady: () => void }) {
   useEffect(onReady, [onReady])
   const group = useRef<Group>(null)
   const cover = useRef<Group>(null)
@@ -181,8 +186,12 @@ function Device({ onReady }: { onReady: () => void }) {
     return texture
   }, [])
   useEffect(() => () => grain.dispose(), [grain])
-  const viewport = useThree(state => state.viewport)
-  const scale = Math.min(1, viewport.width / 6.2, viewport.height / 5.8)
+  const size = useThree(state => state.size)
+  // Derive the home scale from the original camera, not the animated viewport.
+  const homeHeight = 2 * 10 * Math.tan(35 * Math.PI / 360)
+  const scale = Math.min(1, homeHeight * size.width / size.height / 6.2, homeHeight / 5.8)
+  const zoomProgress = useRef(0)
+  const completed = useRef(false)
   const reduced = useReducedMotion()
   const pointer = useRef({ x: 0, y: 0 })
   const shape = useMemo(() => {
@@ -247,8 +256,19 @@ function Device({ onReady }: { onReady: () => void }) {
       document.documentElement.removeEventListener('pointerleave', reset)
     }
   }, [])
-  useFrame(({ clock }, delta) => {
+  useFrame(({ clock, camera }, delta) => {
     if (!group.current) return
+    const target = zoomed ? 1 : 0
+    zoomProgress.current = reduced ? target : MathUtils.damp(zoomProgress.current, target, 6, Math.min(delta, 0.05))
+    const t = zoomProgress.current
+    const perspective = camera as PerspectiveCamera
+    const distance = Math.min(2.59 * scale / perspective.aspect, 2.23 * scale) / (2 * Math.tan(35 * Math.PI / 360))
+    camera.position.set(0, 0.57 * scale * t, MathUtils.lerp(10, 0.532 * scale + distance * 0.94, t))
+    if (zoomed && t > 0.995 && !completed.current) {
+      completed.current = true
+      onZoomComplete?.()
+    }
+    if (!zoomed) completed.current = false
     if (cover.current && removedCount === 4 && !coverRemoved) {
       opening.current = reduced ? 1 : Math.min(1, opening.current + delta / 1.4)
       const t = opening.current
@@ -258,9 +278,10 @@ function Device({ onReady }: { onReady: () => void }) {
       cover.current.rotation.z = t * 0.1
       if (t === 1) setCoverRemoved(true)
     }
-    group.current.position.y = reduced ? 0 : Math.sin(clock.elapsedTime * 0.85) * 0.045
-    group.current.rotation.x = MathUtils.damp(group.current.rotation.x, reduced ? 0 : -pointer.current.y * 0.045, 5, delta)
-    group.current.rotation.y = MathUtils.damp(group.current.rotation.y, reduced ? -0.08 : -0.08 + pointer.current.x * 0.08, 5, delta)
+    group.current.position.y = reduced ? 0 : Math.sin(clock.elapsedTime * 0.85) * 0.045 * (1 - t)
+    group.current.rotation.x = MathUtils.damp(group.current.rotation.x, (reduced ? 0 : -pointer.current.y * 0.045) * (1 - t), 5, delta)
+    group.current.rotation.y = MathUtils.damp(group.current.rotation.y, (reduced ? -0.08 : -0.08 + pointer.current.x * 0.08) * (1 - t), 5, delta)
+    group.current.rotation.z = -0.035 * (1 - t)
   })
   return (
     <group ref={group} scale={scale} rotation={[0, -0.08, -0.035]}>
@@ -297,14 +318,14 @@ function Device({ onReady }: { onReady: () => void }) {
         <meshStandardMaterial color={MATERIAL.screen} roughness={0.4} />
       </RoundedBox>
       {removedCount < 4 && <ConsoleSurface position={[0, 0.57, 0.532]} width={259} height={223}>
-        <ConsoleBreakout squint={squint} />
+        {zoomed ? <div className="console-screen console-screen--loading" role="status">LOADING<span>yukyu.net</span></div> : <ConsoleBreakout squint={squint} />}
       </ConsoleSurface>}
       {removedCount < 4 && <ConsoleSurface position={[0.5, 2.13, 0.365]} width={145} height={49} layer={20}>
         <a className="console-sticker" href="https://x.com/yukyu30" target="_blank" rel="noopener noreferrer" aria-label="Xで @yukyu30 を見る（新しいタブ）">
           <img src="/images/console/yukyu30-hologram.png" alt="X @yukyu30" width={2172} height={724} />
         </a>
       </ConsoleSurface>}
-      {removedCount < 4 && CONSOLE_MENU.map((item, index) => <ConsoleButton key={item.href} index={index} grain={grain} />)}
+      {removedCount < 4 && CONSOLE_MENU.map((item, index) => <ConsoleButton key={item.href} index={index} grain={grain} onNavigate={onNavigate} />)}
       </group>}
       {[-1.65, 1.65].flatMap(x => [-2.01, 2.14].map(y => (
         <ConsoleScrew key={`${x}-${y}`} x={x} y={y}
@@ -320,7 +341,13 @@ function Device({ onReady }: { onReady: () => void }) {
   )
 }
 
-export default function ConsoleScene() {
+export interface ConsoleSceneProps {
+  zoomed?: boolean
+  onNavigate?: (href: string) => void
+  onZoomComplete?: () => void
+}
+
+export default function ConsoleScene(props: ConsoleSceneProps) {
   const [lost, setLost] = useState(false)
   const [ready, setReady] = useState(false)
   const onReady = useCallback(() => setReady(true), [])
@@ -340,7 +367,7 @@ export default function ConsoleScene() {
         <Lightformer position={[-3, 3, 5]} scale={[3, 5, 1]} intensity={3} />
         <Lightformer position={[4, 1, 2]} scale={[2, 5, 1]} intensity={2} />
       </Environment>
-      <Device onReady={onReady} />
+      <Device onReady={onReady} {...props} />
     </Canvas>
     </>
   )

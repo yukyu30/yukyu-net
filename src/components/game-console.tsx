@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { ConsoleBlueprint } from './console-blueprint'
 import { Component, type ReactNode } from 'react'
+import type { ConsoleSceneProps } from './game-console-scene'
 import { Link } from 'next-view-transitions'
 
 export const CONSOLE_MENU = [
@@ -36,6 +37,6 @@ class ConsoleBoundary extends Component<{ children: ReactNode }, { failed: boole
   render() { return this.state.failed ? <ConsoleFallback /> : this.props.children }
 }
 
-export function GameConsole() {
-  return <div className="game-console"><ConsoleBoundary><ConsoleScene /></ConsoleBoundary></div>
+export function GameConsole(props: ConsoleSceneProps) {
+  return <div className="game-console"><ConsoleBoundary><ConsoleScene {...props} /></ConsoleBoundary></div>
 }
