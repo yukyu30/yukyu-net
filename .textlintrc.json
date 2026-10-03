@@ -5,6 +5,10 @@
     }
   },
   "rules": {
-    "preset-ja-spacing": true
+    "preset-ja-spacing": {
+      "ja-no-space-around-slash": false,
+      "ja-space-around-code": false,
+      "ja-space-around-link": false
+    }
   }
 }
