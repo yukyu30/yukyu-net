@@ -1,23 +1,25 @@
 ---
-title: Decode FrensでHandShakeを展示します
+title: Decode FrensでHandShakeを展示しました
 date: 2026-11-15
 author: yukyu
 coAuthors:
   - claude-opus-4-7
-description: NFC カードで、人やモノとのつながりを記録する装置。2026-11-21 の Decode Frens で展示します。
+description: NFCカードで、人やモノとのつながりを記録する装置「HandShake」を、Decode Frensで展示しました。作品の考えと、PC/SCだけでNFCリーダーを2台動かした実装の話。
 thumbnail: /posts/2026-11-15-handshake/frens.jpeg
 tag:
   - つくったもの
   - イベント
+  - work
 ---
 
-「Decode Frens」でHandShakeを展示します。
+「Decode Frens」でHandShakeを展示しました。
 
 - **会期**: 2026-11-21（土）14:00〜19:00
 - **会場**: Crypto Cafe&Bar
 - **主催**: Centrum
 
 <blockquote className="twitter-tweet" data-dnt="true" align="center"><a href="https://twitter.com/0xCentrum/status/2118295311651332546">Centrum (@0xCentrum) のポスト</a></blockquote>
+<blockquote className="twitter-tweet" data-dnt="true" align="center"><a href="https://twitter.com/seiya_oht/status/2123687287691345964">@seiya_oht のポスト</a></blockquote>
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 ## HandShake
@@ -32,3 +34,95 @@ HandShakeは、NFCカードを使って、人やモノとのつながりを記�
 
 ![二枚のカードを読み込んでいる画面](./decoding.jpeg)
 ![Frensになった画面](./frens.jpeg)
+
+ここからは、実装の話をまとめておく。
+Frensは「friends」をくだけて書いた言葉で、このイベントでは、会場で実際に会ってカードをかざし合った相手のことを指す。
+記録はクラウドのDBに残し、同じ内容をそれぞれのカードにも書き込んでいる。
+
+## PC/SCだけで、SDKなしで動かす
+
+リーダーはSony PaSoRi RC-S300を2台使った。
+NFCリーダーを扱うときはメーカーのSDKやNode.jsのライブラリを探しがちだが、今回はどちらも使っていない。
+
+RC-S300はPC/SCに対応していて、OSのPC/SCの層から普通のスマートカードリーダーとして見える。
+PC/SCには、非接触のカードを読み書きするための決まったコマンド（APDU）があり、NTAG213/215を扱うのに必要なのは次の3つだけだった。
+
+| APDU | 用途 |
+| --- | --- |
+| `FF CA 00 00 00` | カードのUIDを読む |
+| `FF B0 00 <ページ> 10` | ページから16バイト読む |
+| `FF D6 00 <ページ> 04 <4バイト>` | ページに4バイト書く |
+
+つまり、OSに最初から入っているPC/SCのAPIにこのバイト列を送れれば、それでカードを読み書きできる。
+
+展示機はWindowsのミニPCなので、Windows PowerShell 5.1から`winscard.dll`を呼ぶことにした。
+PowerShellの`Add-Type`でC#のコードをその場でコンパイルし、P/Invokeで`SCardGetStatusChange`や`SCardTransmit`を呼んでいる。
+Windowsに最初から入っているものだけで動くので、展示機に追加でインストールするものがない。
+
+このスクリプトは二つのリーダーを見張り、カードが置かれたり離されたりするたびに、1行に1つの出来事を標準出力に書く。
+
+```text
+READY
+CARD	SONY FeliCa Port/PaSoRi 4.0 0	04A1B2C3D4E5F69000
+REMOVED	SONY FeliCa Port/PaSoRi 4.0 0
+```
+
+Electronのメインプロセスはこれを子プロセスとして起動し、行を読むだけでタップを受け取れる。
+カードに書くときも、標準入力からAPDUのhexを送るだけである。
+スクリプトはAPDUの意味を知らず、何をどのページに書いてよいかは、TypeScriptの側だけが決める。
+
+ひとつハマったのは文字コードで、Windows PowerShell 5.1はBOMのないファイルをANSIのコードページ（日本語のWindowsではCP932）で読む。
+コメントに日本語を書くと壊れるので、このスクリプトはASCIIだけで書いている。
+
+開発中はLinux（WSL）でも試せるように、`libpcsclite`を呼ぶ小さなCのヘルパーも書いた。
+こちらも同じ行の形でやり取りするので、呼ぶ側のコードは同じである。
+
+## 「同時に」かざす
+
+二人が完全に同じ瞬間にカードを置くことはまずない。
+そこで、1枚目がかざされてから約2秒のあいだに反対側のリーダーにカードが来たら、ペアとして扱っている。
+
+1枚目をかざすと、反対側に「もう1枚、かざしてください」と円が出て、残り時間に合わせて縮んでいく。
+
+## カードを壊さずに書く
+
+人のカードには、DBにあるその人の最新の状態を、JSONの文字（NDEF Text）で書く。
+どのNFCアプリでも読めるようにするためである。
+
+```json
+{"v":1,"id":"313a802d846c","n":"あおい","x":"aoi","frens":[{"x":"ren"},{"n":"みお"}],"c":["Ethiopia Guji"]}
+```
+
+展示ではカードはすぐに離される。
+書いている途中で離されても壊れないように、次のようにした。
+
+- 先頭を空のNDEFにしてから本文を書き、最後に先頭のページで長さを確定する。途中で離されたカードには、壊れたJSONではなく空のNDEFが残り、次にかざしたときに書き直せる。書き終えたら読み戻して照合する。
+- APDUを送るたびに、先にUIDを読み直す。途中でカードが入れ替わっていたら、そこで止める。
+- カードに差分を足さず、毎回DBから全体を作り直して書く。何度書いても同じ結果になり、中身がすでに最新なら書かない。
+- CCから型番を読み、NTAG213（144バイト）、NTAG215（496バイト）、NTAG216（872バイト）の大きさに合わせる。入らない分は古いコーヒーから、それでも入らなければ古いFrensから落とす。DBには全部残る。
+
+書き込みは演出の裏で行い、画面は待たない。
+1枚あたり0.2〜0.5秒ほどで終わる。
+
+## 握手のアニメーションをコードで作る
+
+二人がFrensになると、左右から手が近づいて握手し、「FRENS!」の文字が出る。
+
+このアニメーションはLottieだが、After Effectsでは作っていない。
+Fluent Emojiの3Dの手の画像を使い、Node.jsのスクリプトでLottieのJSONを書き出している。
+キーフレームの接線でイージングを調整するのではなく、タイミングの関数から1フレームずつ手の位置と角度を計算する。
+ぶつかる瞬間に向けて溜めて、当たったら弾む、という緩急をコードで直接書けるので、調整がしやすかった。
+
+コーヒーのカードと一緒にかざしたときは、手がテイクアウトのカップを受け取る別の動きになる。
+
+その前の読み込み画面では、左右の名前を、文字数だけを合わせた化けた文字で回している。
+「関係をデコードしている」ように見せるための演出である。
+
+## AuthorizationヘッダーがAWSに食べられる
+
+展示機は、本番のDBの鍵を持っていない。
+webに展示機専用のAPIを作り、展示機はclient idとsecretで認証してから、展示機が使う処理だけを呼ぶ。
+
+最初は鍵を`Authorization`ヘッダーで送っていたが、本番ではアプリまで届かなかった。
+webを動かしているロリポップ！デプロイナウは、CloudFrontの後ろのAWS Lambdaでアプリを動かしていて、`Authorization`ヘッダーはAWSが自分の署名に使うためである。
+結局、鍵はリクエストの本文に入れて送ることにした。
