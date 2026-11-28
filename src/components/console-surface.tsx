@@ -1,9 +1,21 @@
 'use client'
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { createRoot } from 'react-dom/client'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Group, Matrix4 } from 'three'
+import { Group, MathUtils, Matrix4, type Camera } from 'three'
+import { LCD, pagePlacement, surfaceMatrix, type Surface, type Viewport } from '@/lib/console-dive'
+import { projectPage } from '@/lib/console-page'
+
+const mvp = new Matrix4()
+
+/** CSS transform that pins a DOM box to `group` as seen through `camera`. */
+function projectSurface(group: Group, camera: Camera, surface: Surface, viewport: Viewport) {
+  group.updateWorldMatrix(true, false)
+  camera.updateMatrixWorld()
+  mvp.copy(camera.projectionMatrix).multiply(camera.matrixWorldInverse).multiply(group.matrixWorld)
+  return surfaceMatrix(mvp.elements, surface, viewport)
+}
 
 /** Project a fixed-size DOM surface through the same camera as the console. */
 export function ConsoleSurface({ position, width, height, children, interactive = true, layer = 10 }: {
@@ -15,11 +27,9 @@ export function ConsoleSurface({ position, width, height, children, interactive 
   layer?: number
 }) {
   const group = useRef<Group>(null)
-  const { gl, camera } = useThree()
+  const { gl, camera, size } = useThree()
   const [element] = useState(() => document.createElement('div'))
   const root = useRef<ReturnType<typeof createRoot> | null>(null)
-  const matrix = useRef(new Matrix4())
-  const local = useRef(new Matrix4())
 
   useLayoutEffect(() => {
     const target = gl.domElement.parentElement!
@@ -40,26 +50,29 @@ export function ConsoleSurface({ position, width, height, children, interactive 
 
   useFrame(() => {
     if (!group.current) return
-    group.current.updateWorldMatrix(true, false)
-    camera.updateMatrixWorld()
-    // 100 DOM pixels = one model unit; explicit top-left origin avoids
-    // percentage translations and CSS perspective origins varying by browser.
-    local.current.makeScale(0.01, -0.01, 1)
-    local.current.setPosition(-width * 0.005, height * 0.005, 0)
-    matrix.current.copy(camera.projectionMatrix).multiply(camera.matrixWorldInverse)
-      .multiply(group.current.matrixWorld).multiply(local.current)
-    const m = matrix.current.elements
-    const w = gl.domElement.clientWidth / 2
-    const h = gl.domElement.clientHeight / 2
-    const values = [
-      w * (m[0] + m[3]), h * (m[3] - m[1]), 0, m[3],
-      w * (m[4] + m[7]), h * (m[7] - m[5]), 0, m[7],
-      0, 0, 1, 0,
-      w * (m[12] + m[15]), h * (m[15] - m[13]), 0, m[15]
-    ]
-    element.style.transform = `matrix3d(${values.join(',')})`
-    element.style.visibility = m[15] > 0 ? 'visible' : 'hidden'
+    // 100 DOM pixels = one model unit.
+    const matrix = projectSurface(group.current, camera, { width, height, unitsPerPixel: 0.01 }, size)
+    element.style.transform = `matrix3d(${matrix.join(',')})`
+    element.style.visibility = matrix[15] > 0 ? 'visible' : 'hidden'
   })
 
   return <group ref={group} position={position} />
+}
+
+/**
+ * Show the destination page on the LCD: the real document is transformed onto
+ * the glass, so the dive ends with it already in place at full size.
+ */
+export function ConsolePage({ element, dive }: { element: HTMLElement; dive: RefObject<number> }) {
+  const group = useRef<Group>(null)
+  const { camera, size } = useThree()
+  const { y, unitsPerPixel } = pagePlacement(size)
+
+  useFrame(() => {
+    if (!group.current) return
+    const matrix = projectSurface(group.current, camera, { ...size, unitsPerPixel }, size)
+    projectPage(element, matrix, size, 1 - MathUtils.smoothstep(dive.current, 0.25, 0.85))
+  })
+
+  return <group ref={group} position={[0, y, LCD.z]} />
 }

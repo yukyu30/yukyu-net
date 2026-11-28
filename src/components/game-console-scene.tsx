@@ -1,21 +1,27 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Environment, Lightformer, RoundedBox } from '@react-three/drei'
-import { Group, Mesh, Shape, Path, ExtrudeGeometry, ShapeGeometry, RingGeometry, MathUtils, DataTexture, RepeatWrapping, RGBAFormat, type Texture, PerspectiveCamera } from 'three'
+import { Color, Group, Mesh, Shape, Path, ExtrudeGeometry, ShapeGeometry, RingGeometry, MathUtils, DataTexture, RepeatWrapping, RGBAFormat, type MeshStandardMaterial, type Texture } from 'three'
+import { CAMERA, LCD, diveCamera, easeDive, homePixelsPerUnit, homeScale } from '@/lib/console-dive'
+import type { Navigation } from '@/lib/console-navigation'
 import { ConsoleBreakout } from './console-breakout'
 import { ConsoleScrew } from './console-screw'
 import { ConsoleRoom } from './console-room'
-import { ConsoleSurface } from './console-surface'
+import { ConsolePage, ConsoleSurface } from './console-surface'
 import { CONSOLE_MENU, ConsoleFallback, ConsoleSkeleton } from './game-console'
 
 // Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V5
+const DIVE_SECONDS = 1.15
+
 const MATERIAL = {
   shell: '#002ced', back: '#0825a8', seam: '#091d7d', bezel: '#253347',
   trim: '#143bc5', button: '#edff56', metal: '#d9e2ee',
-  salmon: '#ee815f', rice: '#f5f0dc', salmonLine: '#ffd0aa', coffee: '#533222', ceramic: '#eeeccf', screen: '#dce6cc', white: '#ffffff', fill: '#abc4ff'
+  salmon: '#ee815f', rice: '#f5f0dc', salmonLine: '#ffd0aa', coffee: '#533222', ceramic: '#eeeccf', screen: '#dce6cc', boot: '#0a1436', white: '#ffffff', fill: '#abc4ff'
 }
+
+const GLASS = { lit: new Color(MATERIAL.screen), boot: new Color(MATERIAL.boot) }
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(true)
@@ -149,7 +155,7 @@ function FoodCharms({ reduced }: { reduced: boolean }) {
   </group>
 }
 
-function Device({ onReady, zoomed, onNavigate, onZoomComplete }: ConsoleSceneProps & { onReady: () => void }) {
+function Device({ onReady, navigation, page, onNavigate, onLanded }: ConsoleSceneProps & { onReady: () => void }) {
   useEffect(onReady, [onReady])
   const group = useRef<Group>(null)
   const cover = useRef<Group>(null)
@@ -187,13 +193,20 @@ function Device({ onReady, zoomed, onNavigate, onZoomComplete }: ConsoleScenePro
   }, [])
   useEffect(() => () => grain.dispose(), [grain])
   const size = useThree(state => state.size)
-  // Derive the home scale from the original camera, not the animated viewport.
-  const homeHeight = 2 * 10 * Math.tan(35 * Math.PI / 360)
-  const scale = Math.min(1, homeHeight * size.width / size.height / 6.2, homeHeight / 5.8)
-  const zoomProgress = useRef(0)
-  const completed = useRef(false)
+  const canvas = useThree(state => state.gl.domElement)
+  const scale = homeScale(size)
+  useLayoutEffect(() => {
+    canvas.closest<HTMLElement>('.game-console')?.style.setProperty('--console-unit', `${homePixelsPerUnit(size)}px`)
+  }, [canvas, size])
+  const { phase } = navigation
+  const destination = phase === 'idle' ? undefined : CONSOLE_MENU.find(item => item.href === navigation.href)
+  const motion = useRef({ windup: 0, dive: 0 })
+  const dive = useRef(0)
+  const landed = useRef(false)
+  const glass = useRef<MeshStandardMaterial>(null)
   const reduced = useReducedMotion()
   const pointer = useRef({ x: 0, y: 0 })
+  const hover = useRef({ x: 0, y: 0 })
   const shape = useMemo(() => {
     const s = new Shape()
     s.moveTo(-1.72, 2.38)
@@ -256,19 +269,22 @@ function Device({ onReady, zoomed, onNavigate, onZoomComplete }: ConsoleScenePro
       document.documentElement.removeEventListener('pointerleave', reset)
     }
   }, [])
+  // Runs before the surfaces project themselves, so DOM and WebGL share a frame.
   useFrame(({ clock, camera }, delta) => {
     if (!group.current) return
-    const target = zoomed ? 1 : 0
-    zoomProgress.current = reduced ? target : MathUtils.damp(zoomProgress.current, target, 6, Math.min(delta, 0.05))
-    const t = zoomProgress.current
-    const perspective = camera as PerspectiveCamera
-    const distance = Math.min(2.59 * scale / perspective.aspect, 2.23 * scale) / (2 * Math.tan(35 * Math.PI / 360))
-    camera.position.set(0, 0.57 * scale * t, MathUtils.lerp(10, 0.532 * scale + distance * 0.94, t))
-    if (zoomed && t > 0.995 && !completed.current) {
-      completed.current = true
-      onZoomComplete?.()
+    const step = Math.min(delta, 0.05)
+    const state = motion.current
+    state.windup = MathUtils.damp(state.windup, phase === 'idle' ? 0 : 1, 12, step)
+    state.dive = phase === 'diving' ? Math.min(1, state.dive + step / DIVE_SECONDS) : 0
+    dive.current = easeDive(state.dive)
+    const position = diveCamera({ windup: state.windup, dive: dive.current }, size, scale)
+    camera.position.set(position.x, position.y, position.z)
+    glass.current?.color.lerpColors(GLASS.lit, GLASS.boot, state.windup)
+    if (state.dive === 1 && !landed.current) {
+      landed.current = true
+      onLanded()
     }
-    if (!zoomed) completed.current = false
+    if (phase !== 'diving') landed.current = false
     if (cover.current && removedCount === 4 && !coverRemoved) {
       opening.current = reduced ? 1 : Math.min(1, opening.current + delta / 1.4)
       const t = opening.current
@@ -278,11 +294,14 @@ function Device({ onReady, zoomed, onNavigate, onZoomComplete }: ConsoleScenePro
       cover.current.rotation.z = t * 0.1
       if (t === 1) setCoverRemoved(true)
     }
-    group.current.position.y = reduced ? 0 : Math.sin(clock.elapsedTime * 0.85) * 0.045 * (1 - t)
-    group.current.rotation.x = MathUtils.damp(group.current.rotation.x, (reduced ? 0 : -pointer.current.y * 0.045) * (1 - t), 5, delta)
-    group.current.rotation.y = MathUtils.damp(group.current.rotation.y, (reduced ? -0.08 : -0.08 + pointer.current.x * 0.08) * (1 - t), 5, delta)
-    group.current.rotation.z = -0.035 * (1 - t)
-  })
+    // The pose reaches exactly zero partway through the dive so the page lands flat.
+    const pose = 1 - MathUtils.smoothstep(dive.current, 0, 0.6)
+    const attention = reduced ? 0 : 1 - state.windup
+    hover.current.x = MathUtils.damp(hover.current.x, -pointer.current.y * 0.045 * attention, 5, delta)
+    hover.current.y = MathUtils.damp(hover.current.y, pointer.current.x * 0.08 * attention, 5, delta)
+    group.current.position.y = Math.sin(clock.elapsedTime * 0.85) * 0.045 * attention * pose
+    group.current.rotation.set((hover.current.x - 0.05 * state.windup) * pose, (-0.08 + hover.current.y) * pose, -0.035 * pose)
+  }, -1)
   return (
     <group ref={group} scale={scale} rotation={[0, -0.08, -0.035]}>
       <mesh position={[0, 0, -0.3]}>
@@ -315,10 +334,12 @@ function Device({ onReady, zoomed, onNavigate, onZoomComplete }: ConsoleScenePro
         <meshStandardMaterial color={MATERIAL.bezel} roughness={0.36} />
       </RoundedBox>
       <RoundedBox args={[2.63, 2.27, 0.04]} radius={0.06} smoothness={5} position={[0, 0.57, 0.5]}>
-        <meshStandardMaterial color={MATERIAL.screen} roughness={0.4} />
+        <meshStandardMaterial ref={glass} color={MATERIAL.screen} roughness={0.4} />
       </RoundedBox>
-      {removedCount < 4 && <ConsoleSurface position={[0, 0.57, 0.532]} width={259} height={223}>
-        {zoomed ? <div className="console-screen console-screen--loading" role="status">LOADING<span>yukyu.net</span></div> : <ConsoleBreakout squint={squint} />}
+      {removedCount < 4 && <ConsoleSurface position={[0, LCD.y, LCD.z]} width={LCD.width * 100} height={LCD.height * 100}>
+        {destination
+          ? <div className="console-screen console-screen--boot" aria-hidden="true"><span>{destination.label}</span><i /></div>
+          : <ConsoleBreakout squint={squint} />}
       </ConsoleSurface>}
       {removedCount < 4 && <ConsoleSurface position={[0.5, 2.13, 0.365]} width={145} height={49} layer={20}>
         <a className="console-sticker" href="https://x.com/yukyu30" target="_blank" rel="noopener noreferrer" aria-label="Xで @yukyu30 を見る（新しいタブ）">
@@ -332,6 +353,7 @@ function Device({ onReady, zoomed, onNavigate, onZoomComplete }: ConsoleScenePro
           label={`${y > 0 ? '上' : '下'}${x < 0 ? '左' : '右'}`}
           reduced={reduced} colors={MATERIAL} onTurn={onScrewTurn} onRemoved={onScrewRemoved} />
       )))}
+      {page && phase === 'diving' && <ConsolePage element={page} dive={dive} />}
       <FoodCharms reduced={reduced} />
       <mesh position={[1.7, 2.34, -0.13]} rotation={[0, 0, -0.5]}>
         <torusGeometry args={[0.19, 0.065, 16, 48]} />
@@ -342,9 +364,10 @@ function Device({ onReady, zoomed, onNavigate, onZoomComplete }: ConsoleScenePro
 }
 
 export interface ConsoleSceneProps {
-  zoomed?: boolean
-  onNavigate?: (href: string) => void
-  onZoomComplete?: () => void
+  navigation: Navigation
+  page: HTMLElement | null
+  onNavigate: (href: string) => void
+  onLanded: () => void
 }
 
 export default function ConsoleScene(props: ConsoleSceneProps) {
@@ -355,7 +378,7 @@ export default function ConsoleScene(props: ConsoleSceneProps) {
   return (
     <>
     {!ready && <ConsoleSkeleton />}
-    <Canvas resize={{ debounce: { scroll: 0, resize: 0 } }} camera={{ position: [0, 0, 10], fov: 35 }} dpr={[1, 1.75]}
+    <Canvas resize={{ debounce: { scroll: 0, resize: 0 } }} camera={{ position: [0, 0, CAMERA.distance], fov: CAMERA.fov }} dpr={[1, 1.75]}
       gl={{ alpha: true, antialias: true }} fallback={<ConsoleFallback />}
       onCreated={({ gl }) => {
         gl.domElement.addEventListener('webglcontextlost', () => setLost(true), { once: true })

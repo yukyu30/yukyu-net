@@ -2306,14 +2306,26 @@ button {
 @media (prefers-reduced-motion: reduce) { .console-shards { display: none; } .console-escaped-avatar__pop { animation: none; } }
 .console-escape__announcement { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* Zoom into the physical screen before navigating to a regular page. */
+/* The destination page rides on the LCD while the camera dives into it. */
 .console-stage { position: fixed; inset: 0; padding: 0; min-height: 0; }
 .console-stage .game-console { width: 100%; height: 100%; min-height: 0; }
-.console-stage.is-entering { pointer-events: none; }
-.console-stage.is-entering .game-console::before { opacity: 0; transition: opacity .35s; }
-.console-screen--loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #253347; font-size: 10px; letter-spacing: .2em; }
-.console-screen--loading span { font-size: 18px; letter-spacing: -.05em; }
-.console-navigation-status { position: absolute; bottom: 20px; font-size: 11px; letter-spacing: .08em; }
-@media (prefers-reduced-motion: reduce) {
-  .console-stage.is-entering .game-console::before { transition: none; }
-}
+.console-stage:not([data-phase='idle']) { pointer-events: none; }
+/* The ground shadow follows the device, whose size depends on the viewport shape. */
+.console-stage .game-console::before { left: calc(50% - 2.25 * var(--console-unit, 0px)); right: auto; top: calc(50% + 2.48 * var(--console-unit, 0px)); bottom: auto; width: calc(4.5 * var(--console-unit, 0px)); height: calc(.38 * var(--console-unit, 0px)); filter: blur(calc(.15 * var(--console-unit, 0px))); transition: opacity .3s; }
+.console-stage:not([data-phase='idle']) .game-console::before { opacity: 0; }
+.console-navigation-status { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.console-screen--boot { display: grid; place-items: center; align-content: center; gap: 14px; background: #0a1436; color: var(--console-button); font-size: 15px; font-weight: 700; letter-spacing: .32em; text-indent: .32em; text-transform: uppercase; animation: console-boot .32s ease-out both; }
+.console-screen--boot span { animation: console-boot-label .32s .08s ease-out both; }
+.console-screen--boot i { width: 64px; height: 3px; overflow: hidden; background: rgb(237 255 86 / 22%); }
+.console-screen--boot i::before { content: ''; display: block; width: 40%; height: 100%; background: currentColor; animation: console-boot-bar .7s ease-in-out infinite alternate; }
+@keyframes console-boot { from { background: #f6ffe9; } 35% { background: #dce6cc; } to { background: #0a1436; } }
+@keyframes console-boot-label { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes console-boot-bar { from { transform: translateX(0); } to { transform: translateX(150%); } }
+
+.console-page[data-phase='departing'] { opacity: 0; pointer-events: none; transition: opacity .16s; }
+.console-page[data-phase='diving'] { position: relative; min-height: 100vh; background: var(--color-bg); opacity: 0; pointer-events: none; transform-origin: 0 0; will-change: transform; }
+.console-page[data-phase='diving'][data-projected] { animation: console-page-on .26s ease-out both; }
+/* LCD pixel rows and tint that dissolve as the page becomes the viewport. */
+.console-page[data-phase='diving']::after { content: ''; position: absolute; inset: 0; z-index: 100; pointer-events: none; opacity: var(--console-lcd, 1); background: repeating-linear-gradient(to bottom, rgb(6 16 60 / 11%) 0 4px, transparent 4px 12px), rgb(220 230 204 / 10%); }
+@keyframes console-page-on { from { opacity: 0; filter: brightness(2.2); } to { opacity: 1; filter: none; } }

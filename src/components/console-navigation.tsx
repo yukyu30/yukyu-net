@@ -1,51 +1,58 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useReducer, useState, type ReactNode } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { GameConsole } from './game-console'
+import { IDLE, reduceNavigation } from '@/lib/console-navigation'
+import { releasePage } from '@/lib/console-page'
+import { CONSOLE_MENU, GameConsole } from './game-console'
 
-/** Keep the device mounted until the camera arrives, then reveal the real route. */
+const WINDUP_MS = 320
+// Give up on a route change that was superseded and never arrives.
+const DEPART_TIMEOUT_MS = 8000
+// Lands the page even if WebGL is lost or frames are suspended mid-dive.
+const DIVE_TIMEOUT_MS = 4000
+
+/**
+ * Pressing a console button navigates at once, keeps the device mounted, and
+ * shows the destination page on its LCD while the camera dives into it.
+ */
 export function ConsoleNavigation({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const [destination, setDestination] = useState<string | null>(null)
-  const pending = useRef<string | null>(null)
-  const home = pathname === '/'
+  const [navigation, dispatch] = useReducer(reduceNavigation, IDLE)
+  const [page, setPage] = useState<HTMLDivElement | null>(null)
+  const { phase } = navigation
 
-  const finish = useCallback(() => {
-    if (pending.current) {
-      router.push(pending.current)
-      pending.current = null
-    }
-  }, [router])
+  useEffect(() => dispatch({ type: 'route', pathname }), [pathname])
+
+  useEffect(() => {
+    if (pathname === '/') for (const { href } of CONSOLE_MENU) router.prefetch(href)
+  }, [pathname, router])
+
+  useEffect(() => {
+    if (phase === 'idle') return
+    const windup = phase === 'departing' ? setTimeout(() => dispatch({ type: 'wound' }), WINDUP_MS) : undefined
+    const expiry = setTimeout(() => dispatch({ type: 'expired' }), phase === 'departing' ? DEPART_TIMEOUT_MS : DIVE_TIMEOUT_MS)
+    return () => { clearTimeout(windup); clearTimeout(expiry) }
+  }, [phase])
+
+  useLayoutEffect(() => {
+    if (page && phase !== 'diving') releasePage(page)
+  }, [page, phase])
 
   const navigate = useCallback((href: string) => {
-    if (pending.current || destination) return
-    pending.current = href
-    setDestination(href)
-    router.prefetch(href)
-  }, [destination, router])
-
-  useEffect(() => {
-    if (!destination) return
-    // Navigation remains available if WebGL is lost or frames are suspended.
-    const timeout = setTimeout(finish, 1800)
-    return () => clearTimeout(timeout)
-  }, [destination, finish])
-
-  useEffect(() => {
-    if (!home && destination) {
-      setDestination(null)
-      pending.current = null
-    }
-  }, [pathname, home, destination])
+    if (phase !== 'idle') return
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) dispatch({ type: 'press', href })
+    router.push(href)
+  }, [phase, router])
+  const land = useCallback(() => dispatch({ type: 'landed' }), [])
 
   return <>
-    {home && <section className={`hero-image hero-image--console console-stage${destination ? ' is-entering' : ''}`}
-      aria-label="yukyuの携帯ゲーム機" aria-busy={!!destination}>
-      <GameConsole zoomed={!!destination} onNavigate={navigate} onZoomComplete={finish} />
-      {destination && <p className="console-navigation-status" role="status">画面を開いています…</p>}
+    {(pathname === '/' || phase !== 'idle') && <section className="hero-image hero-image--console console-stage"
+      data-phase={phase} aria-label="yukyuの携帯ゲーム機" aria-busy={phase !== 'idle'}>
+      <GameConsole navigation={navigation} page={page} onNavigate={navigate} onLanded={land} />
+      {phase !== 'idle' && <p className="console-navigation-status" role="status">画面を開いています…</p>}
     </section>}
-    {children}
+    <div ref={setPage} className="console-page" data-phase={phase}>{children}</div>
   </>
 }
