@@ -1,10 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Environment, Lightformer, RoundedBox } from '@react-three/drei'
 import { Color, Group, Mesh, Shape, Path, ExtrudeGeometry, ShapeGeometry, RingGeometry, MathUtils, DataTexture, RepeatWrapping, RGBAFormat, type MeshStandardMaterial, type Texture } from 'three'
-import { CAMERA, LCD, diveCamera, easeDive, homeScale } from '@/lib/console-dive'
+import { CAMERA, LCD, diveCamera, easeDive, homePixelsPerUnit, homeScale } from '@/lib/console-dive'
 import type { Navigation } from '@/lib/console-navigation'
 import { ConsoleBreakout } from './console-breakout'
 import { ConsoleScrew } from './console-screw'
@@ -193,7 +193,11 @@ function Device({ onReady, navigation, page, onNavigate, onLanded }: ConsoleScen
   }, [])
   useEffect(() => () => grain.dispose(), [grain])
   const size = useThree(state => state.size)
+  const canvas = useThree(state => state.gl.domElement)
   const scale = homeScale(size)
+  useLayoutEffect(() => {
+    canvas.closest<HTMLElement>('.game-console')?.style.setProperty('--console-unit', `${homePixelsPerUnit(size)}px`)
+  }, [canvas, size])
   const { phase } = navigation
   const destination = phase === 'idle' ? undefined : CONSOLE_MENU.find(item => item.href === navigation.href)
   const motion = useRef({ windup: 0, dive: 0 })

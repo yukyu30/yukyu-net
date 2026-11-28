@@ -14,6 +14,11 @@ export function homeScale({ width, height }: Viewport) {
   return Math.min(1, HOME_VIEW_HEIGHT * width / height / 6.2, HOME_VIEW_HEIGHT / 5.8)
 }
 
+/** Length of one model unit on screen while the console rests in the home framing. */
+export function homePixelsPerUnit(viewport: Viewport) {
+  return viewport.height / HOME_VIEW_HEIGHT * homeScale(viewport)
+}
+
 /**
  * Where the destination page sits on the LCD: a viewport-shaped sheet that
  * spans the glass in one axis, pinned to its top edge. `clip` is the glass

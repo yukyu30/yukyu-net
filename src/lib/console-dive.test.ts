@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Matrix4, PerspectiveCamera } from 'three'
-import { CAMERA, LCD, diveCamera, easeDive, homeScale, pagePlacement, surfaceMatrix, withScroll, type DiveMotion, type Viewport } from './console-dive'
+import { CAMERA, LCD, diveCamera, easeDive, homePixelsPerUnit, homeScale, pagePlacement, surfaceMatrix, withScroll, type DiveMotion, type Viewport } from './console-dive'
 
 const DESKTOP = { width: 1440, height: 900 }
 const PHONE = { width: 390, height: 844 }
@@ -36,6 +36,21 @@ describe('homeScale', () => {
     const scale = homeScale(PHONE)
     expect(scale).toBeLessThan(1)
     expect(scale).toBeCloseTo(0.47, 2)
+  })
+})
+
+describe('homePixelsPerUnit', () => {
+  const fill = (viewport: Viewport) => {
+    const unit = homePixelsPerUnit(viewport)
+    return Math.max(unit * 6.2 / viewport.width, unit * 5.8 / viewport.height)
+  }
+
+  it('横長の画面では本体の枠がビューポートの内側に収まる', () => {
+    expect(fill(DESKTOP)).toBeLessThan(1)
+  })
+
+  it('縦長の画面では本体の枠がビューポートの幅にちょうど収まる', () => {
+    expect(fill(PHONE)).toBeCloseTo(1)
   })
 })
 
