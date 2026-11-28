@@ -7,8 +7,10 @@ import { releasePage } from '@/lib/console-page'
 import { CONSOLE_MENU, GameConsole } from './game-console'
 
 const WINDUP_MS = 320
+// Give up on a route change that was superseded and never arrives.
+const DEPART_TIMEOUT_MS = 8000
 // Lands the page even if WebGL is lost or frames are suspended mid-dive.
-const DIVE_TIMEOUT_MS = 2400
+const DIVE_TIMEOUT_MS = 4000
 
 /**
  * Pressing a console button navigates at once, keeps the device mounted, and
@@ -29,10 +31,9 @@ export function ConsoleNavigation({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (phase === 'idle') return
-    const timer = phase === 'departing'
-      ? setTimeout(() => dispatch({ type: 'wound' }), WINDUP_MS)
-      : setTimeout(() => dispatch({ type: 'landed' }), DIVE_TIMEOUT_MS)
-    return () => clearTimeout(timer)
+    const windup = phase === 'departing' ? setTimeout(() => dispatch({ type: 'wound' }), WINDUP_MS) : undefined
+    const expiry = setTimeout(() => dispatch({ type: 'expired' }), phase === 'departing' ? DEPART_TIMEOUT_MS : DIVE_TIMEOUT_MS)
+    return () => { clearTimeout(windup); clearTimeout(expiry) }
   }, [phase])
 
   useLayoutEffect(() => {

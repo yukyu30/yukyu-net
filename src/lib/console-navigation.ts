@@ -10,6 +10,7 @@ export type NavigationEvent =
   | { type: 'wound' }
   | { type: 'route'; pathname: string }
   | { type: 'landed' }
+  | { type: 'expired' }
 
 export const IDLE: Navigation = { phase: 'idle' }
 
@@ -22,11 +23,13 @@ export function reduceNavigation(state: Navigation, event: NavigationEvent): Nav
     case 'idle':
       return event.type === 'press' ? { phase: 'departing', href: event.href, arrived: false, wound: false } : state
     case 'departing':
+      if (event.type === 'expired') return IDLE
       if (event.type === 'wound') return depart({ ...state, wound: true })
-      if (event.type !== 'route' || event.pathname === HOME) return state
-      return event.pathname === state.href ? depart({ ...state, arrived: true }) : IDLE
+      if (event.type !== 'route') return state
+      if (event.pathname === state.href) return depart({ ...state, arrived: true })
+      return event.pathname === HOME && !state.arrived ? state : IDLE
     case 'diving':
-      if (event.type === 'landed') return IDLE
+      if (event.type === 'landed' || event.type === 'expired') return IDLE
       return event.type === 'route' && event.pathname !== state.href ? IDLE : state
   }
 }
